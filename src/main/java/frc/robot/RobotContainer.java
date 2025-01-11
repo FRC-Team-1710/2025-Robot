@@ -31,7 +31,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
   private final TunableController joystick =
-      new TunableController(0).withControllerType(TunableControllerType.QUADRATIC);
+      new TunableController(0)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -39,9 +42,10 @@ public class RobotContainer {
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed.times(0.1))
-          .withRotationalDeadband(Constants.MaxAngularRate.times(0.1)) // Add a 10% deadband
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+          .withDeadband(MaxSpeed.times(.025))
+          .withRotationalDeadband(Constants.MaxAngularRate.times(.025)) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -213,13 +217,21 @@ public class RobotContainer {
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
-    joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    joystick.leftBumper().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    joystick.leftBumper().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    joystick
+        .rightBumper()
+        .and(joystick.y())
+        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    joystick
+        .rightBumper()
+        .and(joystick.x())
+        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
-    // joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+    joystick
+        .start()
+        .onTrue(drivetrain.runOnce(() -> drivetrain.resetPose(new Pose2d(0, 0, new Rotation2d()))));
   }
 
   public Command getAutonomousCommand() {
