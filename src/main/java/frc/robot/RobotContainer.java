@@ -23,7 +23,6 @@ import frc.robot.subsystems.drive.requests.ProfiledFieldCentricFacingAngle;
 import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
@@ -57,10 +56,10 @@ public class RobotContainer {
 
         new Vision(
             drivetrain::addVisionData,
-            new VisionIOLimelight("limelight-fl", drivetrain::getVisionParameters),
-            new VisionIOLimelight("limelight-fr", drivetrain::getVisionParameters),
-            new VisionIOLimelight("limelight-bl", drivetrain::getVisionParameters),
-            new VisionIOLimelight("limelight-br", drivetrain::getVisionParameters));
+            new VisionIO() {},
+            new VisionIO() {},
+            new VisionIO() {},
+            new VisionIO() {});
         break;
 
       case SIM:
