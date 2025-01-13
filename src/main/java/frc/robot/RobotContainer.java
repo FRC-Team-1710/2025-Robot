@@ -30,11 +30,13 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
-  private final TunableController joystick =
+  private final TunableController driver = targeting-system
       new TunableController(0)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
+
+  private final TunableController reefTargetingSystem = new TunableController(2);
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -42,10 +44,9 @@ public class RobotContainer {
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed.times(.025))
-          .withRotationalDeadband(Constants.MaxAngularRate.times(.025)) // Add a 10% deadband
-          .withDriveRequestType(
-              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+          .withDeadband(MaxSpeed.times(0.025))
+          .withRotationalDeadband(Constants.MaxAngularRate.times(0.025)) // Add a 10% deadband
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -141,26 +142,24 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            -joystick
-                                .customLeft()
-                                .getY())) // Drive forward with negative Y (forward)
+                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            -joystick.customLeft().getX())) // Drive left with negative X (left)
+                            -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
-                            -joystick
+                            -driver
                                 .customRight()
                                 .getX())))); // Drive counterclockwise with negative X (left)
 
-    joystick.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
-    joystick
+    driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
+    driver
         .b()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     point.withModuleDirection(
-                        new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                        new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
@@ -173,7 +172,7 @@ public class RobotContainer {
             .withDeadband(MaxSpeed.times(0.1))
             .withRotationalDeadband(Constants.MaxAngularRate.times(0.1))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-    joystick
+    driver
         .x()
         .whileTrue(
             drivetrain.applyRequest(
@@ -181,9 +180,9 @@ public class RobotContainer {
                     setpointGen
                         .withVelocityX(
                             MaxSpeed.times(
-                                -joystick.getLeftY())) // Drive forward with negative Y (forward)
-                        .withVelocityY(MaxSpeed.times(-joystick.getLeftX()))
-                        .withRotationalRate(Constants.MaxAngularRate.times(-joystick.getRightX()))
+                                -driver.getLeftY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.getLeftX()))
+                        .withRotationalRate(Constants.MaxAngularRate.times(-driver.getRightX()))
                         .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
 
     // Custom Swerve Request that use ProfiledFieldCentricFacingAngle. Allows you to face specific
@@ -197,7 +196,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
     // Set PID for ProfiledFieldCentricFacingAngle
     driveFacingAngle.HeadingController.setPID(7, 0, 0);
-    joystick
+    driver
         .y()
         .whileTrue(
             drivetrain
@@ -208,30 +207,32 @@ public class RobotContainer {
                             driveFacingAngle
                                 .withVelocityX(
                                     MaxSpeed.times(
-                                        -joystick
+                                        -driver
                                             .getLeftY())) // Drive forward with negative Y (forward)
-                                .withVelocityY(MaxSpeed.times(-joystick.getLeftX()))
+                                .withVelocityY(MaxSpeed.times(-driver.getLeftX()))
                                 .withTargetDirection(
-                                    new Rotation2d(
-                                        -joystick.getRightY(), -joystick.getRightX())))));
+                                    new Rotation2d(-driver.getRightY(), -driver.getRightX())))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
-    joystick.leftBumper().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    joystick.leftBumper().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    joystick
-        .rightBumper()
-        .and(joystick.y())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    joystick
-        .rightBumper()
-        .and(joystick.x())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    driver.rightBumper().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    driver.rightBumper().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    driver.leftBumper().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    driver.leftBumper().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
-    joystick
+    driver
         .start()
-        .onTrue(drivetrain.runOnce(() -> drivetrain.resetPose(new Pose2d(0, 0, new Rotation2d()))));
+        .onTrue(
+            drivetrain.runOnce(
+                () ->
+                    drivetrain.resetPose(
+                        new Pose2d(
+                            drivetrain.getPose().getX(),
+                            drivetrain.getPose().getY(),
+                            new Rotation2d()))));
+
+    reefTargetingSystem.a();
   }
 
   public Command getAutonomousCommand() {
