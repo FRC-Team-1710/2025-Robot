@@ -10,8 +10,11 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
@@ -24,8 +27,13 @@ import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
+import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+
+import java.lang.annotation.Target;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -36,7 +44,25 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
-  private final TunableController reefTargetingSystem = new TunableController(2);
+  private final TunableController mech =
+      new TunableController(0)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
+
+  private final Joystick reefTargetingSystem = new Joystick(2);
+  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 0);
+  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 1);
+  private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 2);
+  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 3);
+  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 4);
+  private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 5);
+  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 6);
+  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 7);
+  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 8);
+  private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 9);
+  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 10);
+  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 11);
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -232,7 +258,48 @@ public class RobotContainer {
                             drivetrain.getPose().getY(),
                             new Rotation2d()))));
 
-    reefTargetingSystem.a();
+    // Mech Controller Bindings
+    mech.y().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(4)));
+    mech.x().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(3)));
+    mech.a().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(2)));
+
+    // Targeting Controller Bindings
+    alphaButton
+        .and(bravoButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ALPHA)));
+    bravoButton
+        .and(alphaButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.BRAVO)));
+    charlieButton
+        .and(deltaButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.CHARLIE)));
+    deltaButton
+        .and(charlieButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.DELTA)));
+    echoButton
+        .and(foxtrotButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ECHO)));
+    foxtrotButton
+        .and(echoButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.FOXTROT)));
+    golfButton
+        .and(hotelButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.GOLF)));
+    hotelButton
+        .and(golfButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.HOTEL)));
+    indiaButton
+        .and(julietButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.INDIA)));
+    julietButton
+        .and(indiaButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.JULIET)));
+    kiloButton
+        .and(limaButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.KILO)));
+    limaButton
+        .and(kiloButton.negate())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
   }
 
   public Command getAutonomousCommand() {

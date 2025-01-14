@@ -1,59 +1,125 @@
 package frc.robot.utils;
 
-public enum TargetingComputer {
-  RED_ALPHA(7, 180, "left"),
-  RED_BRAVO(7, 180, "right"),
-  RED_CHARLIE(8, 240, "left"),
-  RED_DELTA(8, 240, "right"),
-  RED_ECHO(9, 300, "left"),
-  RED_FOXTROT(9, 300, "right"),
-  RED_GOLF(10, 0, "left"),
-  RED_HOTEL(10, 0, "right"),
-  RED_INDIA(11, 60, "left"),
-  RED_JULIET(11, 60, "right"),
-  RED_KILO(6, 120, "left"),
-  RED_LIMA(6, 120, "right"),
-  RED_SOURCE_LEFT(1, 306, null),
-  RED_SOURCE_RIGHT(2, 54, null),
-  RED_PROCESSOR(3, 90, null),
-  RED_NET(5, 180, null),
+public class TargetingComputer {
 
-  BLUE_ALPHA(18, 0, "left"),
-  BLUE_BRAVO(18, 0, "right"),
-  BLUE_CHARLIE(17, 60, "left"),
-  BLUE_DELTA(17, 60, "right"),
-  BLUE_ECHO(22, 120, "left"),
-  BLUE_FOXTROT(22, 120, "right"),
-  BLUE_GOLF(21, 180, "left"),
-  BLUE_HOTEL(21, 180, "right"),
-  BLUE_INDIA(20, 240, "left"),
-  BLUE_JULIET(20, 240, "right"),
-  BLUE_KILO(19, 300, "left"),
-  BLUE_LIMA(19, 300, "right"),
-  BLUE_SOURCE_LEFT(13, 126, null),
-  BLUE_SOURCE_RIGHT(12, 234, null),
-  BLUE_PROCESSOR(16, 270, null),
-  BLUE_NET(14, 0, null);
+  private static int alphaTag,
+      charlieTag,
+      echoTag,
+      golfTag,
+      indiaTag,
+      kiloTag,
+      leftSourceTag,
+      rightSourceTag,
+      processorTag,
+      netTag;
+  private static double alphaAngle,
+      charlieAngle,
+      echoAngle,
+      golfAngle,
+      indiaAngle,
+      kiloAngle,
+      leftSourceAngle,
+      rightSourceAngle,
+      processorAngle,
+      netAngle;
 
-  private final double apriltag;
-  private final double targetingAngle; // in deg
-  private final String side;
+  public static Targets currentTargetBranch = Targets.ALPHA;
+  public static double currentTargetLevel = 4;
 
-  TargetingComputer(double apriltag, double targetingAngle, String side) {
-    this.apriltag = apriltag;
-    this.targetingAngle = targetingAngle;
-    this.side = side;
+  public static void setAlliance(boolean redAlliance) {
+    if (redAlliance) {
+      alphaTag = 7;
+      charlieTag = 8;
+      echoTag = 9;
+      golfTag = 10;
+      indiaTag = 11;
+      kiloTag = 6;
+      leftSourceTag = 1;
+      rightSourceTag = 2;
+      processorTag = 3;
+      netTag = 5;
+
+      alphaAngle = 180;
+      charlieAngle = 240;
+      echoAngle = 300;
+      golfAngle = 0;
+      indiaAngle = 60;
+      kiloAngle = 120;
+      leftSourceAngle = 306;
+      rightSourceAngle = 54;
+      processorAngle = 90;
+      netAngle = 180;
+    } else {
+      alphaTag = 18;
+      charlieTag = 17;
+      echoTag = 22;
+      golfTag = 21;
+      indiaTag = 20;
+      kiloTag = 19;
+      leftSourceTag = 13;
+      rightSourceTag = 12;
+      processorTag = 16;
+      netTag = 14;
+
+      alphaAngle = 0;
+      charlieAngle = 60;
+      echoAngle = 120;
+      golfAngle = 180;
+      indiaAngle = 240;
+      kiloAngle = 300;
+      leftSourceAngle = 126;
+      rightSourceAngle = 234;
+      processorAngle = 270;
+      netAngle = 0;
+    }
   }
 
-  public double getApriltag() {
-    return apriltag;
+  public static void setTargetBranch(Targets target) {
+    currentTargetBranch = target;
   }
 
-  public double getTargetingAngle() {
-    return targetingAngle;
+  public static void setTargetLevel(int level) {
+    currentTargetLevel = level;
   }
 
-  public String getSide() {
-    return side;
+  public enum Targets {
+    ALPHA(alphaTag, alphaAngle, "left"),
+    BRAVO(alphaTag, alphaAngle, "right"),
+    CHARLIE(charlieTag, charlieAngle, "left"),
+    DELTA(charlieTag, charlieAngle, "right"),
+    ECHO(echoTag, echoAngle, "left"),
+    FOXTROT(echoTag, echoAngle, "right"),
+    GOLF(golfTag, golfAngle, "left"),
+    HOTEL(golfTag, golfAngle, "right"),
+    INDIA(indiaTag, indiaAngle, "left"),
+    JULIET(indiaTag, indiaAngle, "right"),
+    KILO(kiloTag, kiloAngle, "left"),
+    LIMA(kiloTag, kiloAngle, "right"),
+    SOURCE_LEFT(leftSourceTag, leftSourceAngle, null),
+    SOURCE_RIGHT(rightSourceTag, rightSourceAngle, null),
+    RED_PROCESSOR(processorTag, processorAngle, null),
+    RED_NET(processorTag, processorAngle, null);
+
+    private final double apriltag;
+    private final double targetingAngle; // in deg
+    private final String side;
+
+    Targets(double apriltag, double targetingAngle, String side) {
+      this.apriltag = apriltag;
+      this.targetingAngle = targetingAngle;
+      this.side = side;
+    }
+
+    public double getApriltag() {
+      return apriltag;
+    }
+
+    public double getTargetingAngle() {
+      return targetingAngle;
+    }
+
+    public String getSide() {
+      return side;
+    }
   }
 }
