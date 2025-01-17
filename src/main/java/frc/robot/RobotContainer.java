@@ -23,6 +23,7 @@ import frc.robot.subsystems.drive.requests.ProfiledFieldCentricFacingAngle;
 import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
@@ -61,10 +62,34 @@ public class RobotContainer {
 
         new Vision(
             drivetrain::addVisionData,
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {});
+            new VisionIOPhotonVision(
+                "FrontLeft",
+                new Transform3d(
+                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
+                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    ),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVision(
+                "FrontRight",
+                new Transform3d(
+                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
+                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    ),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVision(
+                "BackLeft",
+                new Transform3d(
+                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
+                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    ),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVision(
+                "BackRight",
+                new Transform3d(
+                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
+                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    ),
+                drivetrain::getVisionParameters));
         break;
 
       case SIM:

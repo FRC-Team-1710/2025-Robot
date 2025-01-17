@@ -32,11 +32,12 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
-  final PhotonCamera camera;
-  private final Transform3d robotToCamera;
-  final Supplier<VisionParameters> visionParams;
+  final PhotonCamera camera; // creates camera class
+  private final Transform3d robotToCamera; // measured deviation from camera to gyro
+  final Supplier<VisionParameters>
+      visionParams; // Most likely the robot specifications to calculate standard deviations
 
-  public VisionIOPhotonVision(
+  public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
     this.camera = new PhotonCamera(cameraName);
     this.robotToCamera = robotToCamera;
@@ -49,7 +50,7 @@ public class VisionIOPhotonVision implements VisionIO {
     PoseObservation observation = getEstimatedGlobalPose();
     inputs.poseEstimateMT1 = observation.poseEstimate();
     inputs.rawFiducialsMT1 = observation.rawFiducials();
-  }
+  } // Auto-logs the inputs/camera measurements + info
 
   private PoseObservation getEstimatedGlobalPose() {
     List<PhotonPipelineResult> results = camera.getAllUnreadResults();
@@ -59,7 +60,9 @@ public class VisionIOPhotonVision implements VisionIO {
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
+
     var multitagResult = latestResult.getMultiTagResult();
+
     if (multitagResult.isPresent()) {
       Transform3d fieldToRobot =
           multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
