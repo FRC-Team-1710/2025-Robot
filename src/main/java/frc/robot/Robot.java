@@ -88,8 +88,12 @@ public class Robot extends LoggedRobot {
     Threads.setCurrentThreadPriority(true, 99);
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putString("Current Target", TargetingComputer.currentTargetBranch.toString());
     SmartDashboard.putNumber("Target Level", TargetingComputer.currentTargetLevel);
+    SmartDashboard.putString(
+        "Random Target Branch", TargetingComputer.getCurrentBranchGameTarget().toString());
+    SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
   }
 
   /** Gets the current alliance, true is red */
@@ -138,6 +142,9 @@ public class Robot extends LoggedRobot {
   public void teleopInit() {
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
+    if (TargetingComputer.gameMode) {
+      TargetingComputer.startBranchGame();
+    }
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
@@ -145,7 +152,11 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (TargetingComputer.gameMode) {
+      TargetingComputer.checkBranchGame();
+    }
+  }
 
   @Override
   public void teleopExit() {}

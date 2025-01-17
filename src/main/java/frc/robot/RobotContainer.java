@@ -32,9 +32,6 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-
-import java.lang.annotation.Target;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -53,18 +50,18 @@ public class RobotContainer {
           .withDeadband(0.125);
 
   private final Joystick reefTargetingSystem = new Joystick(2);
-  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 0);
-  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 1);
-  private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 2);
-  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 3);
-  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 4);
-  private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 5);
-  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 6);
-  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 7);
-  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 8);
-  private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 9);
-  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 10);
-  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 11);
+  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
+  private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
+  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
+  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 5);
+  private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 6);
+  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 7);
+  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 8);
+  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 9);
+  private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 10);
+  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
+  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   private final LoggedDashboardChooser<Command> autoChooser;
   VisionIOPhotonVision c1 = new VisionIOPhotonVision("hello", null, null);
