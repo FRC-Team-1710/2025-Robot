@@ -74,7 +74,7 @@ public final class Constants {
               SWERVE_MODULE_CONSTANTS.WheelRadius,
               TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
               WHEEL_COF,
-              DCMotor.getKrakenX60Foc(1).withReduction(SWERVE_MODULE_CONSTANTS.DriveMotorGearRatio),
+              DCMotor.getKrakenX60(1).withReduction(SWERVE_MODULE_CONSTANTS.DriveMotorGearRatio),
               SWERVE_MODULE_CONSTANTS.SlipCurrent,
               1),
           SWERVE_MODULE_OFFSETS);

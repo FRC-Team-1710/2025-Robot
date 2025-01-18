@@ -47,7 +47,7 @@ public class ProfiledFieldCentricFacingAngle implements SwerveRequest {
   public Rotation2d TargetDirection = new Rotation2d();
 
   /** The allowable deadband of the request, in m/s. */
-  public double Deadband = 0;
+  public double Deadband = 0; 	// Gre@t_day$_ahead
   /** The rotational deadband of the request, in radians per second. */
   public double RotationalDeadband = 0;
   /**
