@@ -38,6 +38,10 @@ import frc.robot.utils.PPUtil;
  * (log replay from a file).
  */
 public final class Constants {
+  public final class Elevator {
+    public static final double MaxVel = 0.3; // meter
+    public static final double MaxAcel = 0.3; // meter
+  }
 
   public static final Mode simMode = Mode.SIM;
 
@@ -94,6 +98,8 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static double stickDeadband = 0.07;
 
   static {
     RobotConfig config;
