@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meters;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -12,16 +10,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCoralCommand;
-import frc.robot.commands.ElevationManual;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CoralIntake.CoralIntake;
 import frc.robot.subsystems.CoralIntake.CoralIntakeIO;
@@ -52,8 +46,6 @@ public class RobotContainer {
           .withDeadband(0.125);
 
   private final TunableController reefTargetingSystem = new TunableController(2);
-
-  private final XboxController joystic2 = new XboxController(1);
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -162,10 +154,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    joystick.rightBumper().whileTrue(new IntakeCoralCommand(m_coralIntake, joystick));
-    // m_coralIntake.setDefaultCommand(
-    //     m_coralIntake.runTeleop(
-    //         () -> joystick.getRightTriggerAxis(), () -> joystick.getLeftTriggerAxis()));
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
