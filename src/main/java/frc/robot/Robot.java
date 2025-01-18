@@ -37,6 +37,7 @@ public class Robot extends LoggedRobot {
     TargetingComputer.setAlliance(redAlliance);
 
     Pathfinding.setPathfinder(new LocalADStarAK());
+
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
       case REAL:
@@ -73,13 +74,12 @@ public class Robot extends LoggedRobot {
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
-    // Instantiate our RobotContainer. This will perform all our button bindings,
-    // and put our autonomous chooser on the dashboard.
     // Warmup the PPLib library
-
     FollowPathCommand.warmupCommand().schedule();
     PathfindingCommand.warmupCommand().schedule();
 
+    // Instantiate our RobotContainer. This will perform all our button bindings,
+    // and put our autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
 

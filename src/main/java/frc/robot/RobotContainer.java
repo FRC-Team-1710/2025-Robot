@@ -176,6 +176,9 @@ public class RobotContainer {
                                 .getX())))); // Drive counterclockwise with negative X (left)
 
     driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
+
+    driver.back().whileTrue(drivetrain.goToPoint(3, 2));
+
     driver
         .b()
         .whileTrue(
@@ -192,9 +195,10 @@ public class RobotContainer {
                 drivetrain.getChassisSpeeds(),
                 drivetrain.getModuleStates(),
                 drivetrain::getRotation)
-            .withDeadband(MaxSpeed.times(0.1))
-            .withRotationalDeadband(Constants.MaxAngularRate.times(0.1))
+            .withDeadband(MaxSpeed.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     driver
         .x()
         .whileTrue(
@@ -217,6 +221,7 @@ public class RobotContainer {
                     Constants.MaxAngularRate.div(0.25).baseUnitMagnitude()))
             .withDeadband(MaxSpeed.times(0.1))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     // Set PID for ProfiledFieldCentricFacingAngle
     driveFacingAngle.HeadingController.setPID(7, 0, 0);
     driver
