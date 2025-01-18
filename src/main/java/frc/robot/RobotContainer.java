@@ -26,6 +26,7 @@ import frc.robot.subsystems.drive.requests.ProfiledFieldCentricFacingAngle;
 import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
@@ -34,6 +35,7 @@ import frc.robot.utils.TunableController.TunableControllerType;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
+
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
   private final TunableController driver =
       new TunableController(0)
@@ -62,6 +64,7 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   private final LoggedDashboardChooser<Command> autoChooser;
+  VisionIOPhotonVision c1 = new VisionIOPhotonVision("hello", null, null);
 
   public final Drive drivetrain;
   // CTRE Default Drive Request
@@ -186,6 +189,11 @@ public class RobotContainer {
                 () ->
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
+    driver
+        .leftBumper()
+        .onTrue(
+            drivetrain.applyRequest(
+                () -> point.withModuleDirection(new Rotation2d(c1.target(6).getYaw()))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here

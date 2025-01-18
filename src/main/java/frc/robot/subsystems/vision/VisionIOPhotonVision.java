@@ -35,6 +35,7 @@ public class VisionIOPhotonVision implements VisionIO {
   final PhotonCamera camera;
   private final Transform3d robotToCamera;
   final Supplier<VisionParameters> visionParams;
+  PhotonTrackedTarget target;
 
   public VisionIOPhotonVision(
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -111,6 +112,27 @@ public class VisionIOPhotonVision implements VisionIO {
             visionParams.get().robotPose(),
             false),
         rawFiducialsList.toArray(new RawFiducial[0]));
+  }
+
+  public PhotonTrackedTarget target(int id) {
+    int number = 0;
+    var allInfo = camera.getAllUnreadResults();
+    int intex = allInfo.lastIndexOf(camera);
+    PhotonPipelineResult recentResult = allInfo.get(intex);
+    List<PhotonTrackedTarget> targets = recentResult.getTargets();
+    target = targets.get(number);
+    int targetID = target.getFiducialId();
+
+    if (id == targetID) {
+      return target;
+    } else {
+      number = number + 1;
+      return null;
+    }
+  }
+
+  public RawFiducial result() {
+    return createRawFiducial(target);
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
