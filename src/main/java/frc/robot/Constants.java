@@ -112,4 +112,8 @@ public final class Constants {
       e.printStackTrace();
     }
   }
+
+  public static class ClawSubsystemConstants {
+    public static final double ClawIntakePower = 0.5;
+  }
 }

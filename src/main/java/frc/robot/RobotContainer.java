@@ -20,8 +20,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCoralCommand;
 import frc.robot.commands.ElevationManual;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CoralIntake.CoralIntake;
+import frc.robot.subsystems.CoralIntake.CoralIntakeIO;
+import frc.robot.subsystems.CoralIntake.CoralIntakeIOSim;
+import frc.robot.subsystems.CoralIntake.CoralIntakeIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -53,6 +58,7 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   public final Drive drivetrain;
+  public final CoralIntake m_coralIntake;
   public final Elevator elevator;
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -71,6 +77,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
+        m_coralIntake = new CoralIntake(new CoralIntakeIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
 
         new Vision(
@@ -84,6 +91,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
+        m_coralIntake = new CoralIntake(new CoralIntakeIOSim());
         elevator = new Elevator(new ElevatorIOSIM());
 
         new Vision(
@@ -119,6 +127,7 @@ public class RobotContainer {
       default:
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
+        m_coralIntake = new CoralIntake(new CoralIntakeIO() {});
         elevator = new Elevator(new ElevatorIO() {});
 
         new Vision(
@@ -153,6 +162,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    joystick.rightBumper().whileTrue(new IntakeCoralCommand(m_coralIntake, joystick));
+    // m_coralIntake.setDefaultCommand(
+    //     m_coralIntake.runTeleop(
+    //         () -> joystick.getRightTriggerAxis(), () -> joystick.getLeftTriggerAxis()));
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
