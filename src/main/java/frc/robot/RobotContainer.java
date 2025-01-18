@@ -189,11 +189,33 @@ public class RobotContainer {
                 () ->
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
+    /*driver
+    .leftBumper()
+    .onTrue(
+        drivetrain.applyRequest(
+            () -> point.withModuleDirection(new Rotation2d(c1.target(TargetingComputer.currentTargetBranch.getApriltag()).getBestCameraToTarget().getX()))));
+
+            driver
+            .leftBumper()
+            .onTrue(
+                drivetrain.applyRequest(
+                    () -> point.withModuleDirection(new Rotation2d(c1.result(7).txnc()*Constants.MaxAngularRate))));*/
+
     driver
         .leftBumper()
         .onTrue(
             drivetrain.applyRequest(
-                () -> point.withModuleDirection(new Rotation2d(c1.target(6).getYaw()))));
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -c1.result(7).tync()
+                                    * 0.026553)) // todo: double check this number, should be kp
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                -c1.result(7).txnc()
+                                    * 0.026553)))); // todo: double check this number, should be kp
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
