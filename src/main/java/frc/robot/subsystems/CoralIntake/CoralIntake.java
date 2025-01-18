@@ -5,9 +5,7 @@
 package frc.robot.subsystems.CoralIntake;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class CoralIntake extends SubsystemBase {
@@ -29,13 +27,6 @@ public class CoralIntake extends SubsystemBase {
   public void runPercent(double percent) {
     SmartDashboard.putNumber("Claw/ClawPercent", percent);
     io.setVoltage(percent * 12);
-  }
-
-  // Sim
-  public Command runTeleop(DoubleSupplier forward, DoubleSupplier reverse) {
-    return runEnd(
-        () -> io.setVoltage((forward.getAsDouble() - reverse.getAsDouble()) * 12.0),
-        () -> io.setVoltage(0.0));
   }
 
   /*Boolean */
