@@ -31,7 +31,10 @@ public class TunableController extends CommandXboxController {
   private TunableControllerType type = TunableControllerType.LINEAR;
 
   /** Minimum magnitude threshold for considering stick input non-zero */
-  private static final double DEADBAND_THRESHOLD = 1e-6;
+  private double DEADBAND_THRESHOLD = 1e-6;
+
+  /** Lowest possible output value, to be output when the input value is at the deadband */
+  private double OUTPUT_AT_DEADBAND = 0.0;
 
   /**
    * Constructs a new TunableController.
@@ -83,7 +86,10 @@ public class TunableController extends CommandXboxController {
     double magnitude = input.getNorm();
 
     // Scale the magnitude while preserving direction
-    double scaledMagnitude = Math.pow(magnitude, type.exponent);
+    double scaledMagnitude =
+        ((1 - OUTPUT_AT_DEADBAND) / (Math.pow(1 - DEADBAND_THRESHOLD, type.exponent)))
+                * (Math.pow(magnitude - DEADBAND_THRESHOLD, type.exponent))
+            + OUTPUT_AT_DEADBAND;
     scaledMagnitude = Math.min(scaledMagnitude, 1.0);
 
     // Convert back to x,y coordinates
@@ -119,6 +125,29 @@ public class TunableController extends CommandXboxController {
    */
   public TunableController withControllerType(TunableControllerType type) {
     this.type = type;
+    return this;
+  }
+
+  /**
+   * Sets the controller's lowest output.
+   *
+   * @param output The lowest desired output value, to be output when the input value is equal to
+   *     the deadband. This should be the same as your drivetrain deadband.
+   * @return This controller instance for method chaining
+   */
+  public TunableController withOutputAtDeadband(double output) {
+    this.OUTPUT_AT_DEADBAND = output;
+    return this;
+  }
+
+  /**
+   * Sets the controller's minimum magnitude threshold for considering stick input non-zero.
+   *
+   * @param deadband The desired deadband for the controller
+   * @return This controller instance for method chaining
+   */
+  public TunableController withDeadband(double deadband) {
+    this.DEADBAND_THRESHOLD = deadband;
     return this;
   }
 }
