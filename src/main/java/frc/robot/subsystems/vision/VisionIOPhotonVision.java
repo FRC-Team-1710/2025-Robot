@@ -126,7 +126,7 @@ public class VisionIOPhotonVision implements VisionIO {
     PhotonTrackedTarget aprilTag = targets.get(targetID);
     // arwFiducial yes = createRawFiducial(aprilTag);
 
-    while (joystickButtonid != aprilTag.getFiducialId()) {
+    while (joystickButtonid != aprilTag.getFiducialId()) { // flagitious logic
 
       if (joystickButtonid == targets.get(number).getFiducialId()) {
         aprilTag = targets.get(number);
