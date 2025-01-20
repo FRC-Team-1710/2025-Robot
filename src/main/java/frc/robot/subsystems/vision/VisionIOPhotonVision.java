@@ -35,9 +35,12 @@ public class VisionIOPhotonVision implements VisionIO {
   final PhotonCamera camera;
   private final Transform3d robotToCamera;
   final Supplier<VisionParameters> visionParams;
+  List<PhotonPipelineResult> cameraResults;
+  PhotonPipelineResult latestResult;
+  List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
 
-  public VisionIOPhotonVision(
+  public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
     this.camera = new PhotonCamera(cameraName);
     this.robotToCamera = robotToCamera;
@@ -50,17 +53,19 @@ public class VisionIOPhotonVision implements VisionIO {
     PoseObservation observation = getEstimatedGlobalPose();
     inputs.poseEstimateMT1 = observation.poseEstimate();
     inputs.rawFiducialsMT1 = observation.rawFiducials();
-  }
+  } // Auto-logs the inputs/camera measurements + info
 
   private PoseObservation getEstimatedGlobalPose() {
-    List<PhotonPipelineResult> results = camera.getAllUnreadResults();
-    if (results.isEmpty()) return new PoseObservation();
+    updateResults();
+    if (cameraResults.isEmpty()) return new PoseObservation();
 
-    PhotonPipelineResult latestResult = results.get(results.size() - 1);
+    PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
+
     var multitagResult = latestResult.getMultiTagResult();
+
     if (multitagResult.isPresent()) {
       Transform3d fieldToRobot =
           multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
@@ -114,35 +119,21 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
-  public PhotonTrackedTarget target(double joystickButtonid) {
-    int number = 0;
-    var allInfo = camera.getAllUnreadResults();
-    int intex = allInfo.lastIndexOf(camera);
-    PhotonPipelineResult recentResult = allInfo.get(intex);
-    List<PhotonTrackedTarget> targets = recentResult.getTargets();
-    // PhotonTrackedTarget other =
-    // boolean target = targets.contains(joystickButtonid);
-    int targetID = targets.indexOf(target);
-    PhotonTrackedTarget aprilTag = targets.get(targetID);
-    // arwFiducial yes = createRawFiducial(aprilTag);
-
-    while (joystickButtonid != aprilTag.getFiducialId()) {
-
-      if (joystickButtonid == targets.get(number).getFiducialId()) {
-        aprilTag = targets.get(number);
-        break;
-      } else if (number > 15){
-        number = 0;
-      } else{
-        number = number + 1;
-      }
-    }
-
-    return aprilTag;
+  public PhotonTrackedTarget getBestTarget() {
+    return latestResult.getBestTarget();
   }
 
-  public RawFiducial result(double joystickButtonid) {
-    return createRawFiducial(target(joystickButtonid));
+  public PhotonTrackedTarget getTarget(int id) {
+    for (var target : cameraTargets) {
+      if (target.fiducialId == id) {
+        return target;
+      }
+    }
+    return null;
+  }
+
+  public RawFiducial result(int joystickButtonid) {
+    return createRawFiducial(getTarget(joystickButtonid));
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
@@ -154,5 +145,11 @@ public class VisionIOPhotonVision implements VisionIO {
         target.bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation()).getNorm(),
         target.bestCameraToTarget.getTranslation().getNorm(),
         target.poseAmbiguity);
+  }
+
+  private void updateResults() {
+    this.cameraResults = camera.getAllUnreadResults();
+    this.latestResult = cameraResults.get(cameraResults.size() - 1);
+    this.cameraTargets = latestResult.targets;
   }
 }
