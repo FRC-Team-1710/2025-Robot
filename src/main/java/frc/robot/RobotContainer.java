@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -90,29 +91,29 @@ public class RobotContainer {
             new VisionIOPhotonVision(
                 "FrontLeft",
                 new Transform3d(
-                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
-                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    new Translation3d(Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(30)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "FrontRight",
                 new Transform3d(
-                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
-                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    new Translation3d(-Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(330)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "BackLeft",
                 new Transform3d(
-                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
-                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    new Translation3d(Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(150)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "BackRight",
                 new Transform3d(
-                    new Translation3d(0.0, 0.0, 0.0), // IN METERS
-                    new Rotation3d(0, 0, 0) // IN RADIANS
+                    new Translation3d(-Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(210)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters));
         break;
