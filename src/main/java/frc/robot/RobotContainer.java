@@ -180,7 +180,7 @@ public class RobotContainer {
 
     driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
 
-    driver.back().whileTrue(drivetrain.goToPoint(3, 2));
+    // driver.back().whileTrue(drivetrain.goToPoint(3, 2));
 
     driver
         .b()
@@ -189,11 +189,11 @@ public class RobotContainer {
                 () ->
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
-    driver
-        .leftBumper()
-        .onTrue(
-            drivetrain.applyRequest(
-                () -> point.withModuleDirection(new Rotation2d(c1.target(6).getYaw()))));
+    /*driver
+    .leftBumper()
+    .onTrue(
+        drivetrain.applyRequest(
+            () -> point.withModuleDirection(new Rotation2d(c1.target(6).getYaw()))));*/
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
