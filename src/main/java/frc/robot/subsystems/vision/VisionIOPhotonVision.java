@@ -35,6 +35,9 @@ public class VisionIOPhotonVision implements VisionIO {
   final PhotonCamera camera;
   private final Transform3d robotToCamera;
   final Supplier<VisionParameters> visionParams;
+  List<PhotonPipelineResult> cameraResults;
+  PhotonPipelineResult latestResult;
+  List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
 
   public VisionIOPhotonVision( // Creating class
@@ -53,10 +56,10 @@ public class VisionIOPhotonVision implements VisionIO {
   } // Auto-logs the inputs/camera measurements + info
 
   private PoseObservation getEstimatedGlobalPose() {
-    List<PhotonPipelineResult> results = camera.getAllUnreadResults();
-    if (results.isEmpty()) return new PoseObservation();
+    updateResults();
+    if (cameraResults.isEmpty()) return new PoseObservation();
 
-    PhotonPipelineResult latestResult = results.get(results.size() - 1);
+    PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
@@ -116,21 +119,17 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
-  public PhotonTrackedTarget target(int id) {
-    int number = 0;
-    var allInfo = camera.getAllUnreadResults();
-    int intex = allInfo.lastIndexOf(camera);
-    PhotonPipelineResult recentResult = allInfo.get(intex);
-    List<PhotonTrackedTarget> targets = recentResult.getTargets();
-    target = targets.get(number);
-    int targetID = target.getFiducialId();
+  public PhotonTrackedTarget getBestTarget() {
+    return latestResult.getBestTarget();
+  }
 
-    if (id == targetID) {
-      return target;
-    } else {
-      number = number + 1;
-      return null;
+  public PhotonTrackedTarget getTarget(int id) {
+    for (var target : cameraTargets) {
+      if (target.fiducialId == id) {
+        return target;
+      }
     }
+    return null;
   }
 
   public RawFiducial result() {
@@ -146,5 +145,11 @@ public class VisionIOPhotonVision implements VisionIO {
         target.bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation()).getNorm(),
         target.bestCameraToTarget.getTranslation().getNorm(),
         target.poseAmbiguity);
+  }
+
+  private void updateResults() {
+    this.cameraResults = camera.getAllUnreadResults();
+    this.latestResult = cameraResults.get(cameraResults.size() - 1);
+    this.cameraTargets = latestResult.targets;
   }
 }
