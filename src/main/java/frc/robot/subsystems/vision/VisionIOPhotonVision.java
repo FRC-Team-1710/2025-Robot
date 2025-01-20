@@ -114,25 +114,35 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
-  public PhotonTrackedTarget target(int id) {
+  public PhotonTrackedTarget target(double joystickButtonid) {
     int number = 0;
     var allInfo = camera.getAllUnreadResults();
     int intex = allInfo.lastIndexOf(camera);
     PhotonPipelineResult recentResult = allInfo.get(intex);
     List<PhotonTrackedTarget> targets = recentResult.getTargets();
-    target = targets.get(number);
-    int targetID = target.getFiducialId();
+    // PhotonTrackedTarget other =
+    // boolean target = targets.contains(joystickButtonid);
+    int targetID = targets.indexOf(target);
+    PhotonTrackedTarget aprilTag = targets.get(targetID);
+    // arwFiducial yes = createRawFiducial(aprilTag);
 
-    if (id == targetID) {
-      return target;
-    } else {
-      number = number + 1;
-      return null;
+    while (joystickButtonid != aprilTag.getFiducialId()) {
+
+      if (joystickButtonid == targets.get(number).getFiducialId()) {
+        aprilTag = targets.get(number);
+        break;
+      } else if (number > 15){
+        number = 0;
+      } else{
+        number = number + 1;
+      }
     }
+
+    return aprilTag;
   }
 
-  public RawFiducial result() {
-    return createRawFiducial(target);
+  public RawFiducial result(double joystickButtonid) {
+    return createRawFiducial(target(joystickButtonid));
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
