@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class TargetingComputer {
 
-  public static final boolean gameMode = true;
+  public static final boolean gameMode = false;
 
   public static Targets currentTargetBranch = Targets.ALPHA;
   public static double currentTargetLevel = 4;
