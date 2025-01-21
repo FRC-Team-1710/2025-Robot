@@ -70,6 +70,10 @@ public class Vision extends SubsystemBase {
     consumer.accept(sortMeasurements(visionData.measurements()));
   }
 
+  public VisionIOPhotonVision getCamera(int index) {
+    return (VisionIOPhotonVision) io[index];
+  }
+
   /**
    * Processes vision data from all cameras and combines the results.
    *

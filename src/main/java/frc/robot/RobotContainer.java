@@ -65,7 +65,6 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   private final LoggedDashboardChooser<Command> autoChooser;
-  VisionIOPhotonVision c1 = new VisionIOPhotonVision("hello", null, null);
 
   public final Drive drivetrain;
   // CTRE Default Drive Request
@@ -79,6 +78,8 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+  private Vision vision;
+
   public RobotContainer() {
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
@@ -86,7 +87,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
 
-        new Vision(
+        vision = new Vision(
             drivetrain::addVisionData,
             new VisionIOPhotonVision(
                 "FrontLeft",
@@ -121,8 +122,8 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-
-        new Vision(
+        
+        vision = new Vision(
             drivetrain::addVisionData,
             new VisionIOPhotonVisionSIM(
                 "Front Camera",
@@ -154,7 +155,7 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
 
-        new Vision(
+        vision = new Vision(
             drivetrain::addVisionData,
             new VisionIO() {},
             new VisionIO() {},
@@ -215,7 +216,7 @@ public class RobotContainer {
         .leftBumper()
         .onTrue(
             drivetrain.applyRequest(
-                () -> point.withModuleDirection(new Rotation2d(c1.target(6).getYaw()))));
+                () -> point.withModuleDirection(new Rotation2d(vision.getCamera(2).getTarget(17).getYaw()))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
