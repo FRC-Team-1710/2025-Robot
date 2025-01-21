@@ -4,9 +4,9 @@ import java.util.Random;
 
 public class TargetingComputer {
 
-  public static final boolean gameMode = true;
+  public static final boolean gameMode = false;
 
-  public static Targets currentTargetBranch = Targets.ALPHA;
+  public static Targets currentTargetBranch = Targets.CHARLIE;
   public static double currentTargetLevel = 4;
   public static Random random = new Random();
   public static int randomBranch;
@@ -146,19 +146,19 @@ public class TargetingComputer {
     RED_PROCESSOR(processorTag, processorAngle, null, 14),
     RED_NET(processorTag, processorAngle, null, 15);
 
-    private final double apriltag;
+    private final int apriltag;
     private final double targetingAngle; // in deg
     private final String side;
     private final int gameID;
 
-    Targets(double apriltag, double targetingAngle, String side, int gameID) {
+    Targets(int apriltag, double targetingAngle, String side, int gameID) {
       this.apriltag = apriltag;
       this.targetingAngle = targetingAngle;
       this.side = side;
       this.gameID = gameID;
     }
 
-    public double getApriltag() {
+    public int getApriltag() {
       return apriltag;
     }
 

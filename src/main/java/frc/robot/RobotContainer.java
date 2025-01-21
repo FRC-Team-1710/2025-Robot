@@ -65,7 +65,8 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   private final LoggedDashboardChooser<Command> autoChooser;
-  VisionIOPhotonVision c1 = new VisionIOPhotonVision("hello", null, null);
+
+  VisionIOPhotonVision c1;
 
   public final Drive drivetrain;
   // CTRE Default Drive Request
@@ -91,31 +92,56 @@ public class RobotContainer {
             new VisionIOPhotonVision(
                 "FrontLeft",
                 new Transform3d(
-                    new Translation3d(Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(30)) // IN RADIANS
+                    new Translation3d(
+                        Units.inchesToMeters(12.04442909),
+                        Units.inchesToMeters(9.91887103),
+                        Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(
+                        0,
+                        Units.degreesToRadians(115.16683805),
+                        Units.degreesToRadians(30)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "FrontRight",
                 new Transform3d(
-                    new Translation3d(-Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(330)) // IN RADIANS
+                    new Translation3d(
+                        -Units.inchesToMeters(12.04442909),
+                        Units.inchesToMeters(9.91887103),
+                        Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(
+                        0,
+                        Units.degreesToRadians(115.16683805),
+                        Units.degreesToRadians(330)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "BackLeft",
                 new Transform3d(
-                    new Translation3d(Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(150)) // IN RADIANS
+                    new Translation3d(
+                        Units.inchesToMeters(10.87979715),
+                        -Units.inchesToMeters(9.79622433),
+                        Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(
+                        0,
+                        Units.degreesToRadians(115.16683805),
+                        Units.degreesToRadians(150)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters),
             new VisionIOPhotonVision(
                 "BackRight",
                 new Transform3d(
-                    new Translation3d(-Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(210)) // IN RADIANS
+                    new Translation3d(
+                        -Units.inchesToMeters(10.87979715),
+                        -Units.inchesToMeters(9.79622433),
+                        Units.inchesToMeters(8.55647482)), // IN METERS
+                    new Rotation3d(
+                        0,
+                        Units.degreesToRadians(115.16683805),
+                        Units.degreesToRadians(210)) // IN RADIANS
                     ),
                 drivetrain::getVisionParameters));
+
         break;
 
       case SIM:
@@ -162,6 +188,21 @@ public class RobotContainer {
             new VisionIO() {});
         break;
     }
+
+    /*c1 =
+    new VisionIOPhotonVision(
+        "FrontLeft",
+        new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(12.04442909),
+                Units.inchesToMeters(9.91887103),
+                Units.inchesToMeters(8.55647482)), // IN METERS
+            new Rotation3d(
+                0,
+                Units.degreesToRadians(115.16683805),
+                Units.degreesToRadians(30)) // IN RADIANS
+            ),
+        drivetrain::getVisionParameters);*/
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -234,12 +275,14 @@ public class RobotContainer {
                     drive
                         .withVelocityX(
                             MaxSpeed.times(
-                                -c1.result(7).tync()
-                                    * 0.026553)) // todo: double check this number, should be kp
+                                -c1.result(TargetingComputer.currentTargetBranch.getApriltag())
+                                        .tync()
+                                    * 0.02641)) // todo: double check this number, should be kp
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                -c1.result(7).txnc()
+                                -c1.result(TargetingComputer.currentTargetBranch.getApriltag())
+                                        .txnc()
                                     * 0.026553)))); // todo: double check this number, should be kp
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions

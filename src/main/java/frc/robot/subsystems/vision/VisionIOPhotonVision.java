@@ -124,12 +124,14 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   public PhotonTrackedTarget getTarget(int id) {
-    for (var target : cameraTargets) {
-      if (target.fiducialId == id) {
-        return target;
+    if (!cameraTargets.isEmpty()) {
+      for (var target : cameraTargets) {
+        if (target.fiducialId == id) {
+          return target;
+        }
       }
     }
-    return null;
+    return new PhotonTrackedTarget();
   }
 
   public RawFiducial result(int joystickButtonid) {
@@ -148,8 +150,10 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   private void updateResults() {
+    PhotonPipelineResult nullResult = new PhotonPipelineResult();
     this.cameraResults = camera.getAllUnreadResults();
-    this.latestResult = cameraResults.get(cameraResults.size() - 1);
+    this.latestResult =
+        !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) : nullResult;
     this.cameraTargets = latestResult.targets;
   }
 }
