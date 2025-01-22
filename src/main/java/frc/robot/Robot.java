@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -31,6 +32,7 @@ public class Robot extends LoggedRobot {
   private final RobotContainer m_robotContainer;
 
   private static boolean redAlliance;
+  Timer m_gcTimer = new Timer();
 
   public Robot() {
     redAlliance = checkRedAlliance();
@@ -83,6 +85,8 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    m_gcTimer.start();
   }
 
   @Override
@@ -96,6 +100,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putString(
         "Random Target Branch", TargetingComputer.getCurrentBranchGameTarget().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
+    if (m_gcTimer.advanceIfElapsed(5)) System.gc();
   }
 
   /** Gets the current alliance, true is red */
