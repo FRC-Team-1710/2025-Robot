@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -34,14 +35,13 @@ public class VisionUtil {
   private static final double MA_VISION_STD_DEV_XY = 0.333;
   private static final double MA_VISION_STD_DEV_THETA = 5;
   public static final double MA_AMBIGUITY = 0.4;
-  private static final translationalErrorThreshold = 0.1;
-  private static final rotationalErrorThreshold = 1;
 
-  public static boolean atTargetTag(Transform3d cameraToTag, Transform3d visionStdDev, Transform3d desiredOffset, double errorValue) {
-    Transform3d tagToRobot = cameraToTag.plus(visionStdDev);
-    boolean atTarget = false;
-    if (tagToRobot.getTranslation().getDistance(desiredOffset.getTranslation()) < errorValue && tagToRobot.getRotation().rotateBy(desiredOffset.getRotation().unaryMinus()) < errorValue)
-    return atTarget;
+  public static Transform2d atTargetTag(Transform3d cameraToTag, Transform3d visionStdDev, Transform3d desiredOffset, double errorValue) {
+    Transform3d robotToTargetPose = cameraToTag.plus(visionStdDev);
+    Transform2d robotOffset = new Transform2d(
+      new Translation2d(robotToTargetPose.getX() - desiredOffset.getX(), robotToTargetPose.getY() - desiredOffset.getY()),
+      new Rotation2d(robotToTargetPose.getRotation().getZ() - desiredOffset.getRotation().getZ()));
+    return robotOffset;
   }
 
   /**
