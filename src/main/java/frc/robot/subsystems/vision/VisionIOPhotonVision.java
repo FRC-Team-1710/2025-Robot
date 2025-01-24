@@ -121,6 +121,10 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
+  public Transform3d getStdDev() {
+    return robotToCamera;
+  }
+
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }
@@ -147,7 +151,7 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   public double VelocityX(int id) {
-    return result(id).distToCamera() * 0.026553; // todo: double check this number, should be kp
+    return result(id).distToRobot() * 0.026553; // todo: double check this number, should be kp
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {

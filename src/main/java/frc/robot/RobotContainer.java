@@ -156,8 +156,8 @@ private final SwerveRequest.RobotCentric robotCentric =
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-
-        new Vision(
+        
+        vision = new Vision(
             drivetrain::addVisionData,
             new VisionIOPhotonVisionSIM(
                 "Front Camera",
@@ -189,7 +189,7 @@ private final SwerveRequest.RobotCentric robotCentric =
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
 
-        new Vision(
+        vision = new Vision(
             drivetrain::addVisionData,
             new VisionIO() {},
             new VisionIO() {},
