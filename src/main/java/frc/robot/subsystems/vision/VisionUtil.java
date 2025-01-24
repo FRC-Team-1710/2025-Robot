@@ -36,11 +36,11 @@ public class VisionUtil {
   private static final double MA_VISION_STD_DEV_THETA = 5;
   public static final double MA_AMBIGUITY = 0.4;
 
-  public static Transform2d atTargetTag(Transform3d cameraToTag, Transform3d visionStdDev, Transform3d desiredOffset, double errorValue) {
+  public static Transform2d getTagOffset(Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {
     Transform3d robotToTargetPose = cameraToTag.plus(visionStdDev);
     Transform2d robotOffset = new Transform2d(
       new Translation2d(robotToTargetPose.getX() - desiredOffset.getX(), robotToTargetPose.getY() - desiredOffset.getY()),
-      new Rotation2d(robotToTargetPose.getRotation().getZ() - desiredOffset.getRotation().getZ()));
+      new Rotation2d(robotToTargetPose.getRotation().getZ() - desiredOffset.getRotation().getRadians()));
     return robotOffset;
   }
 
