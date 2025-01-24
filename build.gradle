@@ -47,7 +47,7 @@ deploy {
                     // The options below may improve performance, but should only be enabled on the RIO 2
 
                     final MAX_JAVA_HEAP_SIZE_MB = 100;
-                    vmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
                     jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
                     jvmArgs.add("-XX:+AlwaysPreTouch")
 
