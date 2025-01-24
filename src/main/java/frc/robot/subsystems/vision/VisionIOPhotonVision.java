@@ -119,6 +119,10 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
+  public Transform3d getStdDev() {
+    return robotToCamera;
+  }
+
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }
