@@ -11,6 +11,8 @@
 
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -26,6 +28,8 @@ public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;
+
+  private Distance selectedLevel = Meters.of(0);
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -77,6 +81,19 @@ public class Elevator extends SubsystemBase {
   /** Stops the elevator */
   public void stop() {
     io.stop();
+  }
+
+  /**
+   * Preselects target distance for targeting different branch heights. It will not automatically go
+   * there! (Meters)
+   */
+  public void setTargetDistance(Distance target) {
+    selectedLevel = target;
+  }
+
+  /** Returns set distance for current selected level */
+  public Distance getTargetDistance() {
+    return selectedLevel;
   }
 
   /**
