@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -24,6 +26,7 @@ public class Vision extends SubsystemBase {
 
   private static final VisionMode MODE = VisionMode.MA;
   private static final String VISION_PATH = "Vision/Camera";
+  public static final AprilTagFieldLayout field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
@@ -68,6 +71,10 @@ public class Vision extends SubsystemBase {
     VisionData visionData = processAllCameras();
     logSummary(visionData);
     consumer.accept(sortMeasurements(visionData.measurements()));
+  }
+
+  public VisionIOPhotonVision getCamera(int index) {
+    return (VisionIOPhotonVision) io[index];
   }
 
   /**

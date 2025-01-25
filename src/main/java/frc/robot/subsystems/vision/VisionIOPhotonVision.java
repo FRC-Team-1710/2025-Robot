@@ -17,10 +17,12 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
@@ -119,6 +121,10 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
+  public Transform3d getStdDev() {
+    return robotToCamera;
+  }
+
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }
@@ -131,11 +137,21 @@ public class VisionIOPhotonVision implements VisionIO {
         }
       }
     }
-    return new PhotonTrackedTarget();
+    return null;
   }
+
+  public Trigger hasTarget = new Trigger(() -> !cameraTargets.isEmpty());
 
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
+  }
+
+  public double Rotational(int id) {
+    return getTarget(14).getYaw() - getEstimatedGlobalPose().poseEstimate().robotPose().getRotation().getDegrees() * 0.02641; // todo: double check this number, should be kp
+  }
+
+  public double VelocityX(int id) {
+    return result(id).distToRobot() * 0.026553; // todo: double check this number, should be kp
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
