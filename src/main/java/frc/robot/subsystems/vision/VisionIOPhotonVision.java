@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
@@ -181,13 +182,12 @@ public class VisionIOPhotonVision implements VisionIO {
    *         desired pose
    */
   public Translation2d getTagOffset(int tagID, Transform2d desiredOffset) {
-    Transform3d tagToCamera;
+    Translation3d robotToTargetPose;
     try {
-      tagToCamera = getTarget(tagID).bestCameraToTarget;
+      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
     } catch (Exception e) {
       return new Translation2d();
     }
-    Transform3d robotToTargetPose = tagToCamera.plus(robotToCamera);
     Translation2d robotOffset = new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
@@ -202,17 +202,16 @@ public class VisionIOPhotonVision implements VisionIO {
    * @return Distance to the offset from the AprilTag
    */
   public double getTagOffsetDistance(int tagID, Transform2d desiredOffset) {
-    Transform3d tagToCamera;
+    Translation3d robotToTargetPose;
     try {
-      tagToCamera = getTarget(tagID).bestCameraToTarget;
+      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
     } catch (Exception e) {
       return 0.0;
     }
-    Transform3d robotToTargetPose = tagToCamera.plus(robotToCamera);
     Translation2d robotOffset = new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
-    return robotOffset.getDistance(Translation2d.kZero);
+    return robotOffset.getNorm();
   }
 
   public RawFiducial result() {
