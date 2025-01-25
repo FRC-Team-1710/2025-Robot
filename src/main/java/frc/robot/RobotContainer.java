@@ -76,6 +76,12 @@ public class RobotContainer {
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025)) // Add a 10% deadband
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
+  private final SwerveRequest.RobotCentric align =
+      new SwerveRequest.RobotCentric()
+          .withDeadband(MaxSpeed.times(0.025))
+          .withRotationalDeadband(Constants.MaxAngularRate.times(0.025)) // Add a 10% deadband
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -273,6 +279,24 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -c1.result(TargetingComputer.currentTargetBranch.getApriltag())
+                                        .tync()
+                                    * 0.02641)) // todo: double check this number, should be kp
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                -c1.result(TargetingComputer.currentTargetBranch.getApriltag())
+                                        .txnc()
+                                    * 0.026553)))); // todo: double check this number, should be kp
+
+    driver
+        .rightBumper()
+        .onTrue(
+            drivetrain.applyRequest(
+                () ->
+                    align
                         .withVelocityX(
                             MaxSpeed.times(
                                 -c1.result(TargetingComputer.currentTargetBranch.getApriltag())
