@@ -2,14 +2,11 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers.PoseEstimate;
@@ -36,11 +33,16 @@ public class VisionUtil {
   private static final double MA_VISION_STD_DEV_THETA = 5;
   public static final double MA_AMBIGUITY = 0.4;
 
-  public static Transform2d getTagOffset(Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {
+  public static Transform2d getTagOffset(
+      Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {
     Transform3d robotToTargetPose = cameraToTag.plus(visionStdDev);
-    Transform2d robotOffset = new Transform2d(
-      new Translation2d(robotToTargetPose.getX() - desiredOffset.getX(), robotToTargetPose.getY() - desiredOffset.getY()),
-      new Rotation2d(robotToTargetPose.getRotation().getZ() - desiredOffset.getRotation().getRadians()));
+    Transform2d robotOffset =
+        new Transform2d(
+            new Translation2d(
+                robotToTargetPose.getX() - desiredOffset.getX(),
+                robotToTargetPose.getY() - desiredOffset.getY()),
+            new Rotation2d(
+                robotToTargetPose.getRotation().getZ() - desiredOffset.getRotation().getRadians()));
     return robotOffset;
   }
 

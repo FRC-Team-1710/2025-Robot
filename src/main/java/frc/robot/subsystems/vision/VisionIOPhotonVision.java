@@ -22,7 +22,6 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
@@ -147,7 +146,9 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   public double Rotational(int id) {
-    return getTarget(14).getYaw() - getEstimatedGlobalPose().poseEstimate().robotPose().getRotation().getDegrees() * 0.02641; // todo: double check this number, should be kp
+    return getTarget(14).getYaw()
+        - getEstimatedGlobalPose().poseEstimate().robotPose().getRotation().getDegrees()
+            * 0.02641; // todo: double check this number, should be kp
   }
 
   public double VelocityX(int id) {

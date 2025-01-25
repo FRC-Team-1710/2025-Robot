@@ -76,11 +76,11 @@ public class RobotContainer {
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025)) // Add a 10% deadband
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-private final SwerveRequest.RobotCentric robotCentric =   
-        new SwerveRequest.RobotCentric()
-            .withDeadband(MaxSpeed.times(0.025))
-            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);    
+  private final SwerveRequest.RobotCentric robotCentric =
+      new SwerveRequest.RobotCentric()
+          .withDeadband(MaxSpeed.times(0.025))
+          .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -156,45 +156,47 @@ private final SwerveRequest.RobotCentric robotCentric =
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIOPhotonVisionSIM(
-                "Front Camera",
-                new Transform3d(
-                    new Translation3d(0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Back Camera",
-                new Transform3d(
-                    new Translation3d(-0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Left Camera",
-                new Transform3d(
-                    new Translation3d(0.0, 0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Right Camera",
-                new Transform3d(
-                    new Translation3d(0.0, -0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
-                drivetrain::getVisionParameters));
+
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIOPhotonVisionSIM(
+                    "Front Camera",
+                    new Transform3d(
+                        new Translation3d(0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Back Camera",
+                    new Transform3d(
+                        new Translation3d(-0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Left Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, 0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Right Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, -0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
+                    drivetrain::getVisionParameters));
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
 
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {});
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {});
         break;
     }
 
@@ -276,19 +278,15 @@ private final SwerveRequest.RobotCentric robotCentric =
                 drivetrain.applyRequest(
                     () -> point.withModuleDirection(new Rotation2d(c1.result(7).txnc()*Constants.MaxAngularRate))));*/
 
-               
-
     driver
-        .leftBumper().and(vision.getCamera(0).hasTarget).or(vision.getCamera(1).hasTarget)
+        .leftBumper()
+        .and(vision.getCamera(1).hasTarget) //get prefered camera
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     robotCentric
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -vision.getCamera(1).VelocityX(14)))
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        ));
+                        .withVelocityX(MaxSpeed.times(-vision.getCamera(1).VelocityX(14)))
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
 
     // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
 
