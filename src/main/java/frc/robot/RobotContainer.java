@@ -280,12 +280,12 @@ public class RobotContainer {
 
     driver
         .leftBumper()
-        .and(vision.getCamera(1).hasTarget) //get prefered camera
+        .and(vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera()).hasTarget) //get prefered camera
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     robotCentric
-                        .withVelocityX(MaxSpeed.times(-vision.getCamera(1).VelocityX(14)))
+                        .withVelocityX(MaxSpeed.times(-vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera()).VelocityX(14)))
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
 
     // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
