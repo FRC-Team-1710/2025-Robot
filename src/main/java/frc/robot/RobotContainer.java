@@ -87,80 +87,111 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
 
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIOPhotonVision(
-                "FrontLeft",
-                new Transform3d(
-                    new Translation3d(Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(30)) // IN RADIANS
-                    ),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVision(
-                "FrontRight",
-                new Transform3d(
-                    new Translation3d(-Units.inchesToMeters(12.04442909), Units.inchesToMeters(9.91887103), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(330)) // IN RADIANS
-                    ),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVision(
-                "BackLeft",
-                new Transform3d(
-                    new Translation3d(Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(150)) // IN RADIANS
-                    ),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVision(
-                "BackRight",
-                new Transform3d(
-                    new Translation3d(-Units.inchesToMeters(10.87979715), -Units.inchesToMeters(9.79622433), Units.inchesToMeters(8.55647482)), // IN METERS
-                    new Rotation3d(0, Units.degreesToRadians(115.16683805), Units.degreesToRadians(210)) // IN RADIANS
-                    ),
-                drivetrain::getVisionParameters));
+        /*
+         * Vision Class for referencing.
+         * Contains 4 cameras as well as their respective names and standard deviations from robot
+         */
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIOPhotonVision(
+                    "FrontLeft",
+                    new Transform3d(
+                        new Translation3d(
+                            Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(9.91887103),
+                            Units.inchesToMeters(8.55647482)), // IN METERS
+                        new Rotation3d(
+                            0,
+                            Units.degreesToRadians(115.16683805),
+                            Units.degreesToRadians(30)) // IN RADIANS
+                        ),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVision(
+                    "FrontRight",
+                    new Transform3d(
+                        new Translation3d(
+                            -Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(9.91887103),
+                            Units.inchesToMeters(8.55647482)), // IN METERS
+                        new Rotation3d(
+                            0,
+                            Units.degreesToRadians(115.16683805),
+                            Units.degreesToRadians(330)) // IN RADIANS
+                        ),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVision(
+                    "BackLeft",
+                    new Transform3d(
+                        new Translation3d(
+                            Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.79622433),
+                            Units.inchesToMeters(8.55647482)), // IN METERS
+                        new Rotation3d(
+                            0,
+                            Units.degreesToRadians(115.16683805),
+                            Units.degreesToRadians(150)) // IN RADIANS
+                        ),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVision(
+                    "BackRight",
+                    new Transform3d(
+                        new Translation3d(
+                            -Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.79622433),
+                            Units.inchesToMeters(8.55647482)), // IN METERS
+                        new Rotation3d(
+                            0,
+                            Units.degreesToRadians(115.16683805),
+                            Units.degreesToRadians(210)) // IN RADIANS
+                        ),
+                    drivetrain::getVisionParameters));
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIOPhotonVisionSIM(
-                "Front Camera",
-                new Transform3d(
-                    new Translation3d(0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Back Camera",
-                new Transform3d(
-                    new Translation3d(-0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Left Camera",
-                new Transform3d(
-                    new Translation3d(0.0, 0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Right Camera",
-                new Transform3d(
-                    new Translation3d(0.0, -0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
-                drivetrain::getVisionParameters));
+
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIOPhotonVisionSIM(
+                    "Front Camera",
+                    new Transform3d(
+                        new Translation3d(0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Back Camera",
+                    new Transform3d(
+                        new Translation3d(-0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Left Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, 0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Right Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, -0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
+                    drivetrain::getVisionParameters));
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
 
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {},
-            new VisionIO() {});
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {});
         break;
     }
 
@@ -216,7 +247,9 @@ public class RobotContainer {
         .leftBumper()
         .onTrue(
             drivetrain.applyRequest(
-                () -> point.withModuleDirection(new Rotation2d(vision.getCamera(2).getTarget(17).getYaw()))));
+                () ->
+                    point.withModuleDirection(
+                        new Rotation2d(vision.getCamera(2).getTarget(17).getYaw()))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here

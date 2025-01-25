@@ -26,7 +26,8 @@ public class Vision extends SubsystemBase {
 
   private static final VisionMode MODE = VisionMode.MA;
   private static final String VISION_PATH = "Vision/Camera";
-  public static final AprilTagFieldLayout field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+  public static final AprilTagFieldLayout field =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;

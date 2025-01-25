@@ -16,7 +16,10 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
@@ -57,7 +60,8 @@ public class VisionIOPhotonVision implements VisionIO {
 
   private PoseObservation getEstimatedGlobalPose() {
     updateResults();
-    if (cameraResults.isEmpty()) return new PoseObservation();
+    if (cameraResults.isEmpty())
+      return new PoseObservation();
 
     PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
@@ -67,8 +71,7 @@ public class VisionIOPhotonVision implements VisionIO {
     var multitagResult = latestResult.getMultiTagResult();
 
     if (multitagResult.isPresent()) {
-      Transform3d fieldToRobot =
-          multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
+      Transform3d fieldToRobot = multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
       Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
       return buildPoseObservation(latestResult, robotPose);
     }
@@ -76,8 +79,7 @@ public class VisionIOPhotonVision implements VisionIO {
     // Calculate robot pose
     var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
     if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
-      Transform3d fieldToTarget =
-          new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+      Transform3d fieldToTarget = new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
       Transform3d cameraToTarget = target.bestCameraToTarget;
       Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
       Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
@@ -119,14 +121,29 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
+  /**
+   * Provides the offset of the camera relative to the robot
+   *
+   * @return Standard deviations from the robot to the camera
+   */
   public Transform3d getStdDev() {
     return robotToCamera;
   }
 
+  /**
+   * Gets the least ambiguous AprilTag in the multi-tag results
+   *
+   * @return Least ambiguous AprilTag in camera's view
+   */
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }
 
+  /**
+   * Gets the specified AprilTag from the multi-tag results
+   * 
+   * @return Specified AprilTag or null if it isn't in the camera's view
+   */
   public PhotonTrackedTarget getTarget(int id) {
     for (var target : cameraTargets) {
       if (target.fiducialId == id) {
@@ -134,6 +151,68 @@ public class VisionIOPhotonVision implements VisionIO {
       }
     }
     return null;
+  }
+
+  /**
+   * Checks to see if the specified AprilTag ID is within the camera's multi-tag
+   * results
+   *
+   * @param id Requested AprilTag
+   * @return True if the AprilTag exists in the results, false otherwise
+   */
+  public boolean hasTarget(int id) {
+    for (var target : cameraTargets) {
+      if (target.fiducialId == id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Calculates the offset of the robot from a specified desired offset relative
+   * to the AprilTag
+   * provided
+   *
+   * @param tagID Provided AprilTag ID to locate and use for calculation
+   * @param desiredOffset desired position's offset relative to the AprilTag
+   * @return robot centric transform 2d that represents the difference of the
+   *         robots pose and the
+   *         desired pose
+   */
+  public Translation2d getTagOffset(int tagID, Transform2d desiredOffset) {
+    Transform3d tagToCamera;
+    try {
+      tagToCamera = getTarget(tagID).bestCameraToTarget;
+    } catch (Exception e) {
+      return new Translation2d();
+    }
+    Transform3d robotToTargetPose = tagToCamera.plus(robotToCamera);
+    Translation2d robotOffset = new Translation2d(
+            robotToTargetPose.getX() - desiredOffset.getX(),
+            robotToTargetPose.getY() - desiredOffset.getY());
+    return robotOffset;
+  }
+
+  /**
+   * Calculates the distance from a provided offset from the AprilTag to the center of the robot.
+   * 
+   * @param tagID Provided AprilTag ID to locate and use for calculation
+   * @param desiredOffset desired position's offset relative to the AprilTag
+   * @return Distance to the offset from the AprilTag
+   */
+  public double getTagOffsetDistance(int tagID, Transform2d desiredOffset) {
+    Transform3d tagToCamera;
+    try {
+      tagToCamera = getTarget(tagID).bestCameraToTarget;
+    } catch (Exception e) {
+      return 0.0;
+    }
+    Transform3d robotToTargetPose = tagToCamera.plus(robotToCamera);
+    Translation2d robotOffset = new Translation2d(
+            robotToTargetPose.getX() - desiredOffset.getX(),
+            robotToTargetPose.getY() - desiredOffset.getY());
+    return robotOffset.getDistance(Translation2d.kZero);
   }
 
   public RawFiducial result() {
@@ -151,6 +230,9 @@ public class VisionIOPhotonVision implements VisionIO {
         target.poseAmbiguity);
   }
 
+  /**
+   * Updates the local vision results variables
+   */
   private void updateResults() {
     this.cameraResults = camera.getAllUnreadResults();
     this.latestResult = cameraResults.get(cameraResults.size() - 1);
