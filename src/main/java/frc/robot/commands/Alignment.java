@@ -23,9 +23,7 @@ public class Alignment extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (c1.target(6) != null) {
-      c1.result();
-    }
+    
   }
 
   // Called once the command ends or is interrupted.
