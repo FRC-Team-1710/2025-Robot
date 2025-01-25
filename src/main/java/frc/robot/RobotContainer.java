@@ -290,6 +290,20 @@ public class RobotContainer {
 
     // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
 
+    driver
+        .rightBumper()
+        .onTrue(
+            drivetrain.applyRequest(
+                () ->
+										robotCentric
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -vision.getCamera(1).VelocityX(14)))
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        ));
+
+    // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
+
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
     // https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-tuning.html
