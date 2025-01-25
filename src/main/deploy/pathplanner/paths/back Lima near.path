@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5977499999999996,
+        "y": 5.22425
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.5391235961417404,
+        "y": 6.435332955450385
+      },
+      "isLocked": false,
+      "linkedName": "Lima"
+    },
+    {
+      "anchor": {
+        "x": 1.794,
+        "y": 7.29125
+      },
+      "prevControl": {
+        "x": 2.1489147799597963,
+        "y": 6.90680215948475
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "flipped source"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 7.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -60.6422464572088
+  },
+  "useDefaultConstraints": true
+}

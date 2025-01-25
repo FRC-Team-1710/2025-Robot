@@ -21,6 +21,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
@@ -223,13 +225,11 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   public double Rotational(int id) {
-    return getTarget(14).getYaw()
-        - getEstimatedGlobalPose().poseEstimate().robotPose().getRotation().getDegrees()
-            * 0.02641; // todo: double check this number, should be kp
+    return getTagOffset(id, new Transform2d(Units.inchesToMeters(20), Units.inchesToMeters(20), new Rotation2d())).getX() * 0.02641; // todo: double check this number, should be kp
   }
 
   public double VelocityX(int id) {
-    return result(id).distToRobot() * 0.026553; // todo: double check this number, should be kp
+    return getTagOffset(id, new Transform2d(Units.inchesToMeters(20), Units.inchesToMeters(20), new Rotation2d())).getY() * (0.026553); // todo: double check this number, should be kp
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
