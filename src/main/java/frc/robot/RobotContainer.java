@@ -95,6 +95,10 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
 
+        /*
+         * Vision Class for referencing.
+         * Contains 4 cameras as well as their respective names and standard deviations from robot
+         */
         vision =
             new Vision(
                 drivetrain::addVisionData,
@@ -150,40 +154,38 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-
-        vision =
-            new Vision(
-                drivetrain::addVisionData,
-                new VisionIOPhotonVisionSIM(
-                    "Front Camera",
-                    new Transform3d(
-                        new Translation3d(0.2, 0.0, 0.8),
-                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
-                    drivetrain::getVisionParameters),
-                new VisionIOPhotonVisionSIM(
-                    "Back Camera",
-                    new Transform3d(
-                        new Translation3d(-0.2, 0.0, 0.8),
-                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
-                    drivetrain::getVisionParameters),
-                new VisionIOPhotonVisionSIM(
-                    "Left Camera",
-                    new Transform3d(
-                        new Translation3d(0.0, 0.2, 0.8),
-                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
-                    drivetrain::getVisionParameters),
-                new VisionIOPhotonVisionSIM(
-                    "Right Camera",
-                    new Transform3d(
-                        new Translation3d(0.0, -0.2, 0.8),
-                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
-                    drivetrain::getVisionParameters));
+        
+        vision = new Vision(
+            drivetrain::addVisionData,
+            new VisionIOPhotonVisionSIM(
+                "Front Camera",
+                new Transform3d(
+                    new Translation3d(0.2, 0.0, 0.8),
+                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVisionSIM(
+                "Back Camera",
+                new Transform3d(
+                    new Translation3d(-0.2, 0.0, 0.8),
+                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVisionSIM(
+                "Left Camera",
+                new Transform3d(
+                    new Translation3d(0.0, 0.2, 0.8),
+                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
+                drivetrain::getVisionParameters),
+            new VisionIOPhotonVisionSIM(
+                "Right Camera",
+                new Transform3d(
+                    new Translation3d(0.0, -0.2, 0.8),
+                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
+                drivetrain::getVisionParameters));
         break;
 
       default:
