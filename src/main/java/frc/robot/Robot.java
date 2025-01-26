@@ -83,7 +83,7 @@ public class Robot extends LoggedRobot {
     // PathfindingCommand.warmupCommand().schedule();
 
     Threads.setCurrentThreadPriority(false, 10);
-    
+
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
@@ -93,7 +93,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    //Threads.setCurrentThreadPriority(true, 99);
+    // Threads.setCurrentThreadPriority(true, 99);
     CommandScheduler.getInstance().run();
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putString("Current Target", TargetingComputer.currentTargetBranch.toString());
