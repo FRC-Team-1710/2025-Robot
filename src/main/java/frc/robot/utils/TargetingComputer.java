@@ -169,5 +169,9 @@ public class TargetingComputer {
     public int getPreferredCamera() {
       return preferredCamera;
     }
+
+    public int gameID() {
+      return gameID;
+    }
   }
 }

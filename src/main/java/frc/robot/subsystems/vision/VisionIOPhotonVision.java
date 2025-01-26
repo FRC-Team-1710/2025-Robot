@@ -16,8 +16,6 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -32,6 +30,7 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -63,8 +62,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   private PoseObservation getEstimatedGlobalPose() {
     updateResults();
-    if (cameraResults.isEmpty())
-      return new PoseObservation();
+    if (cameraResults.isEmpty()) return new PoseObservation();
 
     PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
@@ -74,7 +72,8 @@ public class VisionIOPhotonVision implements VisionIO {
     var multitagResult = latestResult.getMultiTagResult();
 
     if (multitagResult.isPresent()) {
-      Transform3d fieldToRobot = multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
+      Transform3d fieldToRobot =
+          multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
       Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
       return buildPoseObservation(latestResult, robotPose);
     }
@@ -82,7 +81,8 @@ public class VisionIOPhotonVision implements VisionIO {
     // Calculate robot pose
     var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
     if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
-      Transform3d fieldToTarget = new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+      Transform3d fieldToTarget =
+          new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
       Transform3d cameraToTarget = target.bestCameraToTarget;
       Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
       Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
@@ -144,13 +144,14 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Gets the specified AprilTag from the multi-tag results
-   * 
+   *
    * @return Specified AprilTag or null if it isn't in the camera's view
    */
   public PhotonTrackedTarget getTarget(int id) {
     if (!cameraTargets.isEmpty()) {
       for (var target : cameraTargets) {
-        if (target.fiducialId == id) {
+        if (target.objDetectId == id) {
+          System.out.println("Target " + target);
           return target;
         }
       }
@@ -159,8 +160,7 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   /**
-   * Checks to see if the specified AprilTag ID is within the camera's multi-tag
-   * results
+   * Checks to see if the specified AprilTag ID is within the camera's multi-tag results
    *
    * @param id Requested AprilTag
    * @return True if the AprilTag exists in the results, false otherwise
@@ -175,24 +175,30 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   /**
-   * Calculates the offset of the robot from a specified desired offset relative
-   * to the AprilTag
+   * Calculates the offset of the robot from a specified desired offset relative to the AprilTag
    * provided
    *
    * @param tagID Provided AprilTag ID to locate and use for calculation
    * @param desiredOffset desired position's offset relative to the AprilTag
-   * @return robot centric transform 2d that represents the difference of the
-   *         robots pose and the
-   *         desired pose
+   * @return robot centric transform 2d that represents the difference of the robots pose and the
+   *     desired pose
    */
-  public Translation2d getTagOffset(int tagID, Transform2d desiredOffset) {
+  @AutoLogOutput(key = "Vision/Offset")
+  public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
     Translation3d robotToTargetPose;
     try {
-      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
+      robotToTargetPose =
+          getTarget(tagID)
+              .bestCameraToTarget
+              .getTranslation()
+              .minus(robotToCamera.getTranslation());
     } catch (Exception e) {
+      System.out.println(e);
       return new Translation2d();
     }
-    Translation2d robotOffset = new Translation2d(
+
+    Translation2d robotOffset =
+        new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
     return robotOffset;
@@ -200,19 +206,25 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Calculates the distance from a provided offset from the AprilTag to the center of the robot.
-   * 
+   *
    * @param tagID Provided AprilTag ID to locate and use for calculation
    * @param desiredOffset desired position's offset relative to the AprilTag
    * @return Distance to the offset from the AprilTag
    */
-  public double getTagOffsetDistance(int tagID, Transform2d desiredOffset) {
+  @AutoLogOutput(key = "Vision/Distance")
+  public double getTagOffsetDistance(int tagID, Translation2d desiredOffset) {
     Translation3d robotToTargetPose;
     try {
-      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
+      robotToTargetPose =
+          getTarget(tagID)
+              .bestCameraToTarget
+              .getTranslation()
+              .minus(robotToCamera.getTranslation());
     } catch (Exception e) {
       return 0.0;
     }
-    Translation2d robotOffset = new Translation2d(
+    Translation2d robotOffset =
+        new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
     return robotOffset.getNorm();
@@ -224,12 +236,38 @@ public class VisionIOPhotonVision implements VisionIO {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
-  public double Rotational(int id) {
-    return getTagOffset(id, new Transform2d(Units.inchesToMeters(20), Units.inchesToMeters(20), new Rotation2d())).getX() * 0.02641; // todo: double check this number, should be kp
+  @AutoLogOutput(key = "Hello/Velocityy")
+  public double VelocityY(int id) {
+    return getTagOffset(id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
+            .getX()
+        * 0.10641; // todo: double check this number, should be kp
   }
 
+  @AutoLogOutput(key = "Hello/Velocityx")
   public double VelocityX(int id) {
-    return getTagOffset(id, new Transform2d(Units.inchesToMeters(20), Units.inchesToMeters(20), new Rotation2d())).getY() * (0.026553); // todo: double check this number, should be kp
+    double velocityX =
+        getTagOffset(id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
+                .getY()
+            * (0.106553);
+    // System.out.println(
+    //     "offset"
+    //         + getTagOffset(
+    //             id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))));
+    // System.out.println(" velocity x " + velocityX);
+    return velocityX; // todo: double check this number, should be kp
+  }
+
+  @AutoLogOutput(key = "Vision/turn")
+  public double turn(int id) {
+    double speed =
+        target.getYaw()
+            - getTagOffset(
+                        id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
+                    .getAngle()
+                    .getDegrees()
+                * 0.026553;
+
+    return speed;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
@@ -243,9 +281,7 @@ public class VisionIOPhotonVision implements VisionIO {
         target.poseAmbiguity);
   }
 
-  /**
-   * Updates the local vision results variables
-   */
+  /** Updates the local vision results variables */
   private void updateResults() {
     PhotonPipelineResult nullResult = new PhotonPipelineResult();
     this.cameraResults = camera.getAllUnreadResults();

@@ -159,33 +159,34 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        
-        vision = new Vision(
-            drivetrain::addVisionData,
-            new VisionIOPhotonVisionSIM(
-                "Front Camera",
-                new Transform3d(
-                    new Translation3d(0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Back Camera",
-                new Transform3d(
-                    new Translation3d(-0.2, 0.0, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Left Camera",
-                new Transform3d(
-                    new Translation3d(0.0, 0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
-                drivetrain::getVisionParameters),
-            new VisionIOPhotonVisionSIM(
-                "Right Camera",
-                new Transform3d(
-                    new Translation3d(0.0, -0.2, 0.8),
-                    new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
-                drivetrain::getVisionParameters));
+
+        vision =
+            new Vision(
+                drivetrain::addVisionData,
+                new VisionIOPhotonVisionSIM(
+                    "Front Camera",
+                    new Transform3d(
+                        new Translation3d(0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(0))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Back Camera",
+                    new Transform3d(
+                        new Translation3d(-0.2, 0.0, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(180))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Left Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, 0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(90))),
+                    drivetrain::getVisionParameters),
+                new VisionIOPhotonVisionSIM(
+                    "Right Camera",
+                    new Transform3d(
+                        new Translation3d(0.0, -0.2, 0.8),
+                        new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
+                    drivetrain::getVisionParameters));
         break;
 
       default:
@@ -280,15 +281,48 @@ public class RobotContainer {
                 drivetrain.applyRequest(
                     () -> point.withModuleDirection(new Rotation2d(c1.result(7).txnc()*Constants.MaxAngularRate))));*/
 
+    /*driver
+    .leftBumper()
+    .and(
+        vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera())
+            .hasTarget) // get prefered camera
+    .whileTrue(
+        drivetrain.applyRequest(
+            () ->
+                robotCentric
+                    .withVelocityX(
+                        MaxSpeed.times(
+                            -vision
+                                .getCamera(
+                                    TargetingComputer.currentTargetBranch.getPreferredCamera())
+                                .VelocityX(
+                                    TargetingComputer.currentTargetBranch.getApriltag())))
+                    .withVelocityY(
+                        MaxSpeed.times(
+                            -vision
+                                .getCamera(
+                                    TargetingComputer.currentTargetBranch.getPreferredCamera())
+                                .VelocityY(
+                                    TargetingComputer.currentTargetBranch.getApriltag())))));*/
+
     driver
         .leftBumper()
-        .and(vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera()).hasTarget) //get prefered camera
+        .and(
+            vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera())
+                .hasTarget) // get prefered camera
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     robotCentric
-                        .withVelocityX(MaxSpeed.times(-vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera()).VelocityX(14)))
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -vision
+                                    .getCamera(
+                                        TargetingComputer.currentTargetBranch.getPreferredCamera())
+                                    .VelocityX(TargetingComputer.currentTargetBranch.gameID())))
+                        .withVelocityY(0.2)));
+    // .withRotationalRate(
+    // Constants.MaxAngularRate.times(-driver.customRight().getX()))));
 
     // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
 
@@ -297,12 +331,9 @@ public class RobotContainer {
         .onTrue(
             drivetrain.applyRequest(
                 () ->
-										robotCentric
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -vision.getCamera(1).VelocityX(14)))
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        ));
+                    robotCentric
+                        .withVelocityX(MaxSpeed.times(-vision.getCamera(1).VelocityX(14)))
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
 
     // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
 
@@ -361,7 +392,8 @@ public class RobotContainer {
                                     new Rotation2d(-driver.getRightY(), -driver.getRightX())))));
 
     // Run SysId routines when holding back/start and X/Y.
-    // Note that each routine should be run exactly once in a single log.
+    // Note that each routine should be run exactly once in a single
+
     driver.rightBumper().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
     driver.rightBumper().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     driver.leftBumper().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
