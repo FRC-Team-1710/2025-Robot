@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
-
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class ElevatorConstants {

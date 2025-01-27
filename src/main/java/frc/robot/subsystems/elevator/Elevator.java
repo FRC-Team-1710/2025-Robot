@@ -79,11 +79,6 @@ public class Elevator extends SubsystemBase {
     return inputs.distance;
   }
 
-  /** Stops the elevator */
-  public void stop() {
-    io.stop();
-  }
-
   public void resetEncoder() {
     io.resetEncoder();
   }
@@ -110,7 +105,7 @@ public class Elevator extends SubsystemBase {
     io.setManual(power);
   }
 
-  /** Resets the state of the PID controller. Used to go from manual power setting to setpoints */
+  /** Resets the state of the PID controller. Is used to go from manual power setting to setpoints */
   public void resetPID() {
     io.resetPID();
   }

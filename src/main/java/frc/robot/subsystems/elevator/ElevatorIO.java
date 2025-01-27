@@ -71,8 +71,5 @@ public interface ElevatorIO {
    */
   public default void updatePID(ElevatorIOInputsAutoLogged inputs) {}
 
-  /** Stop in open loop. */
-  public default void stop() {}
-
   public default void resetEncoder() {}
 }
