@@ -150,7 +150,9 @@ public class VisionIOPhotonVision implements VisionIO {
   public PhotonTrackedTarget getTarget(int id) {
     if (!cameraTargets.isEmpty()) {
       for (var target : cameraTargets) {
-        if (target.objDetectId == id) {
+        System.out.println("Requested ID " + id);
+        System.out.println("Actual ID " + target.fiducialId);
+        if (target.fiducialId == id) {
           System.out.println("Target " + target);
           return target;
         }
@@ -201,6 +203,7 @@ public class VisionIOPhotonVision implements VisionIO {
         new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
+    System.out.println("Offset: " + robotOffset);
     return robotOffset;
   }
 

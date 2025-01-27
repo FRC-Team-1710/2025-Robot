@@ -11,6 +11,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -399,7 +400,11 @@ public class Drive extends SubsystemBase {
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
     this.addVisionMeasurement(
-        visionMeasurement.poseEstimate().pose().toPose2d(),
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            this.getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }

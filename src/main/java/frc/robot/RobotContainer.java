@@ -319,8 +319,13 @@ public class RobotContainer {
                                 -vision
                                     .getCamera(
                                         TargetingComputer.currentTargetBranch.getPreferredCamera())
-                                    .VelocityX(TargetingComputer.currentTargetBranch.gameID())))
-                        .withVelocityY(0.2)));
+                                    .VelocityX(17)))
+                        .withVelocityY(
+                            MaxSpeed.times(
+                                vision
+                                    .getCamera(
+                                        TargetingComputer.currentTargetBranch.getPreferredCamera())
+                                    .VelocityY(17)))));
     // .withRotationalRate(
     // Constants.MaxAngularRate.times(-driver.customRight().getX()))));
 
