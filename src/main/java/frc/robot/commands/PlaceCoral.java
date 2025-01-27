@@ -9,11 +9,11 @@ import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class OutakeCoral extends Command {
+public class PlaceCoral extends Command {
   private Manipulator m_Manipulator;
 
   /** Creates a new OutakeCoral. */
-  public OutakeCoral(Manipulator manipulator) {
+  public PlaceCoral(Manipulator manipulator) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_Manipulator = manipulator;
     addRequirements(manipulator);
@@ -26,7 +26,7 @@ public class OutakeCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed * -1);
+    m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
   }
 
   // Called once the command ends or is interrupted.

@@ -19,9 +19,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevationManual;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.OutakeCoral;
+import frc.robot.commands.PlaceCoral;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -118,8 +119,6 @@ public class RobotContainer {
                     new Translation3d(0.0, -0.2, 0.8),
                     new Rotation3d(0, Math.toRadians(20), Math.toRadians(-90))),
                 drivetrain::getVisionParameters));
-
-        SmartDashboard.putString("Case", "SIM");
         break;
 
       default:
@@ -134,8 +133,6 @@ public class RobotContainer {
             new VisionIO() {},
             new VisionIO() {},
             new VisionIO() {});
-
-        SmartDashboard.putString("Case", "Default");
         break;
     }
 
@@ -160,11 +157,12 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getRightY()));
     driver
         .rightBumper()
         .whileTrue(new IntakeCoral(manipulator, elevator, driver))
         .whileFalse(new EndIntake(manipulator));
-    driver.leftBumper().whileTrue(new OutakeCoral(manipulator));
+    driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
     driver.pov(0).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(1))));
     driver.pov(90).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.75))));
     driver.pov(270).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.5))));

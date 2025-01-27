@@ -43,7 +43,7 @@ public class EndIntake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if ((!manipulator.beam1Broken() && manipulator.beam2Broken()) || timer.get() > 1.5) {
+    if ((!manipulator.beam1Broken() && manipulator.beam2Broken()) || timer.get() > 3) {
       return true;
     } else {
       return false;

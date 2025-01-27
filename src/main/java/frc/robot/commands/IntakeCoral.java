@@ -4,9 +4,13 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorConstants;
 import frc.robot.utils.TunableController;
@@ -28,7 +32,7 @@ public class IntakeCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // m_elevator.setDistance(ElevatorConstants.Intake);
+    m_elevator.setDistance(ElevatorConstants.intake);
     m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }
@@ -38,7 +42,7 @@ public class IntakeCoral extends Command {
   public void execute() {
     if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
       m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      controller.setRumble(RumbleType.kBothRumble, 0.1);
+      controller.setRumble(RumbleType.kBothRumble, 0);
     } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
       m_Manipulator.runPercent(0);
       controller.setRumble(RumbleType.kBothRumble, 1);
@@ -50,7 +54,7 @@ public class IntakeCoral extends Command {
   public void end(boolean interrupted) {
     m_Manipulator.runPercent(0);
     controller.setRumble(RumbleType.kBothRumble, 0);
-    // m_elevator.setDistance(Meters.of(0));
+    m_elevator.setDistance(Meters.of(Units.inchesToMeters(1)));
   }
 
   // Returns true when the command should end.
