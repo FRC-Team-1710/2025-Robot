@@ -6,44 +6,53 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CoralIntake.CoralIntake;
-import frc.robot.subsystems.CoralIntake.CoralIntakeConstants;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorConstants;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorConstants;
+import frc.robot.subsystems.roller.Roller;
+import frc.robot.subsystems.roller.RollerConstants;
 import frc.robot.utils.TunableController;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCoral extends Command {
-  private CoralIntake m_coralIntake;
+  private Manipulator m_Manipulator;
   private Elevator m_elevator;
+  private Roller roller;
   private TunableController controller;
 
   /** Creates a new IntakeCoral. */
-  public IntakeCoral(CoralIntake intake, Elevator ele, TunableController control) {
-    this.m_coralIntake = intake;
+  public IntakeCoral(
+      Manipulator manipulator, Elevator ele, Roller roller, TunableController control) {
+    this.m_Manipulator = manipulator;
     this.m_elevator = ele;
+    this.roller = roller;
     this.controller = control;
-    addRequirements(intake, ele);
+    addRequirements(manipulator, ele, roller);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_elevator.setDistance(ElevatorConstants.Intake);
-    m_coralIntake.runPercent(CoralIntakeConstants.intakeSpeed);
+    m_elevator.setDistance(ElevatorConstants.intake);
+    m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
+    roller.SetRollerPower(RollerConstants.intakeSpeed);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (m_coralIntake.beam1Broken() && m_coralIntake.beam2Broken()) {
-      m_coralIntake.runPercent(CoralIntakeConstants.insideSpeed);
-      controller.setRumble(RumbleType.kBothRumble, 0.25);
-    } else if (!m_coralIntake.beam1Broken() && m_coralIntake.beam2Broken()) {
-      m_coralIntake.runPercent(0);
+    if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
+      m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
+      controller.setRumble(RumbleType.kBothRumble, 0);
+      roller.SetRollerPower(RollerConstants.insideSpeed);
+    } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
+      m_Manipulator.runPercent(0);
+      roller.SetRollerPower(0);
       controller.setRumble(RumbleType.kBothRumble, 1);
     }
   }
@@ -51,9 +60,10 @@ public class IntakeCoral extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_coralIntake.runPercent(0);
+    m_Manipulator.runPercent(0);
+    roller.SetRollerPower(0);
     controller.setRumble(RumbleType.kBothRumble, 0);
-    m_elevator.setDistance(Meters.of(0));
+    m_elevator.setDistance(Meters.of(Units.inchesToMeters(1)));
   }
 
   // Returns true when the command should end.
