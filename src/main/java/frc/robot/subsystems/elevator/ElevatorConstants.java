@@ -11,5 +11,5 @@ import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class ElevatorConstants {
-    public static final Distance intake = Meters.of(Units.inchesToMeters(1));
+  public static final Distance intake = Meters.of(Units.inchesToMeters(1));
 }

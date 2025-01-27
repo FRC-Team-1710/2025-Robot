@@ -17,10 +17,8 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
@@ -117,7 +115,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
             leaderStatorCurrent,
             leaderSupplyCurrent);
 
-    var followerStatus = 
+    var followerStatus =
         BaseStatusSignal.refreshAll(
             followerPosition,
             followerVelocity,
@@ -139,23 +137,34 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.followerAppliedVoltage = followerAppliedVolts.getValue();
     inputs.followerStatorCurrent = followerStatorCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
-    
+
     inputs.setpoint = SetPoint;
     inputs.manualSpin = spinManual;
-    
-    inputs.distance = Meters.of((leaderPosition.getValueAsDouble() / GEAR_RATIO) * (drumSize * Math.PI));
-    
-    SmartDashboard.putNumber("Elevator/Motors/Leader/Position", leaderPosition.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Leader/Velocity", leaderVelocity.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Follower/Position", followerPosition.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Follower/Velocity", followerVelocity.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Leader/Applied Volt", leaderAppliedVolts.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Leader/Stator Current", leaderStatorCurrent.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Leader/Supply Current", leaderSupplyCurrent.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Follower/Applied Volt", followerAppliedVolts.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Follower/Stator Current", followerStatorCurrent.getValue().magnitude());
-    SmartDashboard.putNumber("Elevator/Motors/Follower/Supply Current", followerSupplyCurrent.getValue().magnitude());
-    
+
+    inputs.distance =
+        Meters.of((leaderPosition.getValueAsDouble() / GEAR_RATIO) * (drumSize * Math.PI));
+
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Leader/Position", leaderPosition.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Leader/Velocity", leaderVelocity.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Follower/Position", followerPosition.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Follower/Velocity", followerVelocity.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Leader/Applied Volt", leaderAppliedVolts.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Leader/Stator Current", leaderStatorCurrent.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Leader/Supply Current", leaderSupplyCurrent.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Follower/Applied Volt", followerAppliedVolts.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Follower/Stator Current", followerStatorCurrent.getValue().magnitude());
+    SmartDashboard.putNumber(
+        "Elevator/Motors/Follower/Supply Current", followerSupplyCurrent.getValue().magnitude());
+
     leader.optimizeBusUtilization(4, 0.1);
     follower.optimizeBusUtilization(4, 0.1);
   }
@@ -169,9 +178,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
               + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
       follower.setVoltage(
           elevatorPID.calculate(inputs.distance.magnitude())
-              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));        
+              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
     }
-    SmartDashboard.putNumber("Elevator/Distance INCHES", Units.metersToInches(inputs.distance.magnitude()));
+    SmartDashboard.putNumber(
+        "Elevator/Distance INCHES", Units.metersToInches(inputs.distance.magnitude()));
     SmartDashboard.putNumber("Elevator/Distance METERS", inputs.distance.magnitude());
     SmartDashboard.putNumber("Elevator/PID/Goal", elevatorPID.getGoal().position);
     SmartDashboard.putNumber("Elevator/Setpoint", elevatorPID.getSetpoint().position);

@@ -13,12 +13,11 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * The Elevator subsystem controls a dual-motor arm mechanism for game piece manipulation. It
@@ -105,7 +104,9 @@ public class Elevator extends SubsystemBase {
     io.setManual(power);
   }
 
-  /** Resets the state of the PID controller. Is used to go from manual power setting to setpoints */
+  /**
+   * Resets the state of the PID controller. Is used to go from manual power setting to setpoints
+   */
   public void resetPID() {
     io.resetPID();
   }

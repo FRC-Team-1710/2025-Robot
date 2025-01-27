@@ -4,22 +4,21 @@
 
 package frc.robot.subsystems.roller;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Roller extends SubsystemBase {
-  private TalonFX RollerLeader; //Right
+  private TalonFX RollerLeader; // Right
   private TalonFX RollerFollower;
 
   public Roller() {
     RollerLeader = new TalonFX(0);
     RollerFollower = new TalonFX(0);
-    
+
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
