@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -17,13 +19,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OutakeCoral;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CoralIntake.CoralIntake;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIO;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIOSim;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -33,14 +32,15 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.elevator.ElevatorIOSIM;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-
-import static edu.wpi.first.units.Units.Meters;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -56,7 +56,7 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   public final Drive drivetrain;
-  public final CoralIntake coralIntake;
+  public final Manipulator manipulator;
   public final Elevator elevator;
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -75,7 +75,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        coralIntake = new CoralIntake(new CoralIntakeIOTalonFX());
+        manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
 
         new Vision(
@@ -89,7 +89,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        coralIntake = new CoralIntake(new CoralIntakeIOSim());
+        manipulator = new Manipulator(new ManipulatorIOSim());
         elevator = new Elevator(new ElevatorIOSIM());
 
         new Vision(
@@ -125,7 +125,7 @@ public class RobotContainer {
       default:
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
-        coralIntake = new CoralIntake(new CoralIntakeIO() {});
+        manipulator = new Manipulator(new ManipulatorIO() {});
         elevator = new Elevator(new ElevatorIO() {});
 
         new Vision(
@@ -160,14 +160,20 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driver.rightBumper().whileTrue(new IntakeCoral(coralIntake, elevator, driver));
-    driver.leftBumper().whileTrue(new OutakeCoral(coralIntake));
+    driver
+        .rightBumper()
+        .whileTrue(new IntakeCoral(manipulator, elevator, driver))
+        .whileFalse(new EndIntake(manipulator));
+    driver.leftBumper().whileTrue(new OutakeCoral(manipulator));
     driver.pov(0).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(1))));
     driver.pov(90).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.75))));
     driver.pov(270).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.5))));
     driver.pov(180).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.25))));
-    driver.a().onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
-    .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
+    driver
+        .a()
+        .onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
+        .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
+
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(

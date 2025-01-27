@@ -11,17 +11,17 @@
 
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
-import au.grapplerobotics.LaserCan;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
@@ -39,49 +39,51 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private boolean locked = false;
   private boolean stop = false;
 
-  private double kP = 0.5;
+  private double kP = 0.0;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
-  private double kG = 0.3564;
-  private double kV = 3.18;
+  private double kG = 0.0;
+  private double kV = 0.0;
   private double kA = 0.0;
-  private double kVel = 3;
-  private double kAcel = 4.5;
+  private double kVel = 0.3;
+  private double kAcel = 0.3;
 
-  public final TalonFX leader = new TalonFX(30);
-  public final TalonFX follower = new TalonFX(31);
-  public final LaserCan laserCan = new LaserCan(32);
+  public final TalonFX leader = new TalonFX(11);
+  public final TalonFX follower = new TalonFX(12);
 
   private final TrapezoidProfile.Constraints m_Constraints =
-      new TrapezoidProfile.Constraints(0.3, 0.3); // MAX velocity, MAX aceleration
+      new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
   private final ProfiledPIDController elevatorPID =
-      new ProfiledPIDController(0, 0, 0, m_Constraints);
-  private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(0, 0, 0, 0);
+      new ProfiledPIDController(kP, kI, kD, m_Constraints);
+  private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
 
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
   private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
   private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
-  private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
   private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+
+  private final StatusSignal<Angle> followerPosition = follower.getPosition();
+  private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
+  private final StatusSignal<Voltage> followerAppliedVolts = follower.getMotorVoltage();
+  private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
   private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
 
   private final Debouncer leaderDebounce = new Debouncer(0.5);
   private final Debouncer followerDebounce = new Debouncer(0.5);
 
-  protected final Distance elevatorRadius = Inches.of(1.5);
-
   private Distance SetPoint = Meters.of(0);
   private double spinManual = 0.0;
 
   public ElevatorIOCTRE() {
-    var config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+
     leader.getConfigurator().apply(config);
     follower.getConfigurator().apply(config);
-    follower.setControl(new Follower(leader.getDeviceID(), true));
 
     SmartDashboard.putNumber("P", kP);
     SmartDashboard.putNumber("I", kI);
@@ -98,8 +100,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leaderPosition,
         leaderVelocity,
         leaderStatorCurrent,
-        followerStatorCurrent,
         leaderSupplyCurrent,
+        followerPosition,
+        followerVelocity,
+        followerStatorCurrent,
         followerSupplyCurrent);
   }
 
@@ -113,35 +117,43 @@ public class ElevatorIOCTRE implements ElevatorIO {
             leaderStatorCurrent,
             leaderSupplyCurrent);
 
-    var followerStatus = BaseStatusSignal.refreshAll(followerStatorCurrent, followerSupplyCurrent);
+    var followerStatus = 
+        BaseStatusSignal.refreshAll(
+            followerPosition,
+            followerVelocity,
+            followerAppliedVolts,
+            followerStatorCurrent,
+            followerSupplyCurrent);
 
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
 
     inputs.leaderPosition = leaderPosition.getValue().div(GEAR_RATIO);
     inputs.leaderVelocity = leaderVelocity.getValue().div(GEAR_RATIO);
+    inputs.followerPosition = followerPosition.getValue().div(GEAR_RATIO);
+    inputs.followerVelocity = followerVelocity.getValue().div(GEAR_RATIO);
+    SmartDashboard.putNumber("Elevator Leader Position", leaderPosition.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Leader Velocity", leaderVelocity.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Follower Position", followerPosition.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Follower Velocity", followerVelocity.getValue().magnitude());
 
     inputs.setpoint = SetPoint;
     inputs.manualSpin = spinManual;
-
-    inputs.appliedVoltage = leaderAppliedVolts.getValue();
+    
+    SmartDashboard.putNumber("Elevator Leader Applied Volt", leaderAppliedVolts.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Leader Stator Current", leaderStatorCurrent.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Leader Supply Current", leaderSupplyCurrent.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Follower Applied Volt", followerAppliedVolts.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Follower Stator Current", followerStatorCurrent.getValue().magnitude());
+    SmartDashboard.putNumber("Elevator Follower Supply Current", followerSupplyCurrent.getValue().magnitude());
+    inputs.leaderAppliedVoltage = leaderAppliedVolts.getValue();
     inputs.leaderStatorCurrent = leaderStatorCurrent.getValue();
-    inputs.followerStatorCurrent = followerStatorCurrent.getValue();
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
+    inputs.followerAppliedVoltage = followerAppliedVolts.getValue();
+    inputs.followerStatorCurrent = followerStatorCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    if (laserCan.getMeasurement() == null) {
-      inputs.laserFault = true;
-      inputs.distance =
-          Meters.of(
-              (leaderPosition.getValueAsDouble() / GEAR_RATIO)
-                  * (Units.inchesToMeters(1.5) * Math.PI));
-    } else {
-      inputs.laserFault = false;
-      inputs.laserDistance =
-          Meters.of(Double.valueOf(laserCan.getMeasurement().distance_mm) / 1000);
-      inputs.distance = Meters.of(Double.valueOf(laserCan.getMeasurement().distance_mm) / 1000);
-    }
+    inputs.distance = Meters.of((leaderPosition.getValueAsDouble() / GEAR_RATIO) * (Units.inchesToMeters(2.383) * Math.PI));
 
     leader.optimizeBusUtilization(4, 0.1);
     follower.optimizeBusUtilization(4, 0.1);
@@ -155,10 +167,12 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leader.setVoltage(
             elevatorPID.calculate(inputs.distance.magnitude())
                 + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
-      } else {
-        leader.setVoltage(elevatorFF.getKg() + spinManual);
-      }
+        follower.setVoltage(
+            elevatorPID.calculate(inputs.distance.magnitude())
+                + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));        
+      } 
     }
+    SmartDashboard.putNumber("Elevator/Distance INCHES", Units.metersToInches(inputs.distance.magnitude()));
     SmartDashboard.putNumber("Elevator/Pos", inputs.distance.magnitude());
     SmartDashboard.putNumber("Elevator/Goal", elevatorPID.getGoal().position);
     SmartDashboard.putNumber("Elevator/Setpoint", elevatorPID.getSetpoint().position);
@@ -176,6 +190,20 @@ public class ElevatorIOCTRE implements ElevatorIO {
   public void setManual(double power) {
     locked = false;
     spinManual = power;
+    leader.set(spinManual);
+    follower.set(-spinManual);
+  }
+
+  @Override
+  public void resetPID() {
+    locked = false;
+    elevatorPID.reset((leaderPosition.getValueAsDouble()) * (Units.inchesToMeters(1.5) * Math.PI));
+  }
+
+  @Override
+  public void resetEncoder() {
+    leader.setPosition(0);
+    follower.setPosition(0);
   }
 
   @Override

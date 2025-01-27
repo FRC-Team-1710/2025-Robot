@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.CoralIntake;
+package frc.robot.subsystems.manipulator;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
-public class CoralIntakeIOSim implements CoralIntakeIO {
+public class ManipulatorIOSim implements ManipulatorIO {
   private DCMotorSim sim =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(DCMotor.getCIM(1), 0.004, 1), DCMotor.getCIM(1));
@@ -19,7 +19,7 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
   private double appliedVolts = 0.0;
 
   @Override
-  public void updateInputs(CoralIntakeIOInputs inputs) {
+  public void updateInputs(ManipulatorIOInputs inputs) {
     sim.setInputVoltage(appliedVolts);
     sim.update(0.02);
 
@@ -31,7 +31,7 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
 
   @Override
   public void setVoltage(double volts) {
-    SmartDashboard.putNumber("Claw/setVoltage", volts);
+    SmartDashboard.putNumber("Manipulator/setVoltage", volts);
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
   }
 }

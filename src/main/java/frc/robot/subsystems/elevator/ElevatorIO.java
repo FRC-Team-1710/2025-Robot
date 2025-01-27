@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
@@ -29,7 +30,6 @@ public interface ElevatorIO {
   public static class ElevatorIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
-    public boolean laserFault = false;
 
     public double manualSpin = 0.0;
 
@@ -38,16 +38,18 @@ public interface ElevatorIO {
     public static Distance SIMsetpoint = Meters.of(0);
 
     public Angle leaderPosition = Rotations.of(0);
-    public Distance laserDistance = Meters.of(0);
     public Distance distance = Meters.of(0);
 
     public AngularVelocity leaderVelocity = RotationsPerSecond.of(0);
 
-    public Voltage appliedVoltage = Volts.of(0.0);
+    public Voltage leaderAppliedVoltage = Volts.of(0.0);
     public Current leaderStatorCurrent = Amps.of(0);
     public Current followerStatorCurrent = Amps.of(0);
     public Current leaderSupplyCurrent = Amps.of(0);
     public Current followerSupplyCurrent = Amps.of(0);
+    public Voltage followerAppliedVoltage = Volts.of(0.0);
+    public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
+    public Angle followerPosition = Rotations.of(0);
   }
 
   /** Updates the set of loggable inputs. */
@@ -59,6 +61,9 @@ public interface ElevatorIO {
   /** Set power the elevator from 1 to -1 */
   public default void setManual(double power) {}
 
+  /** Resets the state of the PID controller. Used to go from manual power setting to setpoints */
+  public default void resetPID() {}
+
   /**
    * Updates pid loop in ElevatorIOCTRE
    *
@@ -68,4 +73,6 @@ public interface ElevatorIO {
 
   /** Stop in open loop. */
   public default void stop() {}
+
+  public default void resetEncoder() {}
 }
