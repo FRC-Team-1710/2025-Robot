@@ -187,18 +187,9 @@ public class VisionIOPhotonVision implements VisionIO {
    *     desired pose
    */
   public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
-    Translation3d visionStdDev = robotToCamera.getTranslation();
-    Translation3d tagToCameraPose;
     Translation3d robotToTargetPose;
     try {
-      tagToCameraPose =
-          getTarget(tagID)
-              .bestCameraToTarget
-              .getTranslation();
-      robotToTargetPose = new Translation3d(
-        -tagToCameraPose.getY() - visionStdDev.getX(),
-        tagToCameraPose.getX() - visionStdDev.getY(),
-        tagToCameraPose.getZ() - visionStdDev.getZ());
+      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
     } catch (Exception e) {
       System.err.println("Failed to calculate offset for tag " + tagID + ": " + e.getMessage());
       return new Translation2d();
@@ -210,6 +201,16 @@ public class VisionIOPhotonVision implements VisionIO {
             robotToTargetPose.getY() - desiredOffset.getY());
     return robotOffset;
   }
+  /*
+   * tagToCameraPose =
+          getTarget(tagID)
+              .bestCameraToTarget
+              .getTranslation();
+      robotToTargetPose = new Translation3d(
+        -tagToCameraPose.getY() - visionStdDev.getX(),
+        tagToCameraPose.getX() - visionStdDev.getY(),
+        tagToCameraPose.getZ() - visionStdDev.getZ());
+   */
 
   /**
    * Calculates the distance from a provided offset from the AprilTag to the center of the robot.
