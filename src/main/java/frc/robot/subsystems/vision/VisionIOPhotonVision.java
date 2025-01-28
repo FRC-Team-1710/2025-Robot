@@ -187,17 +187,20 @@ public class VisionIOPhotonVision implements VisionIO {
    *     desired pose
    */
   public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
+    Translation3d visionStdDev = robotToCamera.getTranslation();
+    Translation3d tagToCameraPose;
     Translation3d robotToTargetPose;
     try {
-      robotToTargetPose =
+      tagToCameraPose =
           getTarget(tagID)
               .bestCameraToTarget
-              .getTranslation()
-              .minus(robotToCamera.getTranslation());
+              .getTranslation();
+      robotToTargetPose = new Translation3d(
+        -tagToCameraPose.getY() - visionStdDev.getX(),
+        tagToCameraPose.getX() - visionStdDev.getY(),
+        tagToCameraPose.getZ() - visionStdDev.getZ());
     } catch (Exception e) {
-      System.out.println(e);
-      System.out.println("Given TagID: " + tagID);
-      System.out.println("This ID was not within the available targets. Defaulting to blank Translation2d.");
+      System.err.println("Failed to calculate offset for tag " + tagID + ": " + e.getMessage());
       return new Translation2d();
     }
 
