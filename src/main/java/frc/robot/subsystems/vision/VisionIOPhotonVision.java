@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
@@ -185,7 +186,6 @@ public class VisionIOPhotonVision implements VisionIO {
    * @return robot centric transform 2d that represents the difference of the robots pose and the
    *     desired pose
    */
-  @AutoLogOutput(key = "Vision/Offset")
   public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
     Translation3d robotToTargetPose;
     try {
@@ -196,6 +196,8 @@ public class VisionIOPhotonVision implements VisionIO {
               .minus(robotToCamera.getTranslation());
     } catch (Exception e) {
       System.out.println(e);
+      System.out.println("Given TagID: " + tagID);
+      System.out.println("This ID was not within the available targets. Defaulting to blank Translation2d.");
       return new Translation2d();
     }
 
@@ -203,7 +205,6 @@ public class VisionIOPhotonVision implements VisionIO {
         new Translation2d(
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
-    System.out.println("Offset: " + robotOffset);
     return robotOffset;
   }
 
@@ -214,7 +215,6 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param desiredOffset desired position's offset relative to the AprilTag
    * @return Distance to the offset from the AprilTag
    */
-  @AutoLogOutput(key = "Vision/Distance")
   public double getTagOffsetDistance(int tagID, Translation2d desiredOffset) {
     Translation3d robotToTargetPose;
     try {
@@ -233,34 +233,16 @@ public class VisionIOPhotonVision implements VisionIO {
     return robotOffset.getNorm();
   }
 
-  public Trigger hasTarget = new Trigger(() -> !cameraTargets.isEmpty());
+  public boolean hasTargets() {
+    return !cameraTargets.isEmpty();
+  }
+
+  public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
-  @AutoLogOutput(key = "Hello/Velocityy")
-  public double VelocityY(int id) {
-    return getTagOffset(id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
-            .getX()
-        * 0.10641; // todo: double check this number, should be kp
-  }
-
-  @AutoLogOutput(key = "Hello/Velocityx")
-  public double VelocityX(int id) {
-    double velocityX =
-        getTagOffset(id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
-                .getY()
-            * (0.106553);
-    // System.out.println(
-    //     "offset"
-    //         + getTagOffset(
-    //             id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))));
-    // System.out.println(" velocity x " + velocityX);
-    return velocityX; // todo: double check this number, should be kp
-  }
-
-  @AutoLogOutput(key = "Vision/turn")
   public double turn(int id) {
     double speed =
         target.getYaw()

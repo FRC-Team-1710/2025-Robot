@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -203,21 +204,6 @@ public class RobotContainer {
         break;
     }
 
-    /*c1 =
-    new VisionIOPhotonVision(
-        "FrontLeft",
-        new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(12.04442909),
-                Units.inchesToMeters(9.91887103),
-                Units.inchesToMeters(8.55647482)), // IN METERS
-            new Rotation3d(
-                0,
-                Units.degreesToRadians(115.16683805),
-                Units.degreesToRadians(30)) // IN RADIANS
-            ),
-        drivetrain::getVisionParameters);*/
-
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -260,8 +246,6 @@ public class RobotContainer {
 
     driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
 
-    // driver.back().whileTrue(drivetrain.goToPoint(3, 2));
-
     driver
         .b()
         .whileTrue(
@@ -269,47 +253,11 @@ public class RobotContainer {
                 () ->
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
-    /*driver
-    .leftBumper()
-    .onTrue(
-        drivetrain.applyRequest(
-            () -> point.withModuleDirection(new Rotation2d(c1.target(TargetingComputer.currentTargetBranch.getApriltag()).getBestCameraToTarget().getX()))));
 
-            driver
-            .leftBumper()
-            .onTrue(
-                drivetrain.applyRequest(
-                    () -> point.withModuleDirection(new Rotation2d(c1.result(7).txnc()*Constants.MaxAngularRate))));*/
-
-    /*driver
-    .leftBumper()
-    .and(
-        vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera())
-            .hasTarget) // get prefered camera
-    .whileTrue(
-        drivetrain.applyRequest(
-            () ->
-                robotCentric
-                    .withVelocityX(
-                        MaxSpeed.times(
-                            -vision
-                                .getCamera(
-                                    TargetingComputer.currentTargetBranch.getPreferredCamera())
-                                .VelocityX(
-                                    TargetingComputer.currentTargetBranch.getApriltag())))
-                    .withVelocityY(
-                        MaxSpeed.times(
-                            -vision
-                                .getCamera(
-                                    TargetingComputer.currentTargetBranch.getPreferredCamera())
-                                .VelocityY(
-                                    TargetingComputer.currentTargetBranch.getApriltag())))));*/
-
+    // AprilTag Alignment
     driver
         .leftBumper()
-        .and(
-            vision.getCamera(TargetingComputer.currentTargetBranch.getPreferredCamera())
-                .hasTarget) // get prefered camera
+        .and(() -> vision.containsRequestedTarget(17))
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -317,30 +265,12 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                 -vision
-                                    .getCamera(
-                                        TargetingComputer.currentTargetBranch.getPreferredCamera())
-                                    .VelocityX(17)))
+                                    .calculateOffset(17, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))).getX() * 0.10641))
                         .withVelocityY(
                             MaxSpeed.times(
-                                vision
-                                    .getCamera(
-                                        TargetingComputer.currentTargetBranch.getPreferredCamera())
-                                    .VelocityY(17)))));
-    // .withRotationalRate(
-    // Constants.MaxAngularRate.times(-driver.customRight().getX()))));
+                                -vision
+                                    .calculateOffset(17, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))).getY() * 0.106553))));
 
-    // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
-
-    driver
-        .rightBumper()
-        .onTrue(
-            drivetrain.applyRequest(
-                () ->
-                    robotCentric
-                        .withVelocityX(MaxSpeed.times(-vision.getCamera(1).VelocityX(14)))
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
-
-    // TargetingComputer.currentTargetBranch.getApriltag() - use for random april tag
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here

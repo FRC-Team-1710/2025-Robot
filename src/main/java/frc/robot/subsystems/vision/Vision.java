@@ -3,8 +3,10 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -15,6 +17,9 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -76,6 +81,29 @@ public class Vision extends SubsystemBase {
 
   public VisionIOPhotonVision getCamera(int index) {
     return (VisionIOPhotonVision) io[index];
+  }
+
+  public Translation2d calculateOffset(int id, Translation2d desiredOffset) {
+    Translation2d rightOffset = getCamera(1).getTagOffset(id, desiredOffset);
+    Translation2d leftOffset = getCamera(0).getTagOffset(id, desiredOffset);
+
+    SmartDashboard.putNumber("Front Left Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
+    SmartDashboard.putNumber("Front Right Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
+
+    if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
+      // Both offsets are valid, return the average
+      Translation2d averagedOffset =  new Translation2d(
+          (leftOffset.getX() + rightOffset.getX()) / 2,
+          (leftOffset.getY() + rightOffset.getY()) / 2);
+      SmartDashboard.putNumber("Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
+      return averagedOffset;
+    }
+    // Return the non-zero offset, or kZero if both are zero
+    return !leftOffset.equals(Translation2d.kZero) ? leftOffset : rightOffset;
+  }
+
+  public boolean containsRequestedTarget(int id) {
+    return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
   /**
