@@ -192,7 +192,7 @@ public class VisionIOPhotonVision implements VisionIO {
     // Calculation Variables
     double tagDistance = tagToCameraPose.getTranslation().toTranslation2d().getNorm();
     double tagX = -tagToCameraPose.getY();
-    double tagAngle = Math.asin(tagX/tagDistance);
+    double tagAngle = Math.asin(tagX / tagDistance);
     double cameraAngle = Math.toRadians(90 - Math.toDegrees(robotToCamera.getRotation().getZ()));
     double fieldAngle = 90 - (cameraAngle - tagAngle);
     double fieldTagX = tagDistance * Math.sin(fieldAngle);
@@ -201,9 +201,7 @@ public class VisionIOPhotonVision implements VisionIO {
     double robotY = fieldTagY - robotToCamera.getY();
 
     Translation2d robotOffset =
-        new Translation2d(
-          desiredOffset.getX() - robotX,
-          desiredOffset.getY() - robotY);
+        new Translation2d(desiredOffset.getX() - robotX, desiredOffset.getY() - robotY);
     return robotOffset;
   }
 

@@ -116,8 +116,8 @@ public class Vision extends SubsystemBase {
   }
 
   public Translation2d calculateOffset(int id, Translation2d desiredOffset) {
-    Translation2d rightOffset = getCamera(1).getTagOffset(id, desiredOffset);
     Translation2d leftOffset = getCamera(0).getTagOffset(id, desiredOffset);
+    Translation2d rightOffset = getCamera(1).getTagOffset(id, desiredOffset);
 
     try {
       SmartDashboard.putNumberArray(
