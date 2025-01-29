@@ -17,9 +17,6 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.swing.text.StyleContext.SmallAttributeSet;
-
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -77,6 +74,41 @@ public class Vision extends SubsystemBase {
     VisionData visionData = processAllCameras();
     logSummary(visionData);
     consumer.accept(sortMeasurements(visionData.measurements()));
+
+    try {
+      SmartDashboard.putNumberArray(
+          "Left Offset",
+          getCamera(0).getTagOffset(17, new Translation2d(0, 1)).toVector().getData());
+      SmartDashboard.putNumberArray(
+          "Right Offset",
+          getCamera(1).getTagOffset(17, new Translation2d(0, 1)).toVector().getData());
+      SmartDashboard.putNumberArray(
+          "Left Calc Offset",
+          getCamera(0)
+              .getTarget(17)
+              .bestCameraToTarget
+              .getTranslation()
+              .plus(getCamera(0).getStdDev().getTranslation())
+              .toVector()
+              .getData());
+      SmartDashboard.putNumberArray(
+          "Right Calc Offset",
+          getCamera(1)
+              .getTarget(17)
+              .bestCameraToTarget
+              .getTranslation()
+              .plus(getCamera(1).getStdDev().getTranslation())
+              .toVector()
+              .getData());
+      SmartDashboard.putNumberArray(
+          "Left Cam Measurement",
+          getCamera(0).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+      SmartDashboard.putNumberArray(
+          "Right Cam Measurement",
+          getCamera(1).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+    } catch (Exception e) {
+      // TODO: handle exception
+    }
   }
 
   public VisionIOPhotonVision getCamera(int index) {
@@ -87,17 +119,31 @@ public class Vision extends SubsystemBase {
     Translation2d rightOffset = getCamera(1).getTagOffset(id, desiredOffset);
     Translation2d leftOffset = getCamera(0).getTagOffset(id, desiredOffset);
 
-    SmartDashboard.putNumber("Front Left Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
-    SmartDashboard.putNumber("Front Right Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
+    try {
+      SmartDashboard.putNumberArray(
+          "Left Cam Offset",
+          getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+      SmartDashboard.putNumberArray(
+          "Right Cam Offset",
+          getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+    } catch (Exception e) {
 
-    if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
-      // Both offsets are valid, return the average
-      Translation2d averagedOffset =  new Translation2d(
-          (leftOffset.getX() + rightOffset.getX()) / 2,
-          (leftOffset.getY() + rightOffset.getY()) / 2);
-      SmartDashboard.putNumber("Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
-      return averagedOffset;
     }
+    SmartDashboard.putNumber(
+        "Front Left Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
+    SmartDashboard.putNumber(
+        "Front Right Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
+
+    // if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
+    //   // Both offsets are valid, return the average
+    //   Translation2d averagedOffset =
+    //       new Translation2d(
+    //           (leftOffset.getX() + rightOffset.getX()) / 2,
+    //           (leftOffset.getY() + rightOffset.getY()) / 2);
+    //   SmartDashboard.putNumber(
+    //       "Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
+    //   return averagedOffset;
+    // }
     // Return the non-zero offset, or kZero if both are zero
     return !leftOffset.equals(Translation2d.kZero) ? leftOffset : rightOffset;
   }

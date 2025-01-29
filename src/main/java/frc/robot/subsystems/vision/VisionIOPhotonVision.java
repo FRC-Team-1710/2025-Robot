@@ -20,7 +20,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
@@ -31,7 +30,6 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -151,10 +149,7 @@ public class VisionIOPhotonVision implements VisionIO {
   public PhotonTrackedTarget getTarget(int id) {
     if (!cameraTargets.isEmpty()) {
       for (var target : cameraTargets) {
-        System.out.println("Requested ID " + id);
-        System.out.println("Actual ID " + target.fiducialId);
         if (target.fiducialId == id) {
-          System.out.println("Target " + target);
           return target;
         }
       }
@@ -187,30 +182,30 @@ public class VisionIOPhotonVision implements VisionIO {
    *     desired pose
    */
   public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
-    Translation3d robotToTargetPose;
+    Transform3d tagToCameraPose;
     try {
-      robotToTargetPose = getTarget(tagID).bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation());
+      tagToCameraPose = getTarget(tagID).bestCameraToTarget;
     } catch (Exception e) {
-      System.err.println("Failed to calculate offset for tag " + tagID + ": " + e.getMessage());
       return new Translation2d();
     }
 
+    // Calculation Variables
+    double tagDistance = tagToCameraPose.getTranslation().toTranslation2d().getNorm();
+    double tagX = -tagToCameraPose.getY();
+    double tagAngle = Math.asin(tagX/tagDistance);
+    double cameraAngle = Math.toRadians(90 - Math.toDegrees(robotToCamera.getRotation().getZ()));
+    double fieldAngle = 90 - (cameraAngle - tagAngle);
+    double fieldTagX = tagDistance * Math.sin(fieldAngle);
+    double fieldTagY = tagDistance * Math.cos(fieldAngle);
+    double robotX = fieldTagX - robotToCamera.getX();
+    double robotY = fieldTagY - robotToCamera.getY();
+
     Translation2d robotOffset =
         new Translation2d(
-            robotToTargetPose.getX() - desiredOffset.getX(),
-            robotToTargetPose.getY() - desiredOffset.getY());
+          desiredOffset.getX() - robotX,
+          desiredOffset.getY() - robotY);
     return robotOffset;
   }
-  /*
-   * tagToCameraPose =
-          getTarget(tagID)
-              .bestCameraToTarget
-              .getTranslation();
-      robotToTargetPose = new Translation3d(
-        -tagToCameraPose.getY() - visionStdDev.getX(),
-        tagToCameraPose.getX() - visionStdDev.getY(),
-        tagToCameraPose.getZ() - visionStdDev.getZ());
-   */
 
   /**
    * Calculates the distance from a provided offset from the AprilTag to the center of the robot.

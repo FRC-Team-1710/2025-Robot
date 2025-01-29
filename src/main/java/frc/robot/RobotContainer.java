@@ -265,12 +265,21 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                 -vision
-                                    .calculateOffset(17, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))).getX() * 0.10641))
+                                        .calculateOffset(
+                                            17,
+                                            new Translation2d(
+                                                Units.inchesToMeters(0), Units.inchesToMeters(40)))
+                                        .getX()
+                                    * 0.10641))
                         .withVelocityY(
                             MaxSpeed.times(
                                 -vision
-                                    .calculateOffset(17, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20))).getY() * 0.106553))));
-
+                                        .calculateOffset(
+                                            17,
+                                            new Translation2d(
+                                                Units.inchesToMeters(0), Units.inchesToMeters(40)))
+                                        .getY()
+                                    * 0.106553))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
