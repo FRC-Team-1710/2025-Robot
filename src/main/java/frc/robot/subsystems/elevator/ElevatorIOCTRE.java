@@ -101,6 +101,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
         followerVelocity,
         followerStatorCurrent,
         followerSupplyCurrent);
+    
+    leader.optimizeBusUtilization(4, 0.1);
+    follower.optimizeBusUtilization(4, 0.1);
 
     resetEncoder(); // Sets current position to 1 inch
   }
@@ -164,9 +167,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
         "Elevator/Motors/Follower/Stator Current", followerStatorCurrent.getValue().magnitude());
     SmartDashboard.putNumber(
         "Elevator/Motors/Follower/Supply Current", followerSupplyCurrent.getValue().magnitude());
-
-    leader.optimizeBusUtilization(4, 0.1);
-    follower.optimizeBusUtilization(4, 0.1);
   }
 
   @Override
