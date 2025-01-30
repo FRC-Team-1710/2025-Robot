@@ -284,9 +284,6 @@ public class RobotContainer {
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    TargetingComputer.setTargetBranch(Targets.CHARLIE);
-    Logger.recordOutput("target tag", TargetingComputer.getCurrentTargetBranch().getApriltag());
-
     // AprilTag Alignment
     driver
         .leftBumper()
@@ -399,27 +396,6 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.getLeftX()))
                         .withRotationalRate(Constants.MaxAngularRate.times(-driver.getRightX()))
                         .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
-
-    // Custom Swerve Request that use ProfiledFieldCentricFacingAngle. Allows you to face specific
-    // direction while driving
-    ProfiledFieldCentricFacingAngle driveFacingAngle =
-        new ProfiledFieldCentricFacingAngle(
-                new TrapezoidProfile.Constraints(
-                    Constants.MaxAngularRate.baseUnitMagnitude(),
-                    Constants.MaxAngularRate.div(0.25).baseUnitMagnitude()))
-            .withDeadband(MaxSpeed.times(0.1))
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-    // Set PID for ProfiledFieldCentricFacingAngle
-    driveFacingAngle.HeadingController.setPID(.03, 0, 0);
-    driver
-        .y()
-        .whileTrue(
-            drivetrain
-                .runOnce(() -> driveFacingAngle.resetProfile(drivetrain.getRotation()))
-                .andThen(
-                    drivetrain.applyRequest(
-                        () -> driveFacingAngle.withTargetDirection(new Rotation2d()))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single

@@ -178,79 +178,13 @@ public class VisionIOPhotonVision implements VisionIO {
     return false;
   }
 
-  // @AutoLogOutput
-  // public Transform3d getAlignmentTargetPose(int tagID, Transform3d offset) {
-  //   tagID = 17;
-  //   offset =
-  //       new Transform3d(
-  //           new Translation3d(Units.inchesToMeters(15), Units.inchesToMeters(-6.5), 0),
-  //           new Rotation3d(0, 0, 0));
-  //   if (!cameraTargets.isEmpty()) {
-  //     for (var target : cameraTargets) {
-  //       if (target.fiducialId == 17) {
-  //         var name = target.bestCameraToTarget.plus(robotToCamera).plus(offset);
-  //         return name;
-  //       }
-  //     }
-  //   }
-  //   return new Transform3d();
-  // }
-
   /**
    * Calculates the offset of the robot from a specified desired offset relative to the AprilTag
    * provided
    *
    * @param tagID Provided AprilTag ID to locate and use for calculation
-   * @param desiredOffset desired position's offset relative to the AprilTag
-   * @return robot centric transform 2d that represents the difference of the robots pose and the
-   *     desired pose
    */
-  public Translation2d getTagOffset(int tagID, Translation2d desiredOffset) {
-    Transform3d tagToCameraPose;
-    try {
-      tagToCameraPose = getTarget(tagID).bestCameraToTarget;
-    } catch (Exception e) {
-      return new Translation2d();
-    }
-    // Vector Math
-    Translation2d tagToCameraTranslation =
-        new Translation2d(-tagToCameraPose.getY(), tagToCameraPose.getX());
-    Translation2d tagToRobotTranslation =
-        tagToCameraTranslation.minus(robotToCamera.getTranslation().toTranslation2d());
-    Translation2d robotOffsetTranslation = desiredOffset.minus(tagToRobotTranslation);
-    SmartDashboard.putNumberArray(
-        "Vector Math Offset", robotOffsetTranslation.toVector().getData());
-
-    // Calculation Variables
-    double robotToCamX = robotToCamera.getX();
-    double robotToCamY = robotToCamera.getY();
-    double tagToCamX = tagToCameraPose.getX();
-    double tagToCamY = tagToCameraPose.getY();
-    double theta = Math.atan2(tagToCamX, tagToCamY);
-    double angleA =
-        Math.atan2(-robotToCamY, robotToCamX)
-            + (Math.toRadians(90) + robotToCamera.getRotation().getZ())
-            - theta;
-    double sideC = tagToCamY / Math.cos(Math.abs(theta));
-    double sideB = Math.sqrt(robotToCamX * robotToCamX + robotToCamY * robotToCamY);
-    double sideA =
-        Math.sqrt(Math.pow(sideB, 2) + Math.pow(sideC, 2) - 2 * sideB * sideC * Math.cos(angleA));
-    double angleC =
-        Math.acos(
-            (Math.pow(sideC, 2) - Math.pow(sideA, 2) - Math.pow(sideB, 2)) / (-2 * sideA * sideB));
-    double tagToRobotYaw = angleC - Math.atan2(robotToCamY, robotToCamX);
-    Translation2d robotTranslation =
-        new Translation2d(sideA * Math.cos(tagToRobotYaw), sideA * Math.sin(tagToRobotYaw));
-
-    Translation2d robotOffset =
-        new Translation2d(
-            desiredOffset.getX() - robotTranslation.getX(),
-            desiredOffset.getY() - robotTranslation.getY());
-    SmartDashboard.putNumberArray("Trig Math Offset", robotOffset.toVector().getData());
-    return robotOffset;
-  }
-
-  public Transform3d getCameraToTargetTransform(int tagID) {
+  public Transform3d getRobotToTargetOffset(int tagID) {
     Transform3d tagToCameraPose;
     try {
       tagToCameraPose = getTarget(tagID).bestCameraToTarget.inverse().plus(robotToCamera.inverse());
@@ -259,31 +193,6 @@ public class VisionIOPhotonVision implements VisionIO {
     }
     Logger.recordOutput("tagToCameraPose via " + camera.getName(), tagToCameraPose);
     return tagToCameraPose;
-  }
-
-  /**
-   * Calculates the distance from a provided offset from the AprilTag to the center of the robot.
-   *
-   * @param tagID Provided AprilTag ID to locate and use for calculation
-   * @param desiredOffset desired position's offset relative to the AprilTag
-   * @return Distance to the offset from the AprilTag
-   */
-  public double getTagOffsetDistance(int tagID, Translation2d desiredOffset) {
-    Translation3d robotToTargetPose;
-    try {
-      robotToTargetPose =
-          getTarget(tagID)
-              .bestCameraToTarget
-              .getTranslation()
-              .minus(robotToCamera.getTranslation());
-    } catch (Exception e) {
-      return 0.0;
-    }
-    Translation2d robotOffset =
-        new Translation2d(
-            robotToTargetPose.getX() - desiredOffset.getX(),
-            robotToTargetPose.getY() - desiredOffset.getY());
-    return robotOffset.getNorm();
   }
 
   @AutoLogOutput
@@ -307,18 +216,6 @@ public class VisionIOPhotonVision implements VisionIO {
 
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
-  }
-
-  public double turn(int id) {
-    double speed =
-        target.getYaw()
-            - getTagOffset(
-                        id, new Translation2d(Units.inchesToMeters(20), Units.inchesToMeters(20)))
-                    .getAngle()
-                    .getDegrees()
-                * 0.026553;
-
-    return speed;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {

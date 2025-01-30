@@ -2,7 +2,6 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -82,12 +81,6 @@ public class Vision extends SubsystemBase {
 
     try {
       SmartDashboard.putNumberArray(
-          "Left Offset",
-          getCamera(0).getTagOffset(17, new Translation2d(0, 1)).toVector().getData());
-      SmartDashboard.putNumberArray(
-          "Right Offset",
-          getCamera(1).getTagOffset(17, new Translation2d(0, 1)).toVector().getData());
-      SmartDashboard.putNumberArray(
           "Left Calc Offset",
           getCamera(0)
               .getTarget(17)
@@ -120,9 +113,9 @@ public class Vision extends SubsystemBase {
     return (VisionIOPhotonVision) io[index];
   }
 
-  public Transform3d calculateOffset(int id, Translation2d desiredOffset, Pose2d robot) {
-    Transform3d leftCamToTag = getCamera(0).getCameraToTargetTransform(id);
-    Transform3d rightCamToTag = getCamera(1).getCameraToTargetTransform(id);
+  public Transform3d calculateOffset(int id, Translation2d desiredOffset) {
+    Transform3d leftCamToTag = getCamera(0).getRobotToTargetOffset(id);
+    Transform3d rightCamToTag = getCamera(1).getRobotToTargetOffset(id);
 
     try {
       Logger.recordOutput(
@@ -141,12 +134,7 @@ public class Vision extends SubsystemBase {
                   new Transform3d(
                       new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
                       new Rotation3d()))
-              .inverse()
-          // .plus(
-          // new Transform3d(
-          //     new Translation3d(robot.getX(), robot.getY(), 0),
-          //     new Rotation3d(robot.getRotation())))
-          );
+              .inverse());
       Logger.recordOutput(
           "right cam based target position",
           rightCamToTag
@@ -154,12 +142,7 @@ public class Vision extends SubsystemBase {
                   new Transform3d(
                       new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
                       new Rotation3d()))
-              .inverse()
-          // .plus(
-          // new Transform3d(
-          //     new Translation3d(robot.getX(), robot.getY(), 0),
-          //     new Rotation3d(robot.getRotation())))
-          );
+              .inverse());
       Logger.recordOutput(
           "Left Cam Offset",
           getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
@@ -175,22 +158,6 @@ public class Vision extends SubsystemBase {
           ? rightCamToTag
           : leftCamToTag;
     }
-
-    // leftCamToTag =
-    //     leftCamToTag
-    //         .plus(
-    //             new Transform3d(
-    //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-    //                 new Rotation3d()))
-    //         .inverse();
-
-    // rightCamToTag =
-    //     rightCamToTag
-    //         .plus(
-    //             new Transform3d(
-    //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-    //                 new Rotation3d()))
-    //         .inverse();
 
     var result =
         !leftCamToTag.equals(Transform3d.kZero)
