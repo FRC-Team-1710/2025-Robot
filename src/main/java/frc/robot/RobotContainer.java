@@ -323,8 +323,7 @@ public class RobotContainer {
                                                     .getApriltag(),
                                                 new Translation2d(
                                                     Units.inchesToMeters(17),
-                                                    Units.inchesToMeters(-6.5)),
-                                                drivetrain.getPose())
+                                                    Units.inchesToMeters(-6.5)))
                                             .getX())
                                     * 1))
                         .withVelocityY(
@@ -336,8 +335,7 @@ public class RobotContainer {
                                                     .getApriltag(),
                                                 new Translation2d(
                                                     Units.inchesToMeters(17),
-                                                    Units.inchesToMeters(-6.5)),
-                                                drivetrain.getPose())
+                                                    Units.inchesToMeters(-6.5)))
                                             .getY())
                                     * 1))
                         .withRotationalRate(
