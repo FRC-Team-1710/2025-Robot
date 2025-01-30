@@ -175,12 +175,33 @@ public class Vision extends SubsystemBase {
           ? rightCamToTag
           : leftCamToTag;
     }
+
+    // leftCamToTag =
+    //     leftCamToTag
+    //         .plus(
+    //             new Transform3d(
+    //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+    //                 new Rotation3d()))
+    //         .inverse();
+
+    // rightCamToTag =
+    //     rightCamToTag
+    //         .plus(
+    //             new Transform3d(
+    //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+    //                 new Rotation3d()))
+    //         .inverse();
+
+    var result =
+        !leftCamToTag.equals(Transform3d.kZero)
+            ? leftCamToTag
+            : (!rightCamToTag.equals(Transform3d.kZero)
+                ? rightCamToTag
+                : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+    Logger.recordOutput("X Error", result.getX());
     // Return the non-zero offset, or kZero if both are zero
-    return !leftCamToTag.equals(Transform3d.kZero)
-        ? leftCamToTag
-        : (!rightCamToTag.equals(Transform3d.kZero)
-            ? rightCamToTag
-            : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+    return result;
   }
 
   public boolean containsRequestedTarget(int id) {

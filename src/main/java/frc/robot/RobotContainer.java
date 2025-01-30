@@ -34,9 +34,11 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
+  TargetingComputer targetingComputer = new TargetingComputer();
 
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
   private final TunableController driver =
@@ -282,60 +284,73 @@ public class RobotContainer {
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    double dist =
-        Math.sqrt(
-            Math.pow(
-                    (Units.inchesToMeters(27)
-                        + vision
-                            .calculateOffset(
-                                17,
-                                new Translation2d(
-                                    Units.inchesToMeters(27), Units.inchesToMeters(-6.5)),
-                                drivetrain.getPose())
-                            .getX()),
-                    2)
-                + Math.pow(
-                    (Units.inchesToMeters(6.5)
-                        + vision
-                            .calculateOffset(
-                                17,
-                                new Translation2d(
-                                    Units.inchesToMeters(27), Units.inchesToMeters(-6.5)),
-                                drivetrain.getPose())
-                            .getY()),
-                    2));
     TargetingComputer.setTargetBranch(Targets.CHARLIE);
+    Logger.recordOutput("target tag", TargetingComputer.getCurrentTargetBranch().getApriltag());
+
     // AprilTag Alignment
     driver
         .leftBumper()
-        .and(() -> vision.containsRequestedTarget(17))
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getTargetingAngle()))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * 1))))
+        .and(
+            () ->
+                vision.containsRequestedTarget(
+                    TargetingComputer.getCurrentTargetBranch().getApriltag()))
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     robotCentric
                         .withVelocityX(
                             MaxSpeed.times(
-                                (Units.inchesToMeters(27)
-                                        + vision
+                                -(Units.inchesToMeters(17)
+                                        - vision
                                             .calculateOffset(
-                                                17,
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getApriltag(),
                                                 new Translation2d(
-                                                    Units.inchesToMeters(27),
+                                                    Units.inchesToMeters(17),
                                                     Units.inchesToMeters(-6.5)),
                                                 drivetrain.getPose())
                                             .getX())
-                                    * 0.25))
+                                    * 1))
                         .withVelocityY(
                             MaxSpeed.times(
-                                (Units.inchesToMeters(6.5)
-                                        + vision
+                                -(Units.inchesToMeters(-6.5)
+                                        - vision
                                             .calculateOffset(
-                                                17,
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getApriltag(),
                                                 new Translation2d(
-                                                    Units.inchesToMeters(27),
+                                                    Units.inchesToMeters(17),
                                                     Units.inchesToMeters(-6.5)),
                                                 drivetrain.getPose())
                                             .getY())
+                                    * 1))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getTargetingAngle()))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
                                     * 1))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
@@ -374,7 +389,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     // Set PID for ProfiledFieldCentricFacingAngle
-    driveFacingAngle.HeadingController.setPID(7, 0, 0);
+    driveFacingAngle.HeadingController.setPID(.03, 0, 0);
     driver
         .y()
         .whileTrue(
@@ -382,9 +397,7 @@ public class RobotContainer {
                 .runOnce(() -> driveFacingAngle.resetProfile(drivetrain.getRotation()))
                 .andThen(
                     drivetrain.applyRequest(
-                        () ->
-                            driveFacingAngle.withTargetDirection(
-                                new Rotation2d(-driver.getRightY(), -driver.getRightX())))));
+                        () -> driveFacingAngle.withTargetDirection(new Rotation2d()))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single

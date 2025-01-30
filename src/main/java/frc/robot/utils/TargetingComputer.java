@@ -12,7 +12,9 @@ public class TargetingComputer {
   public static int randomBranch;
   public static int branchGameScore = 0;
 
-  private static int alphaTag,
+  private static boolean isRedAlliance;
+
+  public static int alphaTag,
       charlieTag,
       echoTag,
       golfTag,
@@ -22,7 +24,7 @@ public class TargetingComputer {
       rightSourceTag,
       processorTag,
       netTag;
-  private static double alphaAngle,
+  public static double alphaAngle,
       charlieAngle,
       echoAngle,
       golfAngle,
@@ -34,51 +36,43 @@ public class TargetingComputer {
       netAngle;
 
   public static void setAlliance(boolean redAlliance) {
-    if (redAlliance) {
-      alphaTag = 7;
-      charlieTag = 8;
-      echoTag = 9;
-      golfTag = 10;
-      indiaTag = 11;
-      kiloTag = 6;
-      leftSourceTag = 1;
-      rightSourceTag = 2;
-      processorTag = 3;
-      netTag = 5;
+    isRedAlliance = redAlliance;
+  }
 
-      alphaAngle = 180;
-      charlieAngle = 240;
-      echoAngle = 300;
-      golfAngle = 0;
-      indiaAngle = 60;
-      kiloAngle = 120;
-      leftSourceAngle = 306;
-      rightSourceAngle = 54;
-      processorAngle = 90;
-      netAngle = 180;
-    } else {
-      alphaTag = 18;
-      charlieTag = 17;
-      echoTag = 22;
-      golfTag = 21;
-      indiaTag = 20;
-      kiloTag = 19;
-      leftSourceTag = 13;
-      rightSourceTag = 12;
-      processorTag = 16;
-      netTag = 14;
+  public static int getTagForTarget(Targets target) {
+    return switch (target) {
+      case ALPHA -> isRedAlliance ? 7 : 18;
+      case BRAVO -> isRedAlliance ? 7 : 18;
+      case CHARLIE -> isRedAlliance ? 8 : 17;
+      case DELTA -> isRedAlliance ? 8 : 17;
+      case ECHO -> isRedAlliance ? 9 : 22;
+      case FOXTROT -> isRedAlliance ? 9 : 22;
+      case GOLF -> isRedAlliance ? 10 : 21;
+      case HOTEL -> isRedAlliance ? 10 : 21;
+      case INDIA -> isRedAlliance ? 11 : 20;
+      case JULIET -> isRedAlliance ? 11 : 20;
+      case KILO -> isRedAlliance ? 6 : 19;
+      case LIMA -> isRedAlliance ? 6 : 19;
+      case SOURCE_LEFT -> isRedAlliance ? 1 : 13;
+      case SOURCE_RIGHT -> isRedAlliance ? 2 : 12;
+      case RED_PROCESSOR -> isRedAlliance ? 3 : 16;
+      case RED_NET -> isRedAlliance ? 5 : 14;
+    };
+  }
 
-      alphaAngle = 0;
-      charlieAngle = 60;
-      echoAngle = 120;
-      golfAngle = 180;
-      indiaAngle = 240;
-      kiloAngle = 300;
-      leftSourceAngle = 126;
-      rightSourceAngle = 234;
-      processorAngle = 270;
-      netAngle = 0;
-    }
+  public static double getAngleForTarget(Targets target) {
+    return switch (target) {
+      case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
+      case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
+      case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
+      case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
+      case INDIA, JULIET -> isRedAlliance ? 60 : 240;
+      case KILO, LIMA -> isRedAlliance ? 120 : 300;
+      case SOURCE_LEFT -> isRedAlliance ? 306 : 126;
+      case SOURCE_RIGHT -> isRedAlliance ? 54 : 234;
+      case RED_PROCESSOR -> isRedAlliance ? 90 : 270;
+      case RED_NET -> isRedAlliance ? 180 : 0;
+    };
   }
 
   public static void setTargetBranch(Targets target) {
@@ -133,41 +127,37 @@ public class TargetingComputer {
   }
 
   public enum Targets {
-    ALPHA(alphaTag, alphaAngle, 1, 0),
-    BRAVO(alphaTag, alphaAngle, 0, 1),
-    CHARLIE(charlieTag, charlieAngle, 1, 2),
-    DELTA(charlieTag, charlieAngle, 0, 3),
-    ECHO(echoTag, echoAngle, 1, 4),
-    FOXTROT(echoTag, echoAngle, 0, 5),
-    GOLF(golfTag, golfAngle, 1, 6),
-    HOTEL(golfTag, golfAngle, 0, 7),
-    INDIA(indiaTag, indiaAngle, 1, 8),
-    JULIET(indiaTag, indiaAngle, 0, 9),
-    KILO(kiloTag, kiloAngle, 1, 10),
-    LIMA(kiloTag, kiloAngle, 0, 11),
-    SOURCE_LEFT(leftSourceTag, leftSourceAngle, 0, 12),
-    SOURCE_RIGHT(rightSourceTag, rightSourceAngle, 0, 13),
-    RED_PROCESSOR(processorTag, processorAngle, 0, 14),
-    RED_NET(processorTag, processorAngle, 0, 15);
+    ALPHA(1, 0),
+    BRAVO(0, 1),
+    CHARLIE(1, 2),
+    DELTA(0, 3),
+    ECHO(1, 4),
+    FOXTROT(0, 5),
+    GOLF(1, 6),
+    HOTEL(0, 7),
+    INDIA(1, 8),
+    JULIET(0, 9),
+    KILO(1, 10),
+    LIMA(0, 11),
+    SOURCE_LEFT(0, 12),
+    SOURCE_RIGHT(0, 13),
+    RED_PROCESSOR(0, 14),
+    RED_NET(0, 15);
 
-    private final int apriltag;
-    private final double targetingAngle; // in deg
-    private final int preferredCamera;
-    private final int gameID;
+    public final int preferredCamera;
+    public final int gameID;
 
-    Targets(int apriltag, double targetingAngle, int preferredCamera, int gameID) {
-      this.apriltag = apriltag;
-      this.targetingAngle = targetingAngle;
+    Targets(int preferredCamera, int gameID) {
       this.preferredCamera = preferredCamera;
       this.gameID = gameID;
     }
 
     public int getApriltag() {
-      return apriltag;
+      return getTagForTarget(this);
     }
 
     public double getTargetingAngle() {
-      return targetingAngle;
+      return getAngleForTarget(this);
     }
 
     public int getPreferredCamera() {

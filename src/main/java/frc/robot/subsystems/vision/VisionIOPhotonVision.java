@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
@@ -36,7 +37,6 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
@@ -213,10 +213,13 @@ public class VisionIOPhotonVision implements VisionIO {
       return new Translation2d();
     }
     // Vector Math
-    Translation2d tagToCameraTranslation = new Translation2d(-tagToCameraPose.getY(), tagToCameraPose.getX());
-    Translation2d tagToRobotTranslation = tagToCameraTranslation.minus(robotToCamera.getTranslation().toTranslation2d());
+    Translation2d tagToCameraTranslation =
+        new Translation2d(-tagToCameraPose.getY(), tagToCameraPose.getX());
+    Translation2d tagToRobotTranslation =
+        tagToCameraTranslation.minus(robotToCamera.getTranslation().toTranslation2d());
     Translation2d robotOffsetTranslation = desiredOffset.minus(tagToRobotTranslation);
-    SmartDashboard.putNumberArray("Vector Math Offset", robotOffsetTranslation.toVector().getData());
+    SmartDashboard.putNumberArray(
+        "Vector Math Offset", robotOffsetTranslation.toVector().getData());
 
     // Calculation Variables
     double robotToCamX = robotToCamera.getX();
@@ -224,16 +227,25 @@ public class VisionIOPhotonVision implements VisionIO {
     double tagToCamX = tagToCameraPose.getX();
     double tagToCamY = tagToCameraPose.getY();
     double theta = Math.atan2(tagToCamX, tagToCamY);
-    double angleA = Math.atan2(-robotToCamY, robotToCamX) + (Math.toRadians(90) + robotToCamera.getRotation().getZ()) - theta;
-    double sideC = tagToCamY/Math.cos(Math.abs(theta));
+    double angleA =
+        Math.atan2(-robotToCamY, robotToCamX)
+            + (Math.toRadians(90) + robotToCamera.getRotation().getZ())
+            - theta;
+    double sideC = tagToCamY / Math.cos(Math.abs(theta));
     double sideB = Math.sqrt(robotToCamX * robotToCamX + robotToCamY * robotToCamY);
-    double sideA = Math.sqrt(Math.pow(sideB, 2) + Math.pow(sideC, 2) - 2*sideB*sideC*Math.cos(angleA));
-    double angleC = Math.acos((Math.pow(sideC, 2) - Math.pow(sideA, 2) - Math.pow(sideB, 2)) / (-2*sideA*sideB));
+    double sideA =
+        Math.sqrt(Math.pow(sideB, 2) + Math.pow(sideC, 2) - 2 * sideB * sideC * Math.cos(angleA));
+    double angleC =
+        Math.acos(
+            (Math.pow(sideC, 2) - Math.pow(sideA, 2) - Math.pow(sideB, 2)) / (-2 * sideA * sideB));
     double tagToRobotYaw = angleC - Math.atan2(robotToCamY, robotToCamX);
-    Translation2d robotTranslation = new Translation2d(sideA*Math.cos(tagToRobotYaw), sideA*Math.sin(tagToRobotYaw));
+    Translation2d robotTranslation =
+        new Translation2d(sideA * Math.cos(tagToRobotYaw), sideA * Math.sin(tagToRobotYaw));
 
     Translation2d robotOffset =
-        new Translation2d(desiredOffset.getX() - robotTranslation.getX(), desiredOffset.getY() - robotTranslation.getY());
+        new Translation2d(
+            desiredOffset.getX() - robotTranslation.getX(),
+            desiredOffset.getY() - robotTranslation.getY());
     SmartDashboard.putNumberArray("Trig Math Offset", robotOffset.toVector().getData());
     return robotOffset;
   }
