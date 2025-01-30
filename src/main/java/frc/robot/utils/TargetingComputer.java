@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
@@ -139,29 +141,31 @@ public class TargetingComputer {
   }
 
   public enum Targets {
-    ALPHA(1, 0),
-    BRAVO(0, 1),
-    CHARLIE(1, 2),
-    DELTA(0, 3),
-    ECHO(1, 4),
-    FOXTROT(0, 5),
-    GOLF(1, 6),
-    HOTEL(0, 7),
-    INDIA(1, 8),
-    JULIET(0, 9),
-    KILO(1, 10),
-    LIMA(0, 11),
-    SOURCE_LEFT(0, 12),
-    SOURCE_RIGHT(0, 13),
-    RED_PROCESSOR(0, 14),
-    RED_NET(0, 15);
+    ALPHA(1, 0, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    BRAVO(0, 1, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    CHARLIE(1, 2, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    DELTA(0, 3, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    ECHO(1, 4, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    FOXTROT(0, 5, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    GOLF(1, 6, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    HOTEL(0, 7, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    INDIA(1, 8, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    JULIET(0, 9, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    KILO(1, 10, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
+    LIMA(0, 11, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
+    SOURCE_LEFT(0, 12, new Translation2d()),
+    SOURCE_RIGHT(0, 13, new Translation2d()),
+    RED_PROCESSOR(0, 14, new Translation2d()),
+    RED_NET(0, 15, new Translation2d());
 
     public final int preferredCamera;
     public final int gameID;
+    public final Translation2d offset;
 
-    Targets(int preferredCamera, int gameID) {
+    Targets(int preferredCamera, int gameID, Translation2d offset) {
       this.preferredCamera = preferredCamera;
       this.gameID = gameID;
+      this.offset = offset;
     }
 
     public int getApriltag() {
@@ -178,6 +182,10 @@ public class TargetingComputer {
 
     public int gameID() {
       return gameID;
+    }
+
+    public Translation2d getOffset() {
+      return offset;
     }
   }
 }

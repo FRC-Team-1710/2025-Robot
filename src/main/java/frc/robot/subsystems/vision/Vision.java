@@ -155,8 +155,8 @@ public class Vision extends SubsystemBase {
 
     if (!leftCamToTag.equals(Transform3d.kZero) && !rightCamToTag.equals(Transform3d.kZero)) {
       return TargetingComputer.currentTargetBranch.getPreferredCamera() == 0
-          ? rightCamToTag
-          : leftCamToTag;
+          ? leftCamToTag
+          : rightCamToTag;
     }
 
     var result =

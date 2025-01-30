@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -283,7 +282,7 @@ public class RobotContainer {
 
     // AprilTag Alignment
     driver
-        .leftBumper()
+        .rightTrigger()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -313,26 +312,24 @@ public class RobotContainer {
                     robotCentric
                         .withVelocityX(
                             MaxSpeed.times(
-                                -(Units.inchesToMeters(17)
+                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getX()
                                         - vision
                                             .calculateOffset(
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getApriltag(),
-                                                new Translation2d(
-                                                    Units.inchesToMeters(17),
-                                                    Units.inchesToMeters(-6.5)))
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getOffset())
                                             .getX())
                                     * 1))
                         .withVelocityY(
                             MaxSpeed.times(
-                                -(Units.inchesToMeters(-6.5)
+                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getY()
                                         - vision
                                             .calculateOffset(
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getApriltag(),
-                                                new Translation2d(
-                                                    Units.inchesToMeters(17),
-                                                    Units.inchesToMeters(-6.5)))
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getOffset())
                                             .getY())
                                     * 1))
                         .withRotationalRate(
@@ -346,7 +343,7 @@ public class RobotContainer {
                                     * 1))));
 
     driver
-        .rightBumper()
+        .leftTrigger()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
