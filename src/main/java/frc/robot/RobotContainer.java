@@ -12,7 +12,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -270,7 +269,7 @@ public class RobotContainer {
                                 .customRight()
                                 .getX())))); // Drive counterclockwise with negative X (left)
 
-    driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
+    // driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
 
     driver
         .b()
@@ -324,6 +323,42 @@ public class RobotContainer {
                         .withVelocityY(
                             MaxSpeed.times(
                                 -(TargetingComputer.getCurrentTargetBranch().getOffset().getY()
+                                        - vision
+                                            .calculateOffset(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getApriltag(),
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getOffset())
+                                            .getY())
+                                    * 1))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getTargetingAngle()))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * 1))))
+        .and(driver.a())
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    robotCentric
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getX()
+                                        - vision
+                                            .calculateOffset(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getApriltag(),
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getOffset())
+                                            .getX())
+                                    * 1))
+                        .withVelocityY(
+                            MaxSpeed.times(
+                                -(0
                                         - vision
                                             .calculateOffset(
                                                 TargetingComputer.getCurrentTargetBranch()
