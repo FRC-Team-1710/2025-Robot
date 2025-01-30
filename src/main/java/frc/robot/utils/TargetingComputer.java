@@ -68,8 +68,8 @@ public class TargetingComputer {
       case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
       case INDIA, JULIET -> isRedAlliance ? 60 : 240;
       case KILO, LIMA -> isRedAlliance ? 120 : 300;
-      case SOURCE_LEFT -> isRedAlliance ? 306 : 126;
-      case SOURCE_RIGHT -> isRedAlliance ? 54 : 234;
+      case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
+      case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case RED_PROCESSOR -> isRedAlliance ? 90 : 270;
       case RED_NET -> isRedAlliance ? 180 : 0;
     };
@@ -85,6 +85,18 @@ public class TargetingComputer {
 
   public static Targets getCurrentTargetBranch() {
     return currentTargetBranch;
+  }
+
+  public static double getSourceTargetingAngle(double robotY) {
+    if (isRedAlliance) {
+      return (robotY > FieldConstants.fieldWidth / 2)
+          ? Targets.SOURCE_RIGHT.getTargetingAngle()
+          : Targets.SOURCE_LEFT.getTargetingAngle();
+    } else {
+      return (robotY < FieldConstants.fieldWidth / 2)
+          ? Targets.SOURCE_RIGHT.getTargetingAngle()
+          : Targets.SOURCE_LEFT.getTargetingAngle();
+    }
   }
 
   public static void randomizeTargetBranch() {

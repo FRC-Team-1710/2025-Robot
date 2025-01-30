@@ -353,6 +353,28 @@ public class RobotContainer {
                                         .getRadians())
                                     * 1))));
 
+    driver
+        .rightBumper()
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getSourceTargetingAngle(
+                                                    drivetrain.getPose().getY())))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * 1))));
+
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
     // https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-tuning.html
