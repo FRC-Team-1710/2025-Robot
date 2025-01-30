@@ -134,16 +134,16 @@ public class Vision extends SubsystemBase {
     SmartDashboard.putNumber(
         "Front Right Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
 
-    // if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
-    //   // Both offsets are valid, return the average
-    //   Translation2d averagedOffset =
-    //       new Translation2d(
-    //           (leftOffset.getX() + rightOffset.getX()) / 2,
-    //           (leftOffset.getY() + rightOffset.getY()) / 2);
-    //   SmartDashboard.putNumber(
-    //       "Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
-    //   return averagedOffset;
-    // }
+    if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
+      // Both offsets are valid, return the average
+      Translation2d averagedOffset =
+          new Translation2d(
+              (leftOffset.getX() + rightOffset.getX()) / 2,
+              (leftOffset.getY() + rightOffset.getY()) / 2);
+      SmartDashboard.putNumber(
+          "Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
+      return averagedOffset;
+    }
     // Return the non-zero offset, or kZero if both are zero
     return !leftOffset.equals(Translation2d.kZero) ? leftOffset : rightOffset;
   }
