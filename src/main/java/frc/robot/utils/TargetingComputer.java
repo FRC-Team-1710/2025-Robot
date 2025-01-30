@@ -89,6 +89,10 @@ public class TargetingComputer {
     currentTargetLevel = level;
   }
 
+  public static Targets getCurrentTargetBranch() {
+    return currentTargetBranch;
+  }
+
   public static void randomizeTargetBranch() {
     randomBranch = random.nextInt(12);
   }
@@ -109,7 +113,7 @@ public class TargetingComputer {
     branchGameScore = 0;
   }
 
-  public static Targets getCurrentBranchGameTarget() {
+  public static Targets getCurrentTargetForBranchGame() {
     Targets gameTarget = Targets.ALPHA;
 
     if (randomBranch == Targets.ALPHA.gameID) gameTarget = Targets.ALPHA;

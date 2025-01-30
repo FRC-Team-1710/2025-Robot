@@ -282,6 +282,29 @@ public class RobotContainer {
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
+    double dist =
+        Math.sqrt(
+            Math.pow(
+                    (Units.inchesToMeters(27)
+                        + vision
+                            .calculateOffset(
+                                17,
+                                new Translation2d(
+                                    Units.inchesToMeters(27), Units.inchesToMeters(-6.5)),
+                                drivetrain.getPose())
+                            .getX()),
+                    2)
+                + Math.pow(
+                    (Units.inchesToMeters(6.5)
+                        + vision
+                            .calculateOffset(
+                                17,
+                                new Translation2d(
+                                    Units.inchesToMeters(27), Units.inchesToMeters(-6.5)),
+                                drivetrain.getPose())
+                            .getY()),
+                    2));
+    TargetingComputer.setTargetBranch(Targets.CHARLIE);
     // AprilTag Alignment
     driver
         .leftBumper()
@@ -292,24 +315,28 @@ public class RobotContainer {
                     robotCentric
                         .withVelocityX(
                             MaxSpeed.times(
-                                -vision
-                                        .calculateOffset(
-                                            17,
-                                            new Translation2d(
-                                                Units.inchesToMeters(15),
-                                                Units.inchesToMeters(-6.5)))
-                                        .getX()
-                                    * 0.50641))
+                                (Units.inchesToMeters(27)
+                                        + vision
+                                            .calculateOffset(
+                                                17,
+                                                new Translation2d(
+                                                    Units.inchesToMeters(27),
+                                                    Units.inchesToMeters(-6.5)),
+                                                drivetrain.getPose())
+                                            .getX())
+                                    * 0.25))
                         .withVelocityY(
                             MaxSpeed.times(
-                                -vision
-                                        .calculateOffset(
-                                            17,
-                                            new Translation2d(
-                                                Units.inchesToMeters(15),
-                                                Units.inchesToMeters(-6.5)))
-                                        .getY()
-                                    * 0.506553))));
+                                (Units.inchesToMeters(6.5)
+                                        + vision
+                                            .calculateOffset(
+                                                17,
+                                                new Translation2d(
+                                                    Units.inchesToMeters(27),
+                                                    Units.inchesToMeters(-6.5)),
+                                                drivetrain.getPose())
+                                            .getY())
+                                    * 1))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
@@ -356,14 +383,8 @@ public class RobotContainer {
                 .andThen(
                     drivetrain.applyRequest(
                         () ->
-                            driveFacingAngle
-                                .withVelocityX(
-                                    MaxSpeed.times(
-                                        -driver
-                                            .getLeftY())) // Drive forward with negative Y (forward)
-                                .withVelocityY(MaxSpeed.times(-driver.getLeftX()))
-                                .withTargetDirection(
-                                    new Rotation2d(-driver.getRightY(), -driver.getRightX())))));
+                            driveFacingAngle.withTargetDirection(
+                                new Rotation2d(-driver.getRightY(), -driver.getRightX())))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single

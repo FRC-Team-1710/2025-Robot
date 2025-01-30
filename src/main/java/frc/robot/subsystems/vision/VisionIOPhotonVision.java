@@ -16,6 +16,7 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -30,6 +31,8 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -154,7 +157,7 @@ public class VisionIOPhotonVision implements VisionIO {
         }
       }
     }
-    return null;
+    return new PhotonTrackedTarget();
   }
 
   /**
@@ -164,13 +167,33 @@ public class VisionIOPhotonVision implements VisionIO {
    * @return True if the AprilTag exists in the results, false otherwise
    */
   public boolean hasTarget(int id) {
-    for (var target : cameraTargets) {
-      if (target.fiducialId == id) {
-        return true;
+    if (!cameraTargets.isEmpty()) {
+      for (var target : cameraTargets) {
+        if (target.fiducialId == id) {
+          return true;
+        }
       }
     }
     return false;
   }
+
+  // @AutoLogOutput
+  // public Transform3d getAlignmentTargetPose(int tagID, Transform3d offset) {
+  //   tagID = 17;
+  //   offset =
+  //       new Transform3d(
+  //           new Translation3d(Units.inchesToMeters(15), Units.inchesToMeters(-6.5), 0),
+  //           new Rotation3d(0, 0, 0));
+  //   if (!cameraTargets.isEmpty()) {
+  //     for (var target : cameraTargets) {
+  //       if (target.fiducialId == 17) {
+  //         var name = target.bestCameraToTarget.plus(robotToCamera).plus(offset);
+  //         return name;
+  //       }
+  //     }
+  //   }
+  //   return new Transform3d();
+  // }
 
   /**
    * Calculates the offset of the robot from a specified desired offset relative to the AprilTag
@@ -205,6 +228,17 @@ public class VisionIOPhotonVision implements VisionIO {
     return robotOffset;
   }
 
+  public Transform3d getCameraToTargetTransform(int tagID) {
+    Transform3d tagToCameraPose;
+    try {
+      tagToCameraPose = getTarget(tagID).bestCameraToTarget.inverse().plus(robotToCamera.inverse());
+    } catch (Exception e) {
+      return new Transform3d();
+    }
+    Logger.recordOutput("tagToCameraPose via " + camera.getName(), tagToCameraPose);
+    return tagToCameraPose;
+  }
+
   /**
    * Calculates the distance from a provided offset from the AprilTag to the center of the robot.
    *
@@ -228,6 +262,19 @@ public class VisionIOPhotonVision implements VisionIO {
             robotToTargetPose.getX() - desiredOffset.getX(),
             robotToTargetPose.getY() - desiredOffset.getY());
     return robotOffset.getNorm();
+  }
+
+  @AutoLogOutput
+  public Transform3d getTransformToTag(int id) {
+    if (latestResult.hasTargets()) {
+      for (var target : latestResult.getTargets()) {
+        if (target.fiducialId == 17) {
+          var name = target.bestCameraToTarget.plus(robotToCamera);
+          return name;
+        }
+      }
+    }
+    return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
   }
 
   public boolean hasTargets() {
@@ -266,9 +313,16 @@ public class VisionIOPhotonVision implements VisionIO {
   /** Updates the local vision results variables */
   private void updateResults() {
     PhotonPipelineResult nullResult = new PhotonPipelineResult();
-    this.cameraResults = camera.getAllUnreadResults();
-    this.latestResult =
-        !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) : nullResult;
-    this.cameraTargets = latestResult.targets;
+    cameraResults = camera.getAllUnreadResults();
+    if (!cameraResults.isEmpty()) {
+      latestResult = cameraResults.get(cameraResults.size() - 1);
+    }
+    // this.latestResult = !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) :
+    // nullResult;
+    if (latestResult.hasTargets()) {
+      cameraTargets = latestResult.targets;
+    }
+    Logger.recordOutput("please work", getTransformToTag(17));
+    Logger.recordOutput("camera results", cameraResults.toString());
   }
 }

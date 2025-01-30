@@ -2,8 +2,12 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,6 +18,7 @@ import frc.robot.subsystems.vision.VisionUtil.VisionData;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
+import frc.robot.utils.TargetingComputer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -115,37 +120,67 @@ public class Vision extends SubsystemBase {
     return (VisionIOPhotonVision) io[index];
   }
 
-  public Translation2d calculateOffset(int id, Translation2d desiredOffset) {
-    Translation2d leftOffset = getCamera(0).getTagOffset(id, desiredOffset);
-    Translation2d rightOffset = getCamera(1).getTagOffset(id, desiredOffset);
+  public Transform3d calculateOffset(int id, Translation2d desiredOffset, Pose2d robot) {
+    Transform3d leftCamToTag = getCamera(0).getCameraToTargetTransform(id);
+    Transform3d rightCamToTag = getCamera(1).getCameraToTargetTransform(id);
 
     try {
-      SmartDashboard.putNumberArray(
+      Logger.recordOutput(
+          "target position",
+          new Transform3d(
+                  FieldConstants.aprilTags.getTagPose(id).get().getTranslation(),
+                  FieldConstants.aprilTags.getTagPose(id).get().getRotation())
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d())));
+      Logger.recordOutput(
+          "left cam based target position",
+          leftCamToTag
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d()))
+              .inverse()
+          // .plus(
+          // new Transform3d(
+          //     new Translation3d(robot.getX(), robot.getY(), 0),
+          //     new Rotation3d(robot.getRotation())))
+          );
+      Logger.recordOutput(
+          "right cam based target position",
+          rightCamToTag
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d()))
+              .inverse()
+          // .plus(
+          // new Transform3d(
+          //     new Translation3d(robot.getX(), robot.getY(), 0),
+          //     new Rotation3d(robot.getRotation())))
+          );
+      Logger.recordOutput(
           "Left Cam Offset",
           getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
-      SmartDashboard.putNumberArray(
+      Logger.recordOutput(
           "Right Cam Offset",
           getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
     } catch (Exception e) {
 
     }
-    SmartDashboard.putNumber(
-        "Front Left Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
-    SmartDashboard.putNumber(
-        "Front Right Distance", leftOffset.getDistance(Translation2d.kZero)); // Debugging
 
-    // if (!leftOffset.equals(Translation2d.kZero) && !rightOffset.equals(Translation2d.kZero)) {
-    //   // Both offsets are valid, return the average
-    //   Translation2d averagedOffset =
-    //       new Translation2d(
-    //           (leftOffset.getX() + rightOffset.getX()) / 2,
-    //           (leftOffset.getY() + rightOffset.getY()) / 2);
-    //   SmartDashboard.putNumber(
-    //       "Averaged Distance", averagedOffset.getDistance(Translation2d.kZero)); // Debugging
-    //   return averagedOffset;
-    // }
+    if (!leftCamToTag.equals(Transform3d.kZero) && !rightCamToTag.equals(Transform3d.kZero)) {
+      return TargetingComputer.currentTargetBranch.getPreferredCamera() == 0
+          ? rightCamToTag
+          : leftCamToTag;
+    }
     // Return the non-zero offset, or kZero if both are zero
-    return !leftOffset.equals(Translation2d.kZero) ? leftOffset : rightOffset;
+    return !leftCamToTag.equals(Transform3d.kZero)
+        ? leftCamToTag
+        : (!rightCamToTag.equals(Transform3d.kZero)
+            ? rightCamToTag
+            : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
   }
 
   public boolean containsRequestedTarget(int id) {

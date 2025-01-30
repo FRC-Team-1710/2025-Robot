@@ -98,7 +98,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putString("Current Target", TargetingComputer.currentTargetBranch.toString());
     SmartDashboard.putNumber("Target Level", TargetingComputer.currentTargetLevel);
     SmartDashboard.putString(
-        "Random Target Branch", TargetingComputer.getCurrentBranchGameTarget().toString());
+        "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
     if (m_gcTimer.advanceIfElapsed(5)) System.gc();
   }
