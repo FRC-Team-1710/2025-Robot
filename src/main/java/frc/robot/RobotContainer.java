@@ -279,6 +279,8 @@ public class RobotContainer {
                     point.withModuleDirection(
                         new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
+    double alignP = .4;
+    double rotP = .2;
     // AprilTag Alignment
     driver
         .rightTrigger()
@@ -300,7 +302,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * 1))))
+                                    * rotP))))
         .and(
             () ->
                 vision.containsRequestedTarget(
@@ -319,7 +321,7 @@ public class RobotContainer {
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getOffset())
                                             .getX())
-                                    * 1))
+                                    * alignP))
                         .withVelocityY(
                             MaxSpeed.times(
                                 -(TargetingComputer.getCurrentTargetBranch().getOffset().getY()
@@ -330,7 +332,7 @@ public class RobotContainer {
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getOffset())
                                             .getY())
-                                    * 1))
+                                    * alignP))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
                                 (new Rotation2d(
@@ -339,7 +341,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * 1))))
+                                    * rotP))))
         .and(driver.a())
         .whileTrue(
             drivetrain.applyRequest(
@@ -355,7 +357,7 @@ public class RobotContainer {
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getOffset())
                                             .getX())
-                                    * 1))
+                                    * alignP))
                         .withVelocityY(
                             MaxSpeed.times(
                                 -(0
@@ -366,7 +368,7 @@ public class RobotContainer {
                                                 TargetingComputer.getCurrentTargetBranch()
                                                     .getOffset())
                                             .getY())
-                                    * 1))
+                                    * alignP))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
                                 (new Rotation2d(
@@ -375,7 +377,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * 1))));
+                                    * alignP))));
 
     driver
         .leftTrigger()
@@ -397,7 +399,7 @@ public class RobotContainer {
                                                     drivetrain.getPose().getY())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * 1))));
+                                    * alignP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here

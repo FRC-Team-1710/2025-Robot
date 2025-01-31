@@ -8,7 +8,7 @@ public class TargetingComputer {
 
   public static final boolean gameMode = false;
 
-  public static Targets currentTargetBranch = Targets.CHARLIE;
+  public static Targets currentTargetBranch = Targets.ALPHA;
   public static double currentTargetLevel = 4;
   public static Random random = new Random();
   public static int randomBranch;
