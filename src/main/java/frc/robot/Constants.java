@@ -22,7 +22,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
-
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -95,33 +94,37 @@ public final class Constants {
   public static final String kBackLeftCameraName = "Back Left";
   public static final String kbackRightCameraName = "Back Right";
 
-  public static final Transform3d kFrontLeftStdDev = new Transform3d(
-    new Translation3d(
-      Units.inchesToMeters(9.91887103),
-      Units.inchesToMeters(12.04442909),
-      Units.inchesToMeters(8.55647482)),
-    new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(30)));
+  public static final Transform3d kFrontLeftStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(9.91887103),
+              Units.inchesToMeters(12.04442909),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(30)));
 
-    public static final Transform3d kFrontRightStdDev = new Transform3d(
-      new Translation3d(
-        Units.inchesToMeters(9.91887103),
-        Units.inchesToMeters(-12.04442909),
-        Units.inchesToMeters(8.55647482)),
-      new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(330)));
-      
-      public static final Transform3d kBackLeftStdDev = new Transform3d(
-      new Translation3d(
-        Units.inchesToMeters(-9.79622433),
-        Units.inchesToMeters(10.87979715),
-        Units.inchesToMeters(8.55647482)),
-      new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(210)));
+  public static final Transform3d kFrontRightStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(9.91887103),
+              Units.inchesToMeters(-12.04442909),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(330)));
 
-      public static final Transform3d kBackRightStdDev = new Transform3d(
-      new Translation3d(
-        Units.inchesToMeters(-9.79622433),
-        Units.inchesToMeters(-10.87979715),
-        Units.inchesToMeters(8.55647482)),
-      new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(150)));
+  public static final Transform3d kBackLeftStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(-9.79622433),
+              Units.inchesToMeters(10.87979715),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(210)));
+
+  public static final Transform3d kBackRightStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(-9.79622433),
+              Units.inchesToMeters(-10.87979715),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(150)));
 
   public static enum Mode {
     /** Running on a real robot. */
