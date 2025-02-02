@@ -37,8 +37,7 @@ public class ElevationManual extends Command {
     } else {
       if (!locked) {
         m_elevatorSubsystem.setManual(0);
-        m_elevatorSubsystem.resetPID();
-        m_elevatorSubsystem.setDistance(m_elevatorSubsystem.getDistance());
+        m_elevatorSubsystem.stopHere();
         locked = true;
       }
     }

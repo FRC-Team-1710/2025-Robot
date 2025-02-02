@@ -4,16 +4,12 @@
 
 package frc.robot.subsystems.claw;
 
-import java.beans.Encoder;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Claw extends SubsystemBase {
@@ -23,9 +19,9 @@ public class Claw extends SubsystemBase {
 
   private double CanEncoderOffset = 0;
   private double setPoint = 0;
-  private double ClawGearing = 9*(48/18);
+  private double ClawGearing = 9 * (48 / 18);
 
-  //PID
+  // PID
   private PIDController PIDWrist;
   private double VelocityP = 0;
   private double VelocityI = 0;
@@ -50,13 +46,13 @@ public class Claw extends SubsystemBase {
   public void setClawPower(double power) {
     clawRollers.set(power);
   }
-  
+
   public double getPosition() {
-    return clawRollers.getPosition().getValueAsDouble()/ClawGearing;
+    return clawRollers.getPosition().getValueAsDouble() / ClawGearing;
   }
 
   public void setWrist(double position) {
-    setPoint = position*ClawGearing;
+    setPoint = position * ClawGearing;
   }
 
   @Override

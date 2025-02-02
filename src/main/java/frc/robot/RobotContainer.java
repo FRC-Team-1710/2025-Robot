@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -29,6 +31,7 @@ import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorIO;
 import frc.robot.subsystems.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.manipulator.ManipulatorIOTalonFX;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
@@ -51,6 +54,9 @@ public class RobotContainer {
   public final Drive drivetrain;
   public final Manipulator manipulator;
   public final Elevator elevator;
+  public final Roller roller;
+  public final Climber climber;
+  public final Claw claw;
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
@@ -63,6 +69,9 @@ public class RobotContainer {
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   public RobotContainer() {
+    claw = new Claw();
+    climber = new Climber();
+    roller = new Roller();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
@@ -149,21 +158,20 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getRightY()));
-    // driver
-    //     .rightBumper()
-    //     .whileTrue(new IntakeCoral(manipulator, elevator, driver))
-    //     .whileFalse(new EndIntake(manipulator));
+    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
+    // driver.a().onTrue(elevator.L2());
+    // driver.b().onTrue(elevator.intake());
     // driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
-    // driver.pov(0).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(1))));
-    // driver.pov(90).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.75))));
-    // driver.pov(270).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.5))));
-    // driver.pov(180).onTrue(new InstantCommand(() ->
-    // elevator.setTargetDistance(Meters.of(0.25))));
-    // driver
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
-    //     .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
+    // driver.rightBumper().whileTrue(new IntakeCoral(manipulator, roller, driver))
+    //       .onFalse(new EndIntake(manipulator, roller));
+    // driver.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+    // driver.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+    // driver.rightBumper().onTrue(new Infinant(manipulator, roller, () -> 0.2));
+    // driver.leftBumper().onTrue(new Infinant(manipulator, roller, () -> 0));
+    // driver.a().onTrue(new Infinant(manipulator, roller, () -> -0.2))
+    //   .onFalse(new Infinant(manipulator, roller, () -> 0.2));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.

@@ -20,7 +20,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
@@ -120,8 +119,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leaderStatorCurrent,
         followerStatorCurrent,
         leaderSupplyCurrent,
-        followerSupplyCurrent
-        );
+        followerSupplyCurrent);
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
@@ -194,7 +192,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
             followerStatorCurrent,
             followerSupplyCurrent);
 
-
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
@@ -215,14 +212,16 @@ public class ElevatorIOCTRE implements ElevatorIO {
     // Calculate actual elevator distance using encoder position
     // Note: Using gear ratio of 1 since encoder rotations match elevator movement
     inputs.elevatorDistance =
-    Conversions.rotationsToInches(inputs.leaderPosition, 6, elevatorRadius);
+        Conversions.rotationsToInches(inputs.leaderPosition, 6, elevatorRadius);
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.magnitude());
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
     SmartDashboard.putNumber("Elevator Goal", elevatorPID.getGoal().position);
     tempPIDTuning();
 
     if (locked) {
-      leader.setVoltage(elevatorPID.calculate(inputs.elevatorDistance.magnitude())+elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
+      leader.setVoltage(
+          elevatorPID.calculate(inputs.elevatorDistance.magnitude())
+              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
     }
   }
 
@@ -244,9 +243,11 @@ public class ElevatorIOCTRE implements ElevatorIO {
   @Override
   public void stopHere() {
     // leader.setControl(
-        // new PositionVoltage(Conversions.rotationsToInches(leaderPosition.getValue(), 6, elevatorRadius).magnitude()));
-        //elevatorPID.setGoal(Conversions.rotationsToInches(leaderPosition.getValue(), 6, elevatorRadius).magnitude());
-        // locked = true;
+    // new PositionVoltage(Conversions.rotationsToInches(leaderPosition.getValue(), 6,
+    // elevatorRadius).magnitude()));
+    elevatorPID.setGoal(
+        Conversions.rotationsToInches(leaderPosition.getValue(), 6, elevatorRadius).magnitude());
+    locked = true;
   }
 
   @Override

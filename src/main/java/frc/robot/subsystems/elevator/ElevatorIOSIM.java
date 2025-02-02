@@ -92,7 +92,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     Angle position =
         Conversions.metersToRotations(
             Meters.of(motorSimModel.getPositionMeters()), 6, elevatorRadius);
-    
+
     SmartDashboard.putNumber("Elevator Position", inputs.elevatorDistance.magnitude());
 
     // Convert linear velocity to angular velocity based on encoder
