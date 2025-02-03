@@ -232,11 +232,15 @@ public class VisionIOPhotonVision implements VisionIO {
     cameraResults = camera.getAllUnreadResults();
     if (!cameraResults.isEmpty()) {
       latestResult = cameraResults.get(cameraResults.size() - 1);
+    } else {
+      latestResult = new PhotonPipelineResult();
     }
     // this.latestResult = !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) :
     // nullResult;
     if (latestResult.hasTargets()) {
       cameraTargets = latestResult.targets;
+    } else {
+      cameraTargets = new ArrayList<>();
     }
     Logger.recordOutput("please work", getTransformToTag(17));
     Logger.recordOutput("camera results", cameraResults.toString());

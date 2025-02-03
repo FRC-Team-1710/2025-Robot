@@ -13,6 +13,7 @@ public class TargetingComputer {
   public static Random random = new Random();
   public static int randomBranch;
   public static int branchGameScore = 0;
+  public static boolean targetingAlgae = false;
 
   private static boolean isRedAlliance;
 
@@ -121,6 +122,10 @@ public class TargetingComputer {
     branchGameScore = 0;
   }
 
+  public static void setTargetingAlgae(boolean value) {
+    targetingAlgae = value;
+  }
+
   public static Targets getCurrentTargetForBranchGame() {
     Targets gameTarget = Targets.ALPHA;
 
@@ -138,6 +143,40 @@ public class TargetingComputer {
     else if (randomBranch == Targets.LIMA.gameID) gameTarget = Targets.LIMA;
 
     return gameTarget;
+  }
+
+  public static Targets getTargetFromGameID(int gameID) {
+    switch (gameID) {
+      case -1:
+        return Targets.LIMA;
+      case 0:
+        return Targets.ALPHA;
+      case 1:
+        return Targets.BRAVO;
+      case 2:
+        return Targets.CHARLIE;
+      case 3:
+        return Targets.DELTA;
+      case 4:
+        return Targets.ECHO;
+      case 5:
+        return Targets.FOXTROT;
+      case 6:
+        return Targets.GOLF;
+      case 7:
+        return Targets.HOTEL;
+      case 8:
+        return Targets.INDIA;
+      case 9:
+        return Targets.JULIET;
+      case 10:
+        return Targets.KILO;
+      case 11:
+        return Targets.LIMA;
+      case 12:
+        return Targets.ALPHA;
+    }
+    return Targets.ALPHA;
   }
 
   public enum Targets {
@@ -185,7 +224,7 @@ public class TargetingComputer {
     }
 
     public Translation2d getOffset() {
-      return offset;
+      return targetingAlgae ? new Translation2d(offset.getX(), 0) : offset;
     }
   }
 }

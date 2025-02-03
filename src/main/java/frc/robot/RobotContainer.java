@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
@@ -49,24 +50,13 @@ public class RobotContainer {
           .withDeadband(0.125);
 
   private final Joystick reefTargetingSystem = new Joystick(2);
-  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
-  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
-  private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
-  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
-  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 5);
-  private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 6);
-  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 7);
-  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 8);
-  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 9);
-  private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 10);
-  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
-  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
   VisionIOPhotonVision c1;
 
   public final Drive drivetrain;
+
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
@@ -86,6 +76,21 @@ public class RobotContainer {
 
   private Vision vision;
 
+  private final Trigger targetReef = new Trigger(driver.rightTrigger());
+
+  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
+  private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
+  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
+  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 5);
+  private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 6);
+  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 7);
+  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 8);
+  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 9);
+  private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 10);
+  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
+  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
+
   public RobotContainer() {
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
@@ -104,8 +109,8 @@ public class RobotContainer {
                     "FrontLeft",
                     new Transform3d(
                         new Translation3d(
-                            Units.inchesToMeters(9.91887103),
-                            Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(10.066),
+                            Units.inchesToMeters(11.959),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -117,8 +122,8 @@ public class RobotContainer {
                     "FrontRight",
                     new Transform3d(
                         new Translation3d(
-                            Units.inchesToMeters(9.91887103),
-                            -Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(10.066),
+                            -Units.inchesToMeters(11.959),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -130,8 +135,8 @@ public class RobotContainer {
                     "BackLeft",
                     new Transform3d(
                         new Translation3d(
-                            -Units.inchesToMeters(9.79622433),
-                            Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.896),
+                            Units.inchesToMeters(10.938),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -143,8 +148,8 @@ public class RobotContainer {
                     "BackRight",
                     new Transform3d(
                         new Translation3d(
-                            -Units.inchesToMeters(9.79622433),
-                            -Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.896),
+                            -Units.inchesToMeters(10.938),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -165,8 +170,8 @@ public class RobotContainer {
                     "FrontLeft",
                     new Transform3d(
                         new Translation3d(
-                            Units.inchesToMeters(9.91887103),
-                            Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(10.066),
+                            Units.inchesToMeters(11.959),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -178,8 +183,8 @@ public class RobotContainer {
                     "FrontRight",
                     new Transform3d(
                         new Translation3d(
-                            Units.inchesToMeters(9.91887103),
-                            -Units.inchesToMeters(12.04442909),
+                            Units.inchesToMeters(10.066),
+                            -Units.inchesToMeters(11.959),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -191,8 +196,8 @@ public class RobotContainer {
                     "BackLeft",
                     new Transform3d(
                         new Translation3d(
-                            -Units.inchesToMeters(9.79622433),
-                            Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.896),
+                            Units.inchesToMeters(10.938),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -204,8 +209,8 @@ public class RobotContainer {
                     "BackRight",
                     new Transform3d(
                         new Translation3d(
-                            -Units.inchesToMeters(9.79622433),
-                            -Units.inchesToMeters(10.87979715),
+                            -Units.inchesToMeters(9.896),
+                            -Units.inchesToMeters(10.938),
                             Units.inchesToMeters(8.55647482)), // IN METERS
                         new Rotation3d(
                             0,
@@ -271,19 +276,102 @@ public class RobotContainer {
 
     // driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
 
-    driver
-        .b()
-        .whileTrue(
-            drivetrain.applyRequest(
-                () ->
-                    point.withModuleDirection(
-                        new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
+    // driver
+    //     .povLeft()
+    //     .whileTrue(
+    //         drivetrain
+    //             .applyRequest(
+    //                 () ->
+    //                     drive
+    //                         .withVelocityX(
+    //                             MaxSpeed.times(
+    //                                 -driver
+    //                                     .customLeft()
+    //                                     .getY())) // Drive forward with negative Y (forward)
+    //                         .withVelocityY(
+    //                             MaxSpeed.times(
+    //                                 -driver
+    //                                     .customLeft()
+    //                                     .getX())) // Drive left with negative X (left)
+    //                         .withRotationalRate(Constants.MaxAngularRate.times(1)))
+    //             .onlyIf(driver.rightTrigger().negate().or(driver.leftTrigger().negate())))
+    //     .and(driver.rightTrigger())
+    //     .onTrue(
+    //         new InstantCommand(
+    //             () ->
+    //                 TargetingComputer.setTargetBranch(
+    //                     TargetingComputer.getTargetFromGameID(
+    //                         TargetingComputer.getCurrentTargetBranch().gameID - 1))));
 
-    double alignP = .4;
-    double rotP = .2;
-    // AprilTag Alignment
+    // driver
+    //     .povRight()
+    //     .whileTrue(
+    //         drivetrain
+    //             .applyRequest(
+    //                 () ->
+    //                     drive
+    //                         .withVelocityX(
+    //                             MaxSpeed.times(
+    //                                 -driver
+    //                                     .customLeft()
+    //                                     .getY())) // Drive forward with negative Y (forward)
+    //                         .withVelocityY(
+    //                             MaxSpeed.times(
+    //                                 -driver
+    //                                     .customLeft()
+    //                                     .getX())) // Drive left with negative X (left)
+    //                         .withRotationalRate(Constants.MaxAngularRate.times(-1)))
+    //             .onlyIf(driver.rightTrigger().negate().or(driver.leftTrigger().negate())))
+    //     .and(driver.rightTrigger())
+    //     .onTrue(
+    //         new InstantCommand(
+    //             () ->
+    //                 TargetingComputer.setTargetBranch(
+    //                     TargetingComputer.getTargetFromGameID(
+    //                         TargetingComputer.getCurrentTargetBranch().gameID + 1))));
+
     driver
-        .rightTrigger()
+        .povLeft()
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID - 1))));
+
+    driver
+        .povRight()
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID + 1))));
+
+    // driver
+    //     .b()
+    //     .whileTrue(
+    //         drivetrain.applyRequest(
+    //             () ->
+    //                 point.withModuleDirection(
+    //                     new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
+
+    double alignP = 1;
+    double rotP = .75;
+    // AprilTag Alignment
+    targetReef
+        .and(
+            () ->
+                !vision.containsRequestedTarget(
+                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    || Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        > 5)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -302,11 +390,20 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))))
+                                    * rotP))));
+    targetReef
         .and(
             () ->
                 vision.containsRequestedTarget(
-                    TargetingComputer.getCurrentTargetBranch().getApriltag()))
+                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    && Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        < 5)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -341,43 +438,12 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))))
-        .and(driver.a())
-        .whileTrue(
-            drivetrain.applyRequest(
-                () ->
-                    robotCentric
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                        - vision
-                                            .calculateOffset(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getApriltag(),
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getOffset())
-                                            .getX())
-                                    * alignP))
-                        .withVelocityY(
-                            MaxSpeed.times(
-                                -(0
-                                        - vision
-                                            .calculateOffset(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getApriltag(),
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getOffset())
-                                            .getY())
-                                    * alignP))
-                        .withRotationalRate(
-                            Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getTargetingAngle()))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * alignP))));
+                                    * rotP))));
+
+    driver
+        .b()
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
+        .onFalse(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false)));
 
     driver
         .leftTrigger()
@@ -399,7 +465,7 @@ public class RobotContainer {
                                                     drivetrain.getPose().getY())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * alignP))));
+                                    * rotP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
