@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Random;
@@ -58,8 +59,8 @@ public class TargetingComputer {
       case LIMA -> isRedAlliance ? 6 : 19;
       case SOURCE_LEFT -> isRedAlliance ? 1 : 13;
       case SOURCE_RIGHT -> isRedAlliance ? 2 : 12;
-      case RED_PROCESSOR -> isRedAlliance ? 3 : 16;
-      case RED_NET -> isRedAlliance ? 5 : 14;
+      case PROCESSOR -> isRedAlliance ? 3 : 16;
+      case NET -> isRedAlliance ? 5 : 14;
     };
   }
 
@@ -73,8 +74,8 @@ public class TargetingComputer {
       case KILO, LIMA -> isRedAlliance ? 120 : 300;
       case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
-      case RED_PROCESSOR -> isRedAlliance ? 90 : 270;
-      case RED_NET -> isRedAlliance ? 180 : 0;
+      case PROCESSOR -> isRedAlliance ? 90 : 270;
+      case NET -> isRedAlliance ? 180 : 0;
     };
   }
 
@@ -90,15 +91,24 @@ public class TargetingComputer {
     return currentTargetBranch;
   }
 
-  public static double getSourceTargetingAngle(double robotY) {
+  public static double getSourceTargetingAngle(Pose2d pose) {
+    double sourceCutoffDistance = 4.5;
     if (isRedAlliance) {
-      return (robotY > FieldConstants.fieldWidth / 2)
-          ? Targets.SOURCE_RIGHT.getTargetingAngle()
-          : Targets.SOURCE_LEFT.getTargetingAngle();
+      return (pose.getY() > FieldConstants.fieldWidth / 2) // red
+          ? (pose.getX() >= FieldConstants.fieldLength - sourceCutoffDistance) // top half
+              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+              : Targets.PROCESSOR.getTargetingAngle() // far
+          : (pose.getX() >= FieldConstants.fieldLength - sourceCutoffDistance) // bottom half
+              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+              : Targets.NET.getTargetingAngle(); // far
     } else {
-      return (robotY < FieldConstants.fieldWidth / 2)
-          ? Targets.SOURCE_RIGHT.getTargetingAngle()
-          : Targets.SOURCE_LEFT.getTargetingAngle();
+      return (pose.getY() > FieldConstants.fieldWidth / 2) // blue
+          ? (pose.getX() <= sourceCutoffDistance) // top half
+              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+              : Targets.NET.getTargetingAngle() // far
+          : (pose.getX() <= sourceCutoffDistance) // bottom half
+              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+              : Targets.PROCESSOR.getTargetingAngle(); // far
     }
   }
 
@@ -194,8 +204,8 @@ public class TargetingComputer {
     LIMA(0, 11, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
     SOURCE_LEFT(0, 12, new Translation2d()),
     SOURCE_RIGHT(0, 13, new Translation2d()),
-    RED_PROCESSOR(0, 14, new Translation2d()),
-    RED_NET(0, 15, new Translation2d());
+    PROCESSOR(0, 14, new Translation2d()),
+    NET(0, 15, new Translation2d());
 
     public final int preferredCamera;
     public final int gameID;

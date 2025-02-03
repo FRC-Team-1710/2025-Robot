@@ -462,7 +462,7 @@ public class RobotContainer {
                                 (new Rotation2d(
                                             Units.degreesToRadians(
                                                 TargetingComputer.getSourceTargetingAngle(
-                                                    drivetrain.getPose().getY())))
+                                                    drivetrain.getPose())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
                                     * rotP))));
