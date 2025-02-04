@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.1.1"
+    id "edu.wpi.first.GradleRIO" version "2025.2.1"
     id "com.peterabeles.gversion" version "1.10"
     id "com.diffplug.spotless" version "6.12.0"
 }
@@ -35,12 +35,27 @@ deploy {
                     jvmArgs.add("-XX:+UseSerialGC")
                     jvmArgs.add("-XX:MaxGCPauseMillis=50")
 
+                    // Enable VisualVM connection
+                    jvmArgs.add("-Dcom.sun.management.jmxremote=true")
+                    jvmArgs.add("-Dcom.sun.management.jmxremote.port=1198")
+                    jvmArgs.add("-Dcom.sun.management.jmxremote.local.only=false")
+                    jvmArgs.add("-Dcom.sun.management.jmxremote.ssl=false")
+                    jvmArgs.add("-Dcom.sun.management.jmxremote.authenticate=false")
+                    //jvmArgs.add("-Djava.rmi.server.hostname=10.17.10.2")
+                    jvmArgs.add("-Djava.rmi.server.hostname=172.22.11.2")
+
                     // The options below may improve performance, but should only be enabled on the RIO 2
 
-                    /*final MAX_JAVA_HEAP_SIZE_MB = 100;
-                     jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
-                     jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
-                     jvmArgs.add("-XX:+AlwaysPreTouch")*/
+                    final MAX_JAVA_HEAP_SIZE_MB = 100;
+                    jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-XX:+AlwaysPreTouch")
+
+                    // If you have other configuration here, you do not need to remove it.
+                    // Enable automatic heap dumps on OutOfMemoryError
+                    // Note: the heap dump path here is a path on a USB flash drive, see below
+                    jvmArgs.add("-XX:+HeapDumpOnOutOfMemoryError")
+                    jvmArgs.add("-XX:HeapDumpPath=/u/frc-usercode.hprof")
                 }
 
                 // Static files artifact

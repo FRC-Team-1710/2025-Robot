@@ -6,10 +6,12 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -39,6 +41,10 @@ import org.littletonrobotics.junction.Logger;
  * be used in command-based projects.
  */
 public class Drive extends SubsystemBase {
+
+  // Load the path we want to pathfind to and follow
+  // private PathPlannerPath path = PathPlannerPath.fromPathFile("Align Alpha");
+
   private final DriveIO io;
   private final DriveIOInputsAutoLogged inputs;
   private final ModuleIOInputsAutoLogged[] modules =
@@ -140,7 +146,7 @@ public class Drive extends SubsystemBase {
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
   public Drive(DriveIO io) {
 
@@ -149,6 +155,16 @@ public class Drive extends SubsystemBase {
 
     configureAlerts();
     configureAutoBuilder();
+
+    PathPlannerLogging.setLogActivePathCallback(
+        (activePath) -> {
+          Logger.recordOutput(
+              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+        });
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (targetPose) -> {
+          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+        });
   }
 
   private void configureAlerts() {
@@ -274,6 +290,26 @@ public class Drive extends SubsystemBase {
     io.resetPose(pose);
   }
 
+  /*
+  public Command goToPoint(int x, int y) {
+    Pose2d targetPose = new Pose2d(x, y, Rotation2d.fromDegrees(180));
+    PathConstraints constraints =
+        new PathConstraints(4.0, 5.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return AutoBuilder.pathfindToPose(targetPose, constraints);
+  }
+  /*
+   * flips if needed
+   */
+  /*
+  public Command goToPoint(Pose2d pose) {
+    PathConstraints constraints =
+        new PathConstraints(3.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return new ConditionalCommand(
+        AutoBuilder.pathfindToPoseFlipped(pose, constraints),
+        AutoBuilder.pathfindToPose(pose, constraints),
+        () -> Robot.getAlliance());
+  }*/
+
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
@@ -364,7 +400,11 @@ public class Drive extends SubsystemBase {
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
     this.addVisionMeasurement(
-        visionMeasurement.poseEstimate().pose().toPose2d(),
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            this.getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }

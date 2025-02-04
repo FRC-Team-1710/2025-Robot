@@ -1,8 +1,15 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -10,6 +17,7 @@ import frc.robot.subsystems.vision.VisionUtil.VisionData;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
+import frc.robot.utils.TargetingComputer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +32,8 @@ public class Vision extends SubsystemBase {
 
   private static final VisionMode MODE = VisionMode.MA;
   private static final String VISION_PATH = "Vision/Camera";
+  public static final AprilTagFieldLayout field =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
@@ -68,6 +78,101 @@ public class Vision extends SubsystemBase {
     VisionData visionData = processAllCameras();
     logSummary(visionData);
     consumer.accept(sortMeasurements(visionData.measurements()));
+
+    try {
+      SmartDashboard.putNumberArray(
+          "Left Calc Offset",
+          getCamera(0)
+              .getTarget(17)
+              .bestCameraToTarget
+              .getTranslation()
+              .plus(getCamera(0).getStdDev().getTranslation())
+              .toVector()
+              .getData());
+      SmartDashboard.putNumberArray(
+          "Right Calc Offset",
+          getCamera(1)
+              .getTarget(17)
+              .bestCameraToTarget
+              .getTranslation()
+              .plus(getCamera(1).getStdDev().getTranslation())
+              .toVector()
+              .getData());
+      SmartDashboard.putNumberArray(
+          "Left Cam Measurement",
+          getCamera(0).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+      SmartDashboard.putNumberArray(
+          "Right Cam Measurement",
+          getCamera(1).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+    } catch (Exception e) {
+      // TODO: handle exception
+    }
+  }
+
+  public VisionIOPhotonVision getCamera(int index) {
+    return (VisionIOPhotonVision) io[index];
+  }
+
+  public Transform3d calculateOffset(int id, Translation2d desiredOffset) {
+    Transform3d leftCamToTag = getCamera(0).getRobotToTargetOffset(id);
+    Transform3d rightCamToTag = getCamera(1).getRobotToTargetOffset(id);
+
+    try {
+      Logger.recordOutput(
+          "target position",
+          new Transform3d(
+                  FieldConstants.aprilTags.getTagPose(id).get().getTranslation(),
+                  FieldConstants.aprilTags.getTagPose(id).get().getRotation())
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d())));
+      Logger.recordOutput(
+          "left cam based target position",
+          leftCamToTag
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d()))
+              .inverse());
+      Logger.recordOutput(
+          "right cam based target position",
+          rightCamToTag
+              .plus(
+                  new Transform3d(
+                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+                      new Rotation3d()))
+              .inverse());
+      Logger.recordOutput(
+          "Left Cam Offset",
+          getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+      Logger.recordOutput(
+          "Right Cam Offset",
+          getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+    } catch (Exception e) {
+
+    }
+
+    if (!leftCamToTag.equals(Transform3d.kZero) && !rightCamToTag.equals(Transform3d.kZero)) {
+      return TargetingComputer.currentTargetBranch.getPreferredCamera() == 0
+          ? leftCamToTag
+          : rightCamToTag;
+    }
+
+    var result =
+        !leftCamToTag.equals(Transform3d.kZero)
+            ? leftCamToTag
+            : (!rightCamToTag.equals(Transform3d.kZero)
+                ? rightCamToTag
+                : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+    Logger.recordOutput("X Error", result.getX());
+    // Return the non-zero offset, or kZero if both are zero
+    return result;
+  }
+
+  public boolean containsRequestedTarget(int id) {
+    return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
   /**

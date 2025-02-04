@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to echo start"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back echo near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to foxtrot near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to golf near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back golf near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to hotel near"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

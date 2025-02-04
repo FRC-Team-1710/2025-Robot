@@ -16,7 +16,10 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
@@ -26,6 +29,8 @@ import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -35,8 +40,12 @@ public class VisionIOPhotonVision implements VisionIO {
   final PhotonCamera camera;
   private final Transform3d robotToCamera;
   final Supplier<VisionParameters> visionParams;
+  List<PhotonPipelineResult> cameraResults;
+  PhotonPipelineResult latestResult;
+  List<PhotonTrackedTarget> cameraTargets;
+  PhotonTrackedTarget target;
 
-  public VisionIOPhotonVision(
+  public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
     this.camera = new PhotonCamera(cameraName);
     this.robotToCamera = robotToCamera;
@@ -49,17 +58,19 @@ public class VisionIOPhotonVision implements VisionIO {
     PoseObservation observation = getEstimatedGlobalPose();
     inputs.poseEstimateMT1 = observation.poseEstimate();
     inputs.rawFiducialsMT1 = observation.rawFiducials();
-  }
+  } // Auto-logs the inputs/camera measurements + info
 
   private PoseObservation getEstimatedGlobalPose() {
-    List<PhotonPipelineResult> results = camera.getAllUnreadResults();
-    if (results.isEmpty()) return new PoseObservation();
+    updateResults();
+    if (cameraResults.isEmpty()) return new PoseObservation();
 
-    PhotonPipelineResult latestResult = results.get(results.size() - 1);
+    PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
+
     var multitagResult = latestResult.getMultiTagResult();
+
     if (multitagResult.isPresent()) {
       Transform3d fieldToRobot =
           multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
@@ -113,6 +124,97 @@ public class VisionIOPhotonVision implements VisionIO {
         rawFiducialsList.toArray(new RawFiducial[0]));
   }
 
+  /**
+   * Provides the offset of the camera relative to the robot
+   *
+   * @return Standard deviations from the robot to the camera
+   */
+  public Transform3d getStdDev() {
+    return robotToCamera;
+  }
+
+  /**
+   * Gets the least ambiguous AprilTag in the multi-tag results
+   *
+   * @return Least ambiguous AprilTag in camera's view
+   */
+  public PhotonTrackedTarget getBestTarget() {
+    return latestResult.getBestTarget();
+  }
+
+  /**
+   * Gets the specified AprilTag from the multi-tag results
+   *
+   * @return Specified AprilTag or null if it isn't in the camera's view
+   */
+  public PhotonTrackedTarget getTarget(int id) {
+    if (!cameraTargets.isEmpty()) {
+      for (var target : cameraTargets) {
+        if (target.fiducialId == id) {
+          return target;
+        }
+      }
+    }
+    return new PhotonTrackedTarget();
+  }
+
+  /**
+   * Checks to see if the specified AprilTag ID is within the camera's multi-tag results
+   *
+   * @param id Requested AprilTag
+   * @return True if the AprilTag exists in the results, false otherwise
+   */
+  public boolean hasTarget(int id) {
+    if (!cameraTargets.isEmpty()) {
+      for (var target : cameraTargets) {
+        if (target.fiducialId == id) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Calculates the offset of the robot from a specified desired offset relative to the AprilTag
+   * provided
+   *
+   * @param tagID Provided AprilTag ID to locate and use for calculation
+   */
+  public Transform3d getRobotToTargetOffset(int tagID) {
+    Transform3d tagToCameraPose;
+    try {
+      tagToCameraPose = getTarget(tagID).bestCameraToTarget.inverse().plus(robotToCamera.inverse());
+    } catch (Exception e) {
+      return new Transform3d();
+    }
+    Logger.recordOutput("tagToCameraPose via " + camera.getName(), tagToCameraPose);
+    return tagToCameraPose;
+  }
+
+  @AutoLogOutput
+  public Transform3d getTransformToTag(int id) {
+    if (latestResult.hasTargets()) {
+      for (var target : latestResult.getTargets()) {
+        if (target.fiducialId == id) {
+          var name = target.bestCameraToTarget.plus(robotToCamera);
+          return name;
+        }
+      }
+    }
+    return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
+  }
+
+  public boolean hasTargets() {
+    return !cameraTargets.isEmpty();
+  }
+
+  public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
+
+  public RawFiducial result(int joystickButtonid) {
+    return createRawFiducial(getTarget(joystickButtonid));
+  }
+
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
     return new RawFiducial(
         target.getFiducialId(),
@@ -122,5 +224,25 @@ public class VisionIOPhotonVision implements VisionIO {
         target.bestCameraToTarget.getTranslation().minus(robotToCamera.getTranslation()).getNorm(),
         target.bestCameraToTarget.getTranslation().getNorm(),
         target.poseAmbiguity);
+  }
+
+  /** Updates the local vision results variables */
+  private void updateResults() {
+    PhotonPipelineResult nullResult = new PhotonPipelineResult();
+    cameraResults = camera.getAllUnreadResults();
+    if (!cameraResults.isEmpty()) {
+      latestResult = cameraResults.get(cameraResults.size() - 1);
+    } else {
+      latestResult = new PhotonPipelineResult();
+    }
+    // this.latestResult = !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) :
+    // nullResult;
+    if (latestResult.hasTargets()) {
+      cameraTargets = latestResult.targets;
+    } else {
+      cameraTargets = new ArrayList<>();
+    }
+    Logger.recordOutput("please work", getTransformToTag(17));
+    Logger.recordOutput("camera results", cameraResults.toString());
   }
 }
