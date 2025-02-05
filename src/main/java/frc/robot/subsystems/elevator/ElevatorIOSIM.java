@@ -15,10 +15,9 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.*;
 
 /**
  * Simulation implementation of the elevator subsystem. This class extends ElevatorIOCTRE to provide
@@ -54,11 +53,13 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(0);
   // private final TalonFXSimState pwmTalonFX = new TalonFXSimState();
   private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
-  private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
-  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 10, 0);
-  private final MechanismLigament2d m_elevatorMech2d =
+  private final LoggedMechanism2d m_mech2d = new LoggedMechanism2d(20, 50);
+  private final LoggedMechanismRoot2d m_mech2dRoot =
+      m_mech2d.getRoot("Elevator Root", 10, Units.inchesToMeters(4.75));
+  private final LoggedMechanismLigament2d m_elevatorMech2d =
       m_mech2dRoot.append(
-          new MechanismLigament2d("ElevatorSimulator", m_ElevatorSim.getPositionMeters(), 90));
+          new LoggedMechanismLigament2d(
+              "ElevatorSimulator", m_ElevatorSim.getPositionMeters(), 90));
 
   /**
    * Constructs a new ElevatorIOSIM instance. Initializes the physics simulation with realistic
@@ -68,7 +69,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   public ElevatorIOSIM() {
     super();
     enc.setDistancePerPulse((2 * Math.PI * Units.inchesToMeters(2.383)) / 4096);
-    SmartDashboard.putData("Elevator Sim", m_mech2d);
+    Logger.recordOutput("Elevator Sim", m_mech2d);
     SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
     SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
     SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
@@ -89,7 +90,8 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   public void updateInputs(ElevatorIOInputs inputs) {
     super.updateInputs(inputs);
     tempPIDTuning();
-    m_elevatorMech2d.setLength(enc.getDistance());
+    m_elevatorMech2d.setLength(
+        enc.getDistance() > 1 ? Units.inchesToMeters(enc.getDistance()) : Units.inchesToMeters(1));
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
@@ -103,9 +105,11 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     }
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_ElevatorSim.getCurrentDrawAmps()));
-    SmartDashboard.putNumber("ElevatorSIM/Position", enc.getDistance());
-    SmartDashboard.putNumber("ElevatorSIM/Goal", elevatorPID.getGoal().position);
-    SmartDashboard.putNumber("ElevatorSIM/Setpoint", elevatorPID.getSetpoint().position);
+
+    Logger.recordOutput("Elevator Sim", m_mech2d);
+    Logger.recordOutput("ElevatorSIM/Position", enc.getDistance());
+    Logger.recordOutput("ElevatorSIM/Goal", elevatorPID.getGoal().position);
+    Logger.recordOutput("ElevatorSIM/Setpoint", elevatorPID.getSetpoint().position);
   }
 
   private void tempPIDTuning() {
