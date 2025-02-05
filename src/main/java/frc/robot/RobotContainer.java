@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -38,9 +40,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-
-import static edu.wpi.first.units.Units.Meters;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -166,8 +165,10 @@ public class RobotContainer {
     driver.pov(90).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.75))));
     driver.pov(270).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.5))));
     driver.pov(180).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.25))));
-    driver.a().onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
-    .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
+    driver
+        .a()
+        .onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
+        .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
