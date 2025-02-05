@@ -46,23 +46,21 @@ public class ElevatorIOCTRE implements ElevatorIO {
   /** The follower TalonFX motor controller (CAN ID: 12) */
   public final TalonFX follower = new TalonFX(12);
 
-  private double kP = 0.0;
+  private double kP = 0.1;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
-  private double kG = 0.325;
-  private double kV = 0.5;
-  private double kA = 0.0;
-  private double kVel = 1000;
-  private double kAcel = 1000;
+  private double kG = 0.2;
+  private double kV = 0.14;
+  private double kA = 0.5;
+  private double kVel = 200;
+  private double kAcel = 500;
 
   private boolean locked = false;
 
-  private final TrapezoidProfile.Constraints m_Constraints =
-      new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
-  private final ProfiledPIDController elevatorPID =
-      new ProfiledPIDController(kP, kI, kD, m_Constraints);
-  private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
+  private final TrapezoidProfile.Constraints m_Constraints;
+  private final ProfiledPIDController elevatorPID;
+  private ElevatorFeedforward elevatorFF;
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
@@ -83,6 +81,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   // Debouncers for connection status (filters out brief disconnections)
   private final Debouncer leaderDebounce = new Debouncer(0.5);
   private final Debouncer followerDebounce = new Debouncer(0.5);
+
+  private Distance setpoint = Inches.of(0);
 
   /**
    * The radius of the elevator pulley/drum, used for converting between rotations and linear
@@ -128,6 +128,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
     follower.setPosition(0);
     leader.setPosition(0);
 
+    m_Constraints = new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
+    elevatorPID = new ProfiledPIDController(kP, kI, kD, m_Constraints);
+    elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
+
     SmartDashboard.putNumber("Elevator/PID/P", kP);
     SmartDashboard.putNumber("Elevator/PID/I", kI);
     SmartDashboard.putNumber("Elevator/PID/D", kD);
@@ -153,8 +157,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
     // Configure PID and feedforward gains
     // config.Slot0.kP = 0; // Proportional gain
     // config.Slot0.kI = 0; // Integral gain
-    // config.Slot0.kD = 0; // Derivative gain
-    // config.Slot0.kS = 0; // Static friction compensation
+    // config.Slot0.kD = 0.0; // Derivative gain
+    // config.Slot0.kS = 1; // Static friction compensation
     // config.Slot0.kV = 0; // Velocity feedforward
     // config.Slot0.kA = 0; // Acceleration feedforward
     // config.Slot0.kG = 0.325; // Gravity feedforward
@@ -209,10 +213,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    // Calculate actual elevator distance using encoder position
-    // Note: Using gear ratio of 1 since encoder rotations match elevator movement
     inputs.elevatorDistance =
         Conversions.rotationsToInches(inputs.leaderPosition, 6, elevatorRadius);
+    inputs.elevatorSetpoint = setpoint;
+
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.magnitude());
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
     SmartDashboard.putNumber("Elevator Goal", elevatorPID.getGoal().position);
@@ -220,8 +224,11 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     if (locked) {
       leader.setVoltage(
-          elevatorPID.calculate(inputs.elevatorDistance.magnitude())
-              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity));
+          (elevatorPID.calculate(inputs.elevatorDistance.magnitude())
+              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity)));
+      inputs.manual = 0.0;
+    } else {
+      inputs.manual = leader.getMotorVoltage().getValueAsDouble();
     }
   }
 
@@ -233,21 +240,16 @@ public class ElevatorIOCTRE implements ElevatorIO {
    */
   @Override
   public void setDistance(Distance distance) {
-    // Convert desired distance to rotations and set position control
-    // leader.setControl(
-    //     new PositionVoltage(Conversions.metersToRotations(distance, 6, elevatorRadius)));
     elevatorPID.setGoal(distance.magnitude());
+    setpoint = distance;
     locked = true;
   }
 
   @Override
   public void stopHere() {
-    // leader.setControl(
-    // new PositionVoltage(Conversions.rotationsToInches(leaderPosition.getValue(), 6,
-    // elevatorRadius).magnitude()));
-    elevatorPID.setGoal(
-        Conversions.rotationsToInches(leaderPosition.getValue(), 6, elevatorRadius).magnitude());
-    locked = true;
+    // elevatorPID.setGoal(Conversions.rotationsToInches(leaderPosition.getValue(), 6,
+    // elevatorRadius).magnitude());
+    // locked = true;
   }
 
   @Override

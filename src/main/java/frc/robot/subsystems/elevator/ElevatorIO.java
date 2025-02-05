@@ -49,6 +49,9 @@ public interface ElevatorIO {
     public Current followerSupplyCurrent = Amps.of(0);
 
     public Distance elevatorDistance = Inches.of(0);
+    public Distance elevatorSetpoint = Inches.of(0);
+
+    public double manual = 0.0;
   }
 
   /** Updates the set of loggable inputs. */

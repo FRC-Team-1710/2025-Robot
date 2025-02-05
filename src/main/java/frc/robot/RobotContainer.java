@@ -159,19 +159,18 @@ public class RobotContainer {
 
   private void configureBindings() {
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
-    // driver.a().onTrue(elevator.L2());
-    // driver.b().onTrue(elevator.intake());
+    // driver.a().onTrue(elevator.L3());
+    // driver.b().onTrue(elevator.L2());
     // driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
-    // driver.rightBumper().whileTrue(new IntakeCoral(manipulator, roller, driver))
-    //       .onFalse(new EndIntake(manipulator, roller));
+    // driver
+    //     .rightBumper()
+    //     .whileTrue(new IntakeCoral(manipulator, roller, driver))
+    //     .onFalse(new EndIntake(manipulator, roller));
+
     // driver.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));
     // driver.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));
-    // driver.rightBumper().onTrue(new Infinant(manipulator, roller, () -> 0.2));
-    // driver.leftBumper().onTrue(new Infinant(manipulator, roller, () -> 0));
-    // driver.a().onTrue(new Infinant(manipulator, roller, () -> -0.2))
-    //   .onFalse(new Infinant(manipulator, roller, () -> 0.2));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
