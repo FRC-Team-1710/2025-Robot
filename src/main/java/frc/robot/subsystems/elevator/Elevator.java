@@ -11,10 +11,17 @@
 
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Map;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -26,6 +33,9 @@ public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;
+
+  // Current arm distance mode
+  private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -49,42 +59,188 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
-    io.updatePID(inputs);
-
     // Update motor connection status alerts
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
   }
 
   /**
-   * Runs the elevator in closed-loop distance mode to the specified height.
+   * Runs the arm in closed-loop distance mode to the specified angle.
    *
-   * @param distance The target distance (meters)
+   * @param distance The target angle distance
    */
-  public void setDistance(Distance distance) {
+  private void setDistance(Distance distance) {
     io.setDistance(distance);
   }
 
-  /**
-   * Runs the elevator in closed-loop distance mode to the specified height.
-   *
-   * @return Current distance in meters
-   */
-  public Distance getDistance() {
-    return inputs.distance;
+  public void setManual(double power) {
+    io.setManual(power);
   }
 
-  /** Stops the elevator */
-  public void stop() {
+  public void stopHere() {
+    io.stopHere();
+  }
+
+  /** Stops the arm motors. */
+  private void stop() {
     io.stop();
   }
 
   /**
-   * Set the elevator speed manualy. WARNING: WILL OVERRIDE THE SET DISTANCE!!!
+   * Returns the current distance of the arm.
    *
-   * @param double Power from 1 to -1
+   * @return The current angular distance
    */
-  public void setManual(double power) {
-    io.setManual(power);
+  @AutoLogOutput
+  public Distance getPosition() {
+    return inputs.elevatorDistance;
+  }
+
+  /** Enumeration of available arm distances with their corresponding target angles. */
+  private enum ElevatorPosition {
+    STOP(Inches.of(0)), // Stop the arm
+    INTAKE(Inches.of(0)), // Elevator tucked in
+    L1(Inches.of(12)), // Position for scoring in L1
+    L2(Inches.of(15.75)), // Position for scoring in L2
+    L3(Inches.of(30.25)), // Position for scoring in L3
+    L4(Inches.of(53.25)); // Position for scoring in L4
+
+    private final Distance targetDistance;
+    private final Distance angleTolerance;
+
+    ElevatorPosition(Distance targetDistance, Distance angleTolerance) {
+      this.targetDistance = targetDistance;
+      this.angleTolerance = angleTolerance;
+    }
+
+    ElevatorPosition(Distance targetDistance) {
+      this(targetDistance, Inches.of(2)); // 2 degree default tolerance
+    }
+  }
+
+  /**
+   * Gets the current arm distance mode.
+   *
+   * @return The current ElevatorPosition
+   */
+  public ElevatorPosition getMode() {
+    return currentMode;
+  }
+
+  /**
+   * Sets a new arm distance and schedules the corresponding command.
+   *
+   * @param distance The desired ElevatorPosition
+   */
+  private void setElevatorPosition(ElevatorPosition distance) {
+    currentCommand.cancel();
+    currentMode = distance;
+    currentCommand.schedule();
+  }
+
+  // Command that runs the appropriate routine based on the current distance
+  private final Command currentCommand =
+      new SelectCommand<>(
+          Map.of(
+              ElevatorPosition.STOP,
+              Commands.runOnce(this::stop).withName("Stop Elevator"),
+              ElevatorPosition.INTAKE,
+              createPositionCommand(ElevatorPosition.INTAKE),
+              ElevatorPosition.L1,
+              createPositionCommand(ElevatorPosition.L1),
+              ElevatorPosition.L2,
+              createPositionCommand(ElevatorPosition.L2),
+              ElevatorPosition.L3,
+              createPositionCommand(ElevatorPosition.L3),
+              ElevatorPosition.L4,
+              createPositionCommand(ElevatorPosition.L4)),
+          this::getMode);
+
+  /**
+   * Creates a command for a specific arm distance that moves the arm and checks the target
+   * distance.
+   *
+   * @param distance The arm distance to create a command for
+   * @return A command that implements the arm movement
+   */
+  private Command createPositionCommand(ElevatorPosition distance) {
+    return Commands.runOnce(() -> setDistance(distance.targetDistance))
+        .withName("Move to " + distance.toString());
+  }
+
+  /**
+   * Checks if the arm is at its target distance.
+   *
+   * @return true if at target distance, false otherwise
+   */
+  @AutoLogOutput
+  public boolean isAtTarget() {
+    if (currentMode == ElevatorPosition.STOP) return true;
+    return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
+  }
+
+  /**
+   * Logs target angle for given mode.
+   *
+   * @return The target angle for the current mode
+   */
+  @AutoLogOutput
+  private Distance targetDistance() {
+    return currentMode.targetDistance;
+  }
+
+  /**
+   * Creates a command to set the arm to a specific distance.
+   *
+   * @param distance The desired arm distance
+   * @return Command to set the distance
+   */
+  private Command setPositionCommand(ElevatorPosition distance) {
+    return Commands.runOnce(() -> setElevatorPosition(distance))
+        .withName("SetElevatorPosition(" + distance.toString() + ")");
+  }
+
+  /** Factory methods for common distance commands */
+
+  /**
+   * @return Command to move the arm to L1 scoring distance
+   */
+  public final Command L1() {
+    return setPositionCommand(ElevatorPosition.L1);
+  }
+
+  /**
+   * @return Command to move the arm to L2 scoring distance
+   */
+  public final Command L2() {
+    return setPositionCommand(ElevatorPosition.L2);
+  }
+
+  /**
+   * @return Command to move the arm to L3 distance
+   */
+  public final Command L3() {
+    return setPositionCommand(ElevatorPosition.L3);
+  }
+
+  /**
+   * @return Command to move the arm to L4 distance
+   */
+  public final Command L4() {
+    return setPositionCommand(ElevatorPosition.L4);
+  }
+
+  /**
+   * @return Command to intake the arm
+   */
+  public final Command intake() {
+    return setPositionCommand(ElevatorPosition.INTAKE);
+  }
+
+  /**
+   * @return Command to stop the arm
+   */
+  public final Command stopCommand() {
+    return setPositionCommand(ElevatorPosition.STOP);
   }
 }

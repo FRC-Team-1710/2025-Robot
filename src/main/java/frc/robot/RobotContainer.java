@@ -19,10 +19,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CoralIntake.CoralIntake;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIO;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIOSim;
-import frc.robot.subsystems.CoralIntake.CoralIntakeIOTalonFX;
+import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -31,6 +29,11 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.elevator.ElevatorIOSIM;
+import frc.robot.subsystems.manipulator.Manipulator;
+import frc.robot.subsystems.manipulator.ManipulatorIO;
+import frc.robot.subsystems.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.manipulator.ManipulatorIOTalonFX;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -64,8 +67,11 @@ public class RobotContainer {
   VisionIOPhotonVision c1;
 
   public final Drive drivetrain;
-  public final CoralIntake m_coralIntake;
+  public final Manipulator manipulator;
   public final Elevator elevator;
+  public final Roller roller;
+  public final Climber climber;
+  public final Claw claw;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -102,12 +108,15 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   public RobotContainer() {
+    claw = new Claw();
+    climber = new Climber();
+    roller = new Roller();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        m_coralIntake = new CoralIntake(new CoralIntakeIOTalonFX());
+        manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
 
         /*
@@ -174,7 +183,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        m_coralIntake = new CoralIntake(new CoralIntakeIOSim());
+        manipulator = new Manipulator(new ManipulatorIOSim());
         elevator = new Elevator(new ElevatorIOSIM());
 
         vision =
@@ -237,7 +246,7 @@ public class RobotContainer {
       default:
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
-        m_coralIntake = new CoralIntake(new CoralIntakeIO() {});
+        manipulator = new Manipulator(new ManipulatorIO() {});
         elevator = new Elevator(new ElevatorIO() {});
 
         vision =
@@ -271,6 +280,20 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
+    // driver.a().onTrue(elevator.L3());
+    // driver.b().onTrue(elevator.L2());
+    // driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
+    // driver
+    //     .rightBumper()
+    //     .whileTrue(new IntakeCoral(manipulator, roller, driver))
+    //     .onFalse(new EndIntake(manipulator, roller));
+
+    // driver.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+    // driver.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
