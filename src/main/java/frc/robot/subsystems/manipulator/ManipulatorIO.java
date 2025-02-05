@@ -1,10 +1,10 @@
-package frc.robot.subsystems.CoralIntake;
+package frc.robot.subsystems.manipulator;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface CoralIntakeIO {
+public interface ManipulatorIO {
   @AutoLog
-  public class CoralIntakeIOInputs {
+  public class ManipulatorIOInputs {
     public double positionRad = 0.0;
     public double velocityRadPerSec = 0.0;
     public double appliedVolts = 0.0;
@@ -14,7 +14,7 @@ public interface CoralIntakeIO {
   }
 
   /** Update the set of loggable inputs. */
-  public default void updateInputs(CoralIntakeIOInputs inputs) {}
+  public default void updateInputs(ManipulatorIOInputs inputs) {}
 
   /** Run open loop at the specified voltage. */
   public default void setVoltage(double volts) {}

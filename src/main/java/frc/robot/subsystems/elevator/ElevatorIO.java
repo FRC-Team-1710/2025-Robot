@@ -12,7 +12,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -26,28 +26,32 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
   @AutoLog
-  public static class ElevatorIOInputs {
+  public class ElevatorIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
-    public boolean laserFault = false;
-
-    public double manualSpin = 0.0;
-
-    public Distance setpoint = Meters.of(0);
-
-    public static Distance SIMsetpoint = Meters.of(0);
 
     public Angle leaderPosition = Rotations.of(0);
-    public Distance laserDistance = Meters.of(0);
-    public Distance distance = Meters.of(0);
+    public Angle leaderRotorPosition = Rotations.of(0);
 
     public AngularVelocity leaderVelocity = RotationsPerSecond.of(0);
+    public AngularVelocity leaderRotorVelocity = RotationsPerSecond.of(0);
+
+    public Angle followerPosition = Rotations.of(0);
+    public Angle followerRotorPosition = Rotations.of(0);
+
+    public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
+    public AngularVelocity followerRotorVelocity = RotationsPerSecond.of(0);
 
     public Voltage appliedVoltage = Volts.of(0.0);
     public Current leaderStatorCurrent = Amps.of(0);
     public Current followerStatorCurrent = Amps.of(0);
     public Current leaderSupplyCurrent = Amps.of(0);
     public Current followerSupplyCurrent = Amps.of(0);
+
+    public Distance elevatorDistance = Inches.of(0);
+    public Distance elevatorSetpoint = Inches.of(0);
+
+    public double manual = 0.0;
   }
 
   /** Updates the set of loggable inputs. */
@@ -56,15 +60,9 @@ public interface ElevatorIO {
   /** Run closed loop at the specified velocity. */
   public default void setDistance(Distance distance) {}
 
-  /** Set power the elevator from 1 to -1 */
   public default void setManual(double power) {}
 
-  /**
-   * Updates pid loop in ElevatorIOCTRE
-   *
-   * @param inputs
-   */
-  public default void updatePID(ElevatorIOInputsAutoLogged inputs) {}
+  public default void stopHere() {}
 
   /** Stop in open loop. */
   public default void stop() {}

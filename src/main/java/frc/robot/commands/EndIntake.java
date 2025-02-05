@@ -4,61 +4,66 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorConstants;
 import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.roller.RollerConstants;
-import frc.robot.utils.TunableController;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IntakeCoral extends Command {
-  private Manipulator m_Manipulator;
+public class EndIntake extends Command {
+  private Manipulator manipulator;
   private Roller roller;
-  private TunableController controller;
+  public final Timer timer = new Timer();
 
-  /** Creates a new IntakeCoral. */
-  public IntakeCoral(Manipulator manipulator, Roller roller, TunableController control) {
-    this.m_Manipulator = manipulator;
+  /** Creates a new EndIntake. */
+  public EndIntake(Manipulator manipulator, Roller roller) {
+    // Use addRequirements() here to declare subsystem dependencies.
     this.roller = roller;
-    this.controller = control;
+    this.manipulator = manipulator;
     addRequirements(manipulator, roller);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
-    roller.SetRollerPower(RollerConstants.intakeSpeed);
-    controller.setRumble(RumbleType.kBothRumble, 0);
+    timer.reset();
+    timer.start();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
-      m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      controller.setRumble(RumbleType.kBothRumble, 0);
+    if ((manipulator.beam1Broken() && !manipulator.beam2Broken())
+        || (manipulator.beam1Broken() && manipulator.beam2Broken())) {
+      timer.reset();
+      timer.stop();
+      manipulator.runPercent(ManipulatorConstants.insideSpeed);
       roller.SetRollerPower(RollerConstants.insideSpeed);
-    } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
-      m_Manipulator.runPercent(0);
-      roller.SetRollerPower(0);
-      controller.setRumble(RumbleType.kBothRumble, 1);
+    } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
+      if (!timer.isRunning()) {
+        timer.start();
+      }
+      manipulator.runPercent(ManipulatorConstants.insideSpeed);
+      roller.SetRollerPower(RollerConstants.insideSpeed);
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_Manipulator.runPercent(0);
+    manipulator.runPercent(0);
     roller.SetRollerPower(0);
-    controller.setRumble(RumbleType.kBothRumble, 0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    if ((!manipulator.beam1Broken() && manipulator.beam2Broken()) || timer.get() > 3) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

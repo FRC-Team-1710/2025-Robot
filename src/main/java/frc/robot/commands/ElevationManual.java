@@ -15,12 +15,10 @@ public class ElevationManual extends Command {
   double m_speed;
   DoubleSupplier axis;
   boolean locked = false;
-  double lockedValue = 0.0;
-  double newElevatorSetpoint = 0.0;
 
-  public ElevationManual(Elevator elevate, DoubleSupplier control) {
+  public ElevationManual(Elevator elevate, DoubleSupplier axis) {
     m_elevatorSubsystem = elevate;
-    axis = control;
+    this.axis = axis;
     addRequirements(elevate);
   }
 
@@ -31,16 +29,15 @@ public class ElevationManual extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double value = axis.getAsDouble();
-    value = MathUtil.applyDeadband(value, Constants.stickDeadband);
-    value = Math.pow(value, 3);
-    if (Math.abs(value) > 0) {
-      m_elevatorSubsystem.setManual(value);
+    double Power = axis.getAsDouble();
+    Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
+    if (Math.abs(Power) > 0) {
+      m_elevatorSubsystem.setManual(Power);
       locked = false;
     } else {
       if (!locked) {
         m_elevatorSubsystem.setManual(0);
-        m_elevatorSubsystem.setDistance(m_elevatorSubsystem.getDistance());
+        m_elevatorSubsystem.stopHere();
         locked = true;
       }
     }
