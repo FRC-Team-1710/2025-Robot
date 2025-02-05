@@ -20,9 +20,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.PlaceCoral;
+import frc.robot.commands.OuttakeCoral;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Claw.Claw;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -74,7 +73,7 @@ public class RobotContainer {
   public final Elevator elevator;
   public final Roller roller;
   public final Climber climber;
-  public final Claw claw;
+  // public final Claw claw;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -111,7 +110,7 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   public RobotContainer() {
-    claw = new Claw();
+    // claw = new Claw();
     climber = new Climber();
     roller = new Roller();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
@@ -283,10 +282,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
+    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver.a().onTrue(elevator.L3());
     // driver.b().onTrue(elevator.L2());
-    driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
+    driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
         .rightBumper()
         .whileTrue(new IntakeCoral(manipulator, roller, driver))

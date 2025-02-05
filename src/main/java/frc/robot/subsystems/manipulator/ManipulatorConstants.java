@@ -8,4 +8,5 @@ package frc.robot.subsystems.manipulator;
 public class ManipulatorConstants {
   public static final double intakeSpeed = 0.2;
   public static final double insideSpeed = 0.1;
+  public static final double outtakeSpeed = 0.3;
 }

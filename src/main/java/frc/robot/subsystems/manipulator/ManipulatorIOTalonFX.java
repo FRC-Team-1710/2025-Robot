@@ -7,6 +7,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -20,7 +21,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * X60.
  */
 public class ManipulatorIOTalonFX implements ManipulatorIO {
-  private final TalonFX Manipulator = new TalonFX(0);
+  private final TalonFX Manipulator = new TalonFX(21);
   private final DigitalInput BreakingBeam1 = new DigitalInput(0);
   private final DigitalInput BreakingBeam2 = new DigitalInput(1);
   final StatusSignal<Angle> positionRot = Manipulator.getPosition();
@@ -33,6 +34,7 @@ public class ManipulatorIOTalonFX implements ManipulatorIO {
   public ManipulatorIOTalonFX() {
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     tryUntilOk(5, () -> Manipulator.getConfigurator().apply(config, 0.25));
 

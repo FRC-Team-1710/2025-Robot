@@ -14,7 +14,7 @@ public class Climber extends SubsystemBase {
   private TalonFX climber; // Right
 
   public Climber() {
-    climber = new TalonFX(0);
+    climber = new TalonFX(41);
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
