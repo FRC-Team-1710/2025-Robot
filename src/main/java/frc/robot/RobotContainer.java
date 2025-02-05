@@ -18,8 +18,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.EndIntake;
+import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.PlaceCoral;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.Claw.Claw;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -283,11 +286,11 @@ public class RobotContainer {
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
     // driver.a().onTrue(elevator.L3());
     // driver.b().onTrue(elevator.L2());
-    // driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
-    // driver
-    //     .rightBumper()
-    //     .whileTrue(new IntakeCoral(manipulator, roller, driver))
-    //     .onFalse(new EndIntake(manipulator, roller));
+    driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
+    driver
+        .rightBumper()
+        .whileTrue(new IntakeCoral(manipulator, roller, driver))
+        .onFalse(new EndIntake(manipulator, roller));
 
     // driver.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));
