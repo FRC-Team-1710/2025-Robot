@@ -103,7 +103,7 @@ public class Elevator extends SubsystemBase {
     L1(Inches.of(12)), // Position for scoring in L1
     L2(Inches.of(15.75)), // Position for scoring in L2
     L3(Inches.of(30.25)), // Position for scoring in L3
-    L4(Inches.of(53.25)); // Position for scoring in L4
+    L4(Inches.of(55)); // Position for scoring in L4
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
