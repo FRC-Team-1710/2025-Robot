@@ -43,11 +43,10 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
-  TargetingComputer targetingComputer = new TargetingComputer();
-
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
   private final TunableController driver =
       new TunableController(0)
@@ -282,9 +281,33 @@ public class RobotContainer {
 
   private void configureBindings() {
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
-    driver.a().onTrue(elevator.L2()).onFalse(elevator.intake());
-    driver.x().onTrue(elevator.L3()).onFalse(elevator.intake());
-    driver.y().onTrue(elevator.L4()).onFalse(elevator.intake());
+    TargetingComputer.Levels targetLevel = TargetingComputer.getCurrentTargetLevel();
+    Logger.recordOutput("Target Level (robotcontainer)", targetLevel);
+
+    driver
+        .a()
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
+                .alongWith(
+                    elevator.setHeightFromTargetingComputer(
+                        () -> TargetingComputer.getCurrentTargetLevel())))
+        .onFalse(elevator.intake().unless(targetReef));
+    driver
+        .x()
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
+                .alongWith(
+                    elevator.setHeightFromTargetingComputer(
+                        () -> TargetingComputer.getCurrentTargetLevel())))
+        .onFalse(elevator.intake().unless(targetReef));
+    driver
+        .y()
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
+                .alongWith(
+                    elevator.setHeightFromTargetingComputer(
+                        () -> TargetingComputer.getCurrentTargetLevel())))
+        .onFalse(elevator.intake().unless(targetReef));
     driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
         .rightBumper()
@@ -479,12 +502,31 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))));
+                                    * rotP))))
+        .and(
+            (() ->
+                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    < 1.5))
+        .onTrue(
+            elevator.setHeightFromTargetingComputer(
+                () -> TargetingComputer.getCurrentTargetLevel()))
+        .onFalse(elevator.intake());
 
     driver
         .b()
-        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
-        .onFalse(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false)));
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true))
+                .alongWith(
+                    elevator.setHeightFromTargetingComputer(
+                        () -> TargetingComputer.getCurrentTargetLevel())))
+        .onFalse(
+            new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false))
+                .alongWith(elevator.intake().unless(targetReef))
+                .alongWith(
+                    elevator
+                        .setHeightFromTargetingComputer(
+                            () -> TargetingComputer.getCurrentTargetLevel())
+                        .unless(targetReef.negate())));
 
     driver
         .leftTrigger()
@@ -555,9 +597,18 @@ public class RobotContainer {
                             new Rotation2d()))));
 
     // Mech Controller Bindings
-    mech.y().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(4)));
-    mech.x().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(3)));
-    mech.a().onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(2)));
+    mech.y()
+        .onTrue(
+            new InstantCommand(
+                () -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4)));
+    mech.x()
+        .onTrue(
+            new InstantCommand(
+                () -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3)));
+    mech.a()
+        .onTrue(
+            new InstantCommand(
+                () -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2)));
 
     // Targeting Controller Bindings
     alphaButton

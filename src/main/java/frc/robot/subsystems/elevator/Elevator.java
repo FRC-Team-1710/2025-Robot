@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.TargetingComputer;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,6 +38,9 @@ public class Elevator extends SubsystemBase {
 
   // Current arm distance mode
   private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
+
+  public static Supplier<TargetingComputer.Levels> targetLevel =
+      () -> TargetingComputer.getCurrentTargetLevel();
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -62,6 +67,9 @@ public class Elevator extends SubsystemBase {
     // Update motor connection status alerts
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
+
+    targetLevel = () -> TargetingComputer.getCurrentTargetLevel();
+    Logger.recordOutput("Target Level (Elevator)", targetLevel.get());
   }
 
   /**
@@ -103,7 +111,9 @@ public class Elevator extends SubsystemBase {
     L1(Inches.of(12)), // Position for scoring in L1
     L2(Inches.of(15.75)), // Position for scoring in L2
     L3(Inches.of(30.25)), // Position for scoring in L3
-    L4(Inches.of(55)); // Position for scoring in L4
+    L4(Inches.of(55)), // Position for scoring in L4
+    ALGAE_LOW(Inches.of(20)), // Position for grabbing low algae
+    ALGAE_HIGH(Inches.of(35)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
@@ -153,7 +163,11 @@ public class Elevator extends SubsystemBase {
               ElevatorPosition.L3,
               createPositionCommand(ElevatorPosition.L3),
               ElevatorPosition.L4,
-              createPositionCommand(ElevatorPosition.L4)),
+              createPositionCommand(ElevatorPosition.L4),
+              ElevatorPosition.ALGAE_LOW,
+              createPositionCommand(ElevatorPosition.ALGAE_LOW),
+              ElevatorPosition.ALGAE_HIGH,
+              createPositionCommand(ElevatorPosition.ALGAE_HIGH)),
           this::getMode);
 
   /**
@@ -231,6 +245,20 @@ public class Elevator extends SubsystemBase {
   }
 
   /**
+   * @return Command to move the arm to the low algae distance
+   */
+  public final Command AlgaeLow() {
+    return setPositionCommand(ElevatorPosition.ALGAE_LOW);
+  }
+
+  /**
+   * @return Command to move the arm to the high algae distance
+   */
+  public final Command AlgaeHigh() {
+    return setPositionCommand(ElevatorPosition.ALGAE_HIGH);
+  }
+
+  /**
    * @return Command to intake the arm
    */
   public final Command intake() {
@@ -242,5 +270,33 @@ public class Elevator extends SubsystemBase {
    */
   public final Command stopCommand() {
     return setPositionCommand(ElevatorPosition.STOP);
+  }
+
+  public Command setHeightFromTargetingComputer(
+      Supplier<TargetingComputer.Levels> latestTargetLevel) {
+
+    TargetingComputer.Levels pleaseWork = latestTargetLevel.get();
+    Logger.recordOutput("Target Level (in-method)", pleaseWork);
+    Logger.recordOutput(
+        "TargetingComputer.getCurrentTargetLevel()", TargetingComputer.getCurrentTargetLevel());
+
+    switch (pleaseWork) {
+      case L1:
+        return L1();
+      case L2:
+        return L2();
+      case L3:
+        return L3();
+      case L4:
+        return L4();
+      case ALGAE_LOW:
+        return AlgaeLow();
+      case ALGAE_HIGH:
+        return AlgaeHigh();
+      case INTAKE:
+        return intake();
+      default:
+        return intake();
+    }
   }
 }

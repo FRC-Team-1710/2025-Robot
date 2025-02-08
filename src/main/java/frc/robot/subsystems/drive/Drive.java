@@ -361,6 +361,14 @@ public class Drive extends SubsystemBase {
     return inputs.speeds;
   }
 
+  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured/velocity")
+  public double getChassisVelocity() {
+
+    return Math.sqrt(
+        Math.pow(inputs.speeds.vxMetersPerSecond, 2)
+            + Math.pow(inputs.speeds.vyMetersPerSecond, 2));
+  }
+
   /**
    * Return the pose at a given timestamp. If the buffer is empty return current pose.
    *

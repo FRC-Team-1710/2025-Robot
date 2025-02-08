@@ -95,8 +95,9 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
-    SmartDashboard.putString("Current Target", TargetingComputer.currentTargetBranch.toString());
-    SmartDashboard.putNumber("Target Level", TargetingComputer.currentTargetLevel);
+    SmartDashboard.putString(
+        "Current Target", TargetingComputer.getCurrentTargetBranch().toString());
+    Logger.recordOutput("Target Level", TargetingComputer.getCurrentTargetLevel().toString());
     SmartDashboard.putString(
         "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
