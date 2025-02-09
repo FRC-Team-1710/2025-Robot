@@ -281,14 +281,15 @@ public class Elevator extends SubsystemBase {
     return currentLevelTarget.get();
   }
 
-  public final Command setHeightFromTargetingComputer(TargetingComputer.Levels latestTargetLevel) {
-    Supplier<TargetingComputer.Levels> something = TargetingComputer::getCurrentTargetLevel;
-    Logger.recordOutput("Target Level (in-method)", latestTargetLevel);
+  public final Command setHeightFromTargetingComputer(
+      Supplier<TargetingComputer.Levels> mlatestTargetLevel) {
+    TargetingComputer.Levels latestTargetLevel = mlatestTargetLevel.get(); // recieves L1 from controller input
+    Logger.recordOutput("Target Level (in-method)", latestTargetLevel); // outputs L4 despite being sent L1
     Logger.recordOutput(
-        "TargetingComputer.getCurrentTargetLevel()", TargetingComputer.getCurrentTargetLevel());
-    SmartDashboard.putString("Target (in-method)", something.get().toString());
+        "TargetingComputer.getCurrentTargetLevel()", TargetingComputer.getCurrentTargetLevel()); // Also outputs L4
+    SmartDashboard.putString("Target (in-method)", latestTargetLevel.toString()); // Also also outputs L4
 
-    switch (latestTargetLevel) {
+    switch (latestTargetLevel) { // Sets elevator height to L1 anyway???
       case L1:
         return L1();
       case L2:

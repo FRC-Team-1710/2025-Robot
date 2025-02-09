@@ -289,31 +289,32 @@ public class RobotContainer {
         .a()
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
-                .alongWith(elevator.setHeightFromTargetingComputer(TargetingComputer.Levels.L2)))
+                .alongWith(
+                    elevator.setHeightFromTargetingComputer(() -> TargetingComputer.Levels.L2)))
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .x()
         .onTrue(
             new InstantCommand(
                     () ->
-                        TargetingComputer.setTargetLevel(
+                        TargetingComputer.setTargetLevel( // spotless:off
                             TargetingComputer.Levels.L3)) // sets the target level to L3
                 .alongWith(
                     elevator
                         .setHeightFromTargetingComputer(
-                            TargetingComputer.getCurrentTargetLevel() == TargetingComputer.Levels.L3
-                                ? TargetingComputer.Levels.L3
-                                : TargetingComputer.Levels
-                                    .L1) // sends the command L4 for some ungodly reason
+                            () ->
+                                TargetingComputer.getCurrentTargetLevel() // this value is L4 here for some ungodly reason
+                                        == TargetingComputer.Levels.L3
+                                    ? TargetingComputer.Levels.L3
+                                    : TargetingComputer.Levels
+                                        .L1) // sends the command L1 as a result
                         .alongWith(
                             new InstantCommand(
                                 () ->
                                     Logger.recordOutput(
                                         "Targeting Hopefully L3",
                                         TargetingComputer
-                                            .getCurrentTargetLevel()))))) // ouputs L3 to the log
-        // file just to screw with
-        // me
+                                            .getCurrentTargetLevel()))))) // ouputs L3 to the log file just to screw with me
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .y()
@@ -321,7 +322,7 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
                 .alongWith(
                     elevator.setHeightFromTargetingComputer(
-                        TargetingComputer.getCurrentTargetLevel())))
+                        () -> TargetingComputer.getCurrentTargetLevel())))
         .onFalse(elevator.intake().unless(targetReef));
     driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
@@ -522,7 +523,9 @@ public class RobotContainer {
             (() ->
                 vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
                     < 1.5))
-        .onTrue(elevator.setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel()))
+        .onTrue(
+            elevator.setHeightFromTargetingComputer(
+                () -> TargetingComputer.getCurrentTargetLevel()))
         .onFalse(elevator.intake());
 
     driver
@@ -531,13 +534,14 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true))
                 .alongWith(
                     elevator.setHeightFromTargetingComputer(
-                        TargetingComputer.getCurrentTargetLevel())))
+                        () -> TargetingComputer.getCurrentTargetLevel())))
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false))
                 .alongWith(elevator.intake().unless(targetReef))
                 .alongWith(
                     elevator
-                        .setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel())
+                        .setHeightFromTargetingComputer(
+                            () -> TargetingComputer.getCurrentTargetLevel())
                         .unless(targetReef.negate())));
 
     driver
