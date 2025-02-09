@@ -294,16 +294,26 @@ public class RobotContainer {
     driver
         .x()
         .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3)) // sets the target level to L3
+            new InstantCommand(
+                    () ->
+                        TargetingComputer.setTargetLevel(
+                            TargetingComputer.Levels.L3)) // sets the target level to L3
                 .alongWith(
                     elevator
-                        .setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel()) // sends the command L4 for some ungodly reason
+                        .setHeightFromTargetingComputer(
+                            TargetingComputer.getCurrentTargetLevel() == TargetingComputer.Levels.L3
+                                ? TargetingComputer.Levels.L3
+                                : TargetingComputer.Levels
+                                    .L1) // sends the command L4 for some ungodly reason
                         .alongWith(
                             new InstantCommand(
                                 () ->
                                     Logger.recordOutput(
                                         "Targeting Hopefully L3",
-                                        TargetingComputer.getCurrentTargetLevel()))))) // ouputs L3 to the log file just to screw with me
+                                        TargetingComputer
+                                            .getCurrentTargetLevel()))))) // ouputs L3 to the log
+        // file just to screw with
+        // me
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .y()
