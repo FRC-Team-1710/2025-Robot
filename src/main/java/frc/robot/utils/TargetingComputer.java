@@ -1,12 +1,12 @@
 package frc.robot.utils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-
   public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -19,6 +19,7 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
   public static boolean readyToGrabAlgae = false;
+  public static boolean targetingControllerOverride = false;
   public static int randomBranch;
 
   private static boolean isRedAlliance;
@@ -84,8 +85,39 @@ public class TargetingComputer {
     };
   }
 
+  public static void toggleTargetingControllerOverride() {
+    targetingControllerOverride = !targetingControllerOverride;
+  }
+
   public static void setTargetBranch(Targets target) {
     currentTargetBranch = target;
+  }
+
+  public static void setTargetBranchByOrientation(Pose2d pose) {
+    if (Math.abs(new Rotation2d(Units.degreesToRadians(0)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.GOLF : Targets.ALPHA);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(60)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.INDIA : Targets.CHARLIE);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(120)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.KILO : Targets.ECHO);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(180)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.ALPHA : Targets.GOLF);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(240)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.CHARLIE : Targets.INDIA);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(300)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.ECHO : Targets.KILO);
+    }
   }
 
   public static void setTargetLevel(Levels level) {
