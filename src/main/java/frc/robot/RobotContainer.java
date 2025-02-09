@@ -117,7 +117,8 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
-        elevator = new Elevator(new ElevatorIOCTRE());
+        elevator =
+            new Elevator(new ElevatorIOCTRE(), () -> TargetingComputer.getCurrentTargetLevel());
 
         /*
          * Vision Class for referencing.
@@ -184,7 +185,8 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOSim());
-        elevator = new Elevator(new ElevatorIOSIM());
+        elevator =
+            new Elevator(new ElevatorIOSIM(), () -> TargetingComputer.getCurrentTargetLevel());
 
         vision =
             new Vision(
@@ -247,7 +249,8 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
         manipulator = new Manipulator(new ManipulatorIO() {});
-        elevator = new Elevator(new ElevatorIO() {});
+        elevator =
+            new Elevator(new ElevatorIO() {}, () -> TargetingComputer.getCurrentTargetLevel());
 
         vision =
             new Vision(
@@ -281,24 +284,26 @@ public class RobotContainer {
 
   private void configureBindings() {
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
-    TargetingComputer.Levels targetLevel = TargetingComputer.getCurrentTargetLevel();
-    Logger.recordOutput("Target Level (robotcontainer)", targetLevel);
 
     driver
         .a()
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
-                .alongWith(
-                    elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                .alongWith(elevator.setHeightFromTargetingComputer(TargetingComputer.Levels.L2)))
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .x()
         .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3)) // sets the target level to L3
                 .alongWith(
-                    elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                    elevator
+                        .setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel()) // sends the command L4 for some ungodly reason
+                        .alongWith(
+                            new InstantCommand(
+                                () ->
+                                    Logger.recordOutput(
+                                        "Targeting Hopefully L3",
+                                        TargetingComputer.getCurrentTargetLevel()))))) // ouputs L3 to the log file just to screw with me
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .y()
@@ -306,7 +311,7 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
                 .alongWith(
                     elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                        TargetingComputer.getCurrentTargetLevel())))
         .onFalse(elevator.intake().unless(targetReef));
     driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
@@ -507,9 +512,7 @@ public class RobotContainer {
             (() ->
                 vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
                     < 1.5))
-        .onTrue(
-            elevator.setHeightFromTargetingComputer(
-                () -> TargetingComputer.getCurrentTargetLevel()))
+        .onTrue(elevator.setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel()))
         .onFalse(elevator.intake());
 
     driver
@@ -518,14 +521,13 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true))
                 .alongWith(
                     elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                        TargetingComputer.getCurrentTargetLevel())))
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false))
                 .alongWith(elevator.intake().unless(targetReef))
                 .alongWith(
                     elevator
-                        .setHeightFromTargetingComputer(
-                            () -> TargetingComputer.getCurrentTargetLevel())
+                        .setHeightFromTargetingComputer(TargetingComputer.getCurrentTargetLevel())
                         .unless(targetReef.negate())));
 
     driver

@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
@@ -35,6 +36,7 @@ public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;
+  public Supplier<TargetingComputer.Levels> currentLevelTarget;
 
   // Current arm distance mode
   private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
@@ -53,9 +55,10 @@ public class Elevator extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the arm
    */
-  public Elevator(ElevatorIO io) {
+  public Elevator(ElevatorIO io, Supplier<TargetingComputer.Levels> currentLevelTarget) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
+    this.currentLevelTarget = currentLevelTarget;
   }
 
   @Override
@@ -70,6 +73,8 @@ public class Elevator extends SubsystemBase {
 
     targetLevel = () -> TargetingComputer.getCurrentTargetLevel();
     Logger.recordOutput("Target Level (Elevator)", targetLevel.get());
+
+    Logger.recordOutput("Target Level (Constructor)", currentLevelTarget.get());
   }
 
   /**
@@ -272,15 +277,18 @@ public class Elevator extends SubsystemBase {
     return setPositionCommand(ElevatorPosition.STOP);
   }
 
-  public Command setHeightFromTargetingComputer(
-      Supplier<TargetingComputer.Levels> latestTargetLevel) {
+  public TargetingComputer.Levels getTargetLevel() {
+    return currentLevelTarget.get();
+  }
 
-    TargetingComputer.Levels pleaseWork = latestTargetLevel.get();
-    Logger.recordOutput("Target Level (in-method)", pleaseWork);
+  public final Command setHeightFromTargetingComputer(TargetingComputer.Levels latestTargetLevel) {
+    Supplier<TargetingComputer.Levels> something = TargetingComputer::getCurrentTargetLevel;
+    Logger.recordOutput("Target Level (in-method)", latestTargetLevel);
     Logger.recordOutput(
         "TargetingComputer.getCurrentTargetLevel()", TargetingComputer.getCurrentTargetLevel());
+    SmartDashboard.putString("Target (in-method)", something.get().toString());
 
-    switch (pleaseWork) {
+    switch (latestTargetLevel) {
       case L1:
         return L1();
       case L2:

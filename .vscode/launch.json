@@ -6,7 +6,7 @@
       "name": "Flywheel",
       "request": "launch",
       "mainClass": "frc.robot.flywheel.Flywheel",
-      "projectName": "CTRE-AKit"
+      "projectName": "2025-Robot"
     },
     {
       "type": "wpilib",

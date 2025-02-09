@@ -193,11 +193,12 @@ public class TargetingComputer {
         return Targets.LIMA;
       case 12:
         return Targets.ALPHA;
+      default:
+        return Targets.ALPHA;
     }
-    return Targets.ALPHA;
   }
 
-  public enum Targets {
+  public static enum Targets {
     ALPHA(
         1,
         0,
@@ -300,7 +301,7 @@ public class TargetingComputer {
     }
   }
 
-  public enum Levels {
+  public static enum Levels {
     INTAKE,
     L1,
     L2,
