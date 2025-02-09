@@ -8,12 +8,17 @@ import java.util.Random;
 public class TargetingComputer {
 
   public static final boolean gameMode = false;
+  public static final Translation2d primaryAlgaeOffset =
+      new Translation2d(Units.inchesToMeters(32), 0);
+  public static final Translation2d secondaryAlgaeOffset =
+      new Translation2d(Units.inchesToMeters(23), 0);
 
   public static Targets currentTargetBranch = Targets.ALPHA;
   public static Levels currentTargetLevel = Levels.L4;
   public static Random random = new Random();
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
+  public static boolean readyToGrabAlgae = false;
   public static int randomBranch;
 
   private static boolean isRedAlliance;
@@ -142,6 +147,10 @@ public class TargetingComputer {
 
   public static void setTargetingAlgae(boolean value) {
     targetingAlgae = value;
+  }
+
+  public static void setReadyToGrabAlgae(boolean value) {
+    readyToGrabAlgae = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {
@@ -297,7 +306,9 @@ public class TargetingComputer {
     }
 
     public Translation2d getOffset() {
-      return targetingAlgae ? new Translation2d(offset.getX(), 0) : offset;
+      return targetingAlgae
+          ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset
+          : offset;
     }
   }
 

@@ -117,8 +117,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
-        elevator =
-            new Elevator(new ElevatorIOCTRE(), () -> TargetingComputer.getCurrentTargetLevel());
+        elevator = new Elevator(new ElevatorIOCTRE());
 
         /*
          * Vision Class for referencing.
@@ -185,8 +184,7 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOSim());
-        elevator =
-            new Elevator(new ElevatorIOSIM(), () -> TargetingComputer.getCurrentTargetLevel());
+        elevator = new Elevator(new ElevatorIOSIM());
 
         vision =
             new Vision(
@@ -249,8 +247,7 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         drivetrain = new Drive(new DriveIO() {});
         manipulator = new Manipulator(new ManipulatorIO() {});
-        elevator =
-            new Elevator(new ElevatorIO() {}, () -> TargetingComputer.getCurrentTargetLevel());
+        elevator = new Elevator(new ElevatorIO() {});
 
         vision =
             new Vision(
@@ -515,8 +512,42 @@ public class RobotContainer {
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false))
+                .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
                 .alongWith(elevator.intake().unless(targetReef))
                 .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())));
+
+    driver
+        .b()
+        .and(
+            () ->
+                vision.containsRequestedTarget(
+                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    && Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        < 5
+                    && Math.abs(
+                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
+                                - vision
+                                    .calculateOffset(
+                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
+                                        TargetingComputer.getCurrentTargetBranch().getOffset())
+                                    .getY())
+                        < Units.inchesToMeters(1)
+                    && Math.abs(
+                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
+                                - vision
+                                    .calculateOffset(
+                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
+                                        TargetingComputer.getCurrentTargetBranch().getOffset())
+                                    .getX())
+                        < Units.inchesToMeters(1)
+                    && elevator.isAtTarget())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
     driver
         .leftTrigger()

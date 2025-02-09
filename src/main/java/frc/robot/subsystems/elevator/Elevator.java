@@ -16,14 +16,11 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.TargetingComputer;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,13 +33,9 @@ public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;
-  public Supplier<TargetingComputer.Levels> currentLevelTarget;
 
   // Current arm distance mode
   private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
-
-  public static Supplier<TargetingComputer.Levels> targetLevel =
-      () -> TargetingComputer.getCurrentTargetLevel();
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -55,10 +48,9 @@ public class Elevator extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the arm
    */
-  public Elevator(ElevatorIO io, Supplier<TargetingComputer.Levels> currentLevelTarget) {
+  public Elevator(ElevatorIO io) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
-    this.currentLevelTarget = currentLevelTarget;
   }
 
   @Override
@@ -70,11 +62,6 @@ public class Elevator extends SubsystemBase {
     // Update motor connection status alerts
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
-
-    targetLevel = () -> TargetingComputer.getCurrentTargetLevel();
-    Logger.recordOutput("Target Level (Elevator)", targetLevel.get());
-
-    Logger.recordOutput("Target Level (Constructor)", currentLevelTarget.get());
   }
 
   /**
@@ -112,13 +99,13 @@ public class Elevator extends SubsystemBase {
   /** Enumeration of available arm distances with their corresponding target angles. */
   private enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
-    INTAKE(Inches.of(0)), // Elevator tucked in
-    L1(Inches.of(12)), // Position for scoring in L1
-    L2(Inches.of(15.75)), // Position for scoring in L2
-    L3(Inches.of(30.25)), // Position for scoring in L3
-    L4(Inches.of(55)), // Position for scoring in L4
-    ALGAE_LOW(Inches.of(20)), // Position for grabbing low algae
-    ALGAE_HIGH(Inches.of(35)); // Position for grabbing high algae
+    INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
+    L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
+    L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
+    L3(Inches.of(30.25), Inches.of(.5)), // Position for scoring in L3
+    L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
+    ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
+    ALGAE_HIGH(Inches.of(25), Inches.of(1)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
@@ -275,41 +262,5 @@ public class Elevator extends SubsystemBase {
    */
   public final Command stopCommand() {
     return setPositionCommand(ElevatorPosition.STOP);
-  }
-
-  public TargetingComputer.Levels getTargetLevel() {
-    return currentLevelTarget.get();
-  }
-
-  public final Command setHeightFromTargetingComputer(
-      Supplier<TargetingComputer.Levels> mlatestTargetLevel) {
-    TargetingComputer.Levels latestTargetLevel =
-        mlatestTargetLevel.get(); // recieves L1 from controller input
-    Logger.recordOutput(
-        "Target Level (in-method)", latestTargetLevel); // outputs L4 despite being sent L1
-    Logger.recordOutput(
-        "TargetingComputer.getCurrentTargetLevel()",
-        TargetingComputer.getCurrentTargetLevel()); // Also outputs L4
-    SmartDashboard.putString(
-        "Target (in-method)", latestTargetLevel.toString()); // Also also outputs L4
-
-    switch (latestTargetLevel) { // Sets elevator height to L1 anyway???
-      case L1:
-        return L1();
-      case L2:
-        return L2();
-      case L3:
-        return L3();
-      case L4:
-        return L4();
-      case ALGAE_LOW:
-        return AlgaeLow();
-      case ALGAE_HIGH:
-        return AlgaeHigh();
-      case INTAKE:
-        return intake();
-      default:
-        return intake();
-    }
   }
 }

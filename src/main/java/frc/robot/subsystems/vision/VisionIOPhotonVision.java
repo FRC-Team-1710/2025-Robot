@@ -242,7 +242,6 @@ public class VisionIOPhotonVision implements VisionIO {
     } else {
       cameraTargets = new ArrayList<>();
     }
-    Logger.recordOutput("please work", getTransformToTag(17));
     Logger.recordOutput("camera results", cameraResults.toString());
   }
 }
