@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
@@ -43,7 +44,6 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -289,8 +289,7 @@ public class RobotContainer {
         .a()
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
-                .alongWith(
-                    elevator.setHeightFromTargetingComputer(() -> TargetingComputer.Levels.L2)))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .x()
@@ -299,30 +298,13 @@ public class RobotContainer {
                     () ->
                         TargetingComputer.setTargetLevel( // spotless:off
                             TargetingComputer.Levels.L3)) // sets the target level to L3
-                .alongWith(
-                    elevator
-                        .setHeightFromTargetingComputer(
-                            () ->
-                                TargetingComputer.getCurrentTargetLevel() // this value is L4 here for some ungodly reason
-                                        == TargetingComputer.Levels.L3
-                                    ? TargetingComputer.Levels.L3
-                                    : TargetingComputer.Levels
-                                        .L1) // sends the command L1 as a result
-                        .alongWith(
-                            new InstantCommand(
-                                () ->
-                                    Logger.recordOutput(
-                                        "Targeting Hopefully L3",
-                                        TargetingComputer
-                                            .getCurrentTargetLevel()))))) // ouputs L3 to the log file just to screw with me
+                .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
     driver
         .y()
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(
-                    elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
     driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
@@ -523,26 +505,18 @@ public class RobotContainer {
             (() ->
                 vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
                     < 1.5))
-        .onTrue(
-            elevator.setHeightFromTargetingComputer(
-                () -> TargetingComputer.getCurrentTargetLevel()))
+        .onTrue(new ElevatorToTargetLevel(elevator))
         .onFalse(elevator.intake());
 
     driver
         .b()
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true))
-                .alongWith(
-                    elevator.setHeightFromTargetingComputer(
-                        () -> TargetingComputer.getCurrentTargetLevel())))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setTargetingAlgae(false))
                 .alongWith(elevator.intake().unless(targetReef))
-                .alongWith(
-                    elevator
-                        .setHeightFromTargetingComputer(
-                            () -> TargetingComputer.getCurrentTargetLevel())
-                        .unless(targetReef.negate())));
+                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())));
 
     driver
         .leftTrigger()
