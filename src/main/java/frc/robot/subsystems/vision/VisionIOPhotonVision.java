@@ -26,9 +26,11 @@ import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 import java.util.function.Supplier;
+
+import frc.robot.utils.TargetingComputer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
@@ -197,8 +199,7 @@ public class VisionIOPhotonVision implements VisionIO {
     if (latestResult.hasTargets()) {
       for (var target : latestResult.getTargets()) {
         if (target.fiducialId == id) {
-          var name = target.bestCameraToTarget.plus(robotToCamera);
-          return name;
+            return target.bestCameraToTarget.plus(robotToCamera);
         }
       }
     }
@@ -215,6 +216,10 @@ public class VisionIOPhotonVision implements VisionIO {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
+  public List<PhotonTrackedTarget> getCameraTargets() {
+    return cameraTargets;
+  }
+
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
     return new RawFiducial(
         target.getFiducialId(),
@@ -228,20 +233,16 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /** Updates the local vision results variables */
   private void updateResults() {
-    PhotonPipelineResult nullResult = new PhotonPipelineResult();
     cameraResults = camera.getAllUnreadResults();
     if (!cameraResults.isEmpty()) {
       latestResult = cameraResults.get(cameraResults.size() - 1);
     } else {
       latestResult = new PhotonPipelineResult();
     }
-    // this.latestResult = !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) :
-    // nullResult;
     if (latestResult.hasTargets()) {
       cameraTargets = latestResult.targets;
     } else {
       cameraTargets = new ArrayList<>();
     }
-    Logger.recordOutput("camera results", cameraResults.toString());
   }
 }
