@@ -24,9 +24,9 @@ import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import java.util.*;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -45,6 +45,10 @@ public class Vision extends SubsystemBase {
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+
+  private final int[] branchIDs = {
+          6, 7, 8, 9, 10, 11,
+          17, 18, 19, 20, 21, 22};
 
   /**
    * Creates a new Vision subsystem.
@@ -185,6 +189,42 @@ public class Vision extends SubsystemBase {
     return Math.sqrt(
         Math.pow(calculateOffset(tagID, new Translation2d()).getX(), 2)
             + Math.pow(calculateOffset(tagID, new Translation2d()).getY(), 2));
+  }
+
+  public boolean containsBranchID(int value) {
+    return Arrays.stream(branchIDs).anyMatch(id -> id == value);
+  }
+
+  public void autoBranchTargeting() {
+    var availableTags = new HashMap<Integer, Double>();
+    for (int i = 0; i < io.length; i++) {
+      for (var target : getCamera(i).getCameraTargets()) {
+        if (containsBranchID(target.fiducialId)) {
+          availableTags.put(target.fiducialId, target.bestCameraToTarget.getTranslation().getNorm());
+        }
+      }
+    }
+    if (!availableTags.isEmpty()) {
+      int targetTagID = Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+      TargetingComputer.setTargetByTag(
+              targetTagID,
+              !(getCamera(getCameraIDWithTarget(targetTagID)).getRobotToTargetOffset(targetTagID).getTranslation().getX() < 0)
+      );
+    }
+  }
+
+  /**
+   * Only use this method if you are completely sure there is a camera with the target or else it will not work as expected.
+   * @param tagID The tag ID to find the camera for
+   * @return The camera ID that has the target
+   */
+  public int getCameraIDWithTarget(int tagID) {
+    for (int i = 0; i < io.length; i++) {
+      if (getCamera(i).hasTarget(tagID)) {
+        return i;
+      }
+    }
+    return 0;
   }
 
   /**

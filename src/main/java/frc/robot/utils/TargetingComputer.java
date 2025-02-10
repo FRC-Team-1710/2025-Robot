@@ -51,23 +51,30 @@ public class TargetingComputer {
 
   public static int getTagForTarget(Targets target) {
     return switch (target) {
-      case ALPHA -> isRedAlliance ? 7 : 18;
-      case BRAVO -> isRedAlliance ? 7 : 18;
-      case CHARLIE -> isRedAlliance ? 8 : 17;
-      case DELTA -> isRedAlliance ? 8 : 17;
-      case ECHO -> isRedAlliance ? 9 : 22;
-      case FOXTROT -> isRedAlliance ? 9 : 22;
-      case GOLF -> isRedAlliance ? 10 : 21;
-      case HOTEL -> isRedAlliance ? 10 : 21;
-      case INDIA -> isRedAlliance ? 11 : 20;
-      case JULIET -> isRedAlliance ? 11 : 20;
-      case KILO -> isRedAlliance ? 6 : 19;
-      case LIMA -> isRedAlliance ? 6 : 19;
+      case ALPHA, BRAVO -> isRedAlliance ? 7 : 18;
+      case CHARLIE, DELTA -> isRedAlliance ? 8 : 17;
+      case ECHO, FOXTROT -> isRedAlliance ? 9 : 22;
+      case GOLF, HOTEL -> isRedAlliance ? 10 : 21;
+      case INDIA, JULIET -> isRedAlliance ? 11 : 20;
+      case KILO, LIMA -> isRedAlliance ? 6 : 19;
       case SOURCE_LEFT -> isRedAlliance ? 1 : 13;
       case SOURCE_RIGHT -> isRedAlliance ? 2 : 12;
       case PROCESSOR -> isRedAlliance ? 3 : 16;
       case NET -> isRedAlliance ? 5 : 14;
     };
+  }
+
+  public static void setTargetByTag(int tagID, boolean rightSide) {
+    if (tagID == 7 || tagID == 18) setTargetBranch(rightSide ? Targets.ALPHA : Targets.BRAVO);
+    else if (tagID == 8 || tagID == 17) setTargetBranch(rightSide ? Targets.CHARLIE : Targets.DELTA);
+    else if (tagID == 9 || tagID == 22) setTargetBranch(rightSide ? Targets.ECHO : Targets.FOXTROT);
+    else if (tagID == 10 || tagID == 21) setTargetBranch(rightSide ? Targets.GOLF : Targets.HOTEL);
+    else if (tagID == 11 || tagID == 20) setTargetBranch(rightSide ? Targets.INDIA : Targets.JULIET);
+    else if (tagID == 6 || tagID == 19) setTargetBranch(rightSide ? Targets.KILO : Targets.LIMA);
+    else if (tagID == 1 || tagID == 13) setTargetBranch(Targets.SOURCE_LEFT);
+    else if (tagID == 2 || tagID == 12) setTargetBranch(Targets.SOURCE_RIGHT);
+    else if (tagID == 3 || tagID == 16) setTargetBranch(Targets.PROCESSOR);
+    else if (tagID == 5 || tagID == 14) setTargetBranch(Targets.NET);
   }
 
   public static double getAngleForTarget(Targets target) {

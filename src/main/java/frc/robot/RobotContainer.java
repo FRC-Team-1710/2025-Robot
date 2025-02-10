@@ -126,6 +126,7 @@ public class RobotContainer {
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
 
   private final Trigger overrideTargetingController = new Trigger(mech.povDown());
+  // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
@@ -587,7 +588,7 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, roller));
 
     overrideTargetingController.onTrue(
-        new InstantCommand(() -> TargetingComputer.toggleTargetingControllerOverride()));
+        new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));
