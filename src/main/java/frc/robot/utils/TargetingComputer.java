@@ -1,20 +1,26 @@
 package frc.robot.utils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-
   public static final boolean gameMode = false;
+  public static final Translation2d primaryAlgaeOffset =
+      new Translation2d(Units.inchesToMeters(32), 0);
+  public static final Translation2d secondaryAlgaeOffset =
+      new Translation2d(Units.inchesToMeters(23), 0);
 
   public static Targets currentTargetBranch = Targets.ALPHA;
-  public static double currentTargetLevel = 4;
+  public static Levels currentTargetLevel = Levels.L4;
   public static Random random = new Random();
-  public static int randomBranch;
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
+  public static boolean readyToGrabAlgae = false;
+  public static boolean targetingControllerOverride = false;
+  public static int randomBranch;
 
   private static boolean isRedAlliance;
 
@@ -79,16 +85,55 @@ public class TargetingComputer {
     };
   }
 
+  public static void toggleTargetingControllerOverride() {
+    targetingControllerOverride = !targetingControllerOverride;
+  }
+
   public static void setTargetBranch(Targets target) {
     currentTargetBranch = target;
   }
 
-  public static void setTargetLevel(int level) {
+  public static void setTargetBranchByOrientation(Pose2d pose) {
+    if (Math.abs(new Rotation2d(Units.degreesToRadians(0)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.GOLF : Targets.ALPHA);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(60)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.INDIA : Targets.CHARLIE);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(120)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.KILO : Targets.ECHO);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(180)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.ALPHA : Targets.GOLF);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(240)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.CHARLIE : Targets.INDIA);
+    } else if (Math.abs(
+            new Rotation2d(Units.degreesToRadians(300)).minus(pose.getRotation()).getDegrees())
+        < 30) {
+      setTargetBranch(isRedAlliance ? Targets.ECHO : Targets.KILO);
+    }
+  }
+
+  public static void setTargetLevel(Levels level) {
     currentTargetLevel = level;
   }
 
   public static Targets getCurrentTargetBranch() {
     return currentTargetBranch;
+  }
+
+  public static Levels getCurrentTargetLevel() {
+    if (!targetingAlgae) {
+      return currentTargetLevel;
+    } else {
+      return getCurrentTargetBranch().getAlgaeLevel();
+    }
   }
 
   public static double getSourceTargetingAngle(Pose2d pose) {
@@ -134,6 +179,10 @@ public class TargetingComputer {
 
   public static void setTargetingAlgae(boolean value) {
     targetingAlgae = value;
+  }
+
+  public static void setReadyToGrabAlgae(boolean value) {
+    readyToGrabAlgae = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {
@@ -185,36 +234,87 @@ public class TargetingComputer {
         return Targets.LIMA;
       case 12:
         return Targets.ALPHA;
+      default:
+        return Targets.ALPHA;
     }
-    return Targets.ALPHA;
   }
 
-  public enum Targets {
-    ALPHA(1, 0, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    BRAVO(0, 1, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    CHARLIE(1, 2, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    DELTA(0, 3, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    ECHO(1, 4, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    FOXTROT(0, 5, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    GOLF(1, 6, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    HOTEL(0, 7, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    INDIA(1, 8, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    JULIET(0, 9, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    KILO(1, 10, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5))),
-    LIMA(0, 11, new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5))),
-    SOURCE_LEFT(0, 12, new Translation2d()),
-    SOURCE_RIGHT(0, 13, new Translation2d()),
-    PROCESSOR(0, 14, new Translation2d()),
-    NET(0, 15, new Translation2d());
+  public static enum Targets {
+    ALPHA(
+        1,
+        0,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_HIGH),
+    BRAVO(
+        0,
+        1,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_HIGH),
+    CHARLIE(
+        1,
+        2,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_LOW),
+    DELTA(
+        0,
+        3,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_LOW),
+    ECHO(
+        1,
+        4,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_HIGH),
+    FOXTROT(
+        0,
+        5,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_HIGH),
+    GOLF(
+        1,
+        6,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_LOW),
+    HOTEL(
+        0,
+        7,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_LOW),
+    INDIA(
+        1,
+        8,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_HIGH),
+    JULIET(
+        0,
+        9,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_HIGH),
+    KILO(
+        1,
+        10,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        Levels.ALGAE_LOW),
+    LIMA(
+        0,
+        11,
+        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        Levels.ALGAE_LOW),
+    SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
+    SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
+    PROCESSOR(0, 14, new Translation2d(), Levels.INTAKE),
+    NET(0, 15, new Translation2d(), Levels.L4);
 
     public final int preferredCamera;
     public final int gameID;
     public final Translation2d offset;
+    public final Levels algaeLevel;
 
-    Targets(int preferredCamera, int gameID, Translation2d offset) {
+    Targets(int preferredCamera, int gameID, Translation2d offset, Levels algaeLevel) {
       this.preferredCamera = preferredCamera;
       this.gameID = gameID;
       this.offset = offset;
+      this.algaeLevel = algaeLevel;
     }
 
     public int getApriltag() {
@@ -229,12 +329,28 @@ public class TargetingComputer {
       return preferredCamera;
     }
 
+    public Levels getAlgaeLevel() {
+      return algaeLevel;
+    }
+
     public int gameID() {
       return gameID;
     }
 
     public Translation2d getOffset() {
-      return targetingAlgae ? new Translation2d(offset.getX(), 0) : offset;
+      return targetingAlgae
+          ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset
+          : offset;
     }
+  }
+
+  public static enum Levels {
+    INTAKE,
+    L1,
+    L2,
+    L3,
+    L4,
+    ALGAE_HIGH,
+    ALGAE_LOW;
   }
 }

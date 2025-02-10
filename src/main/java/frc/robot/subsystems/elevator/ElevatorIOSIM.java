@@ -7,6 +7,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
@@ -109,6 +110,8 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     super.updateInputs(inputs);
+    inputs.elevatorDistance =
+        Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
     tempPIDTuning();
     m_elevatorMechSecondStage2d.setLength(
         enc.getDistance() > 0
