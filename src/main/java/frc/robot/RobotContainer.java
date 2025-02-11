@@ -11,11 +11,19 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevationManual;
+import frc.robot.commands.EndIntake;
+import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.PlaceCoral;
+import frc.robot.commands.WristManual;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.claw.ClawIO;
+import frc.robot.subsystems.claw.ClawIOCTRE;
+import frc.robot.subsystems.claw.ClawIOSIM;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -29,6 +37,7 @@ import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorIO;
 import frc.robot.subsystems.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.manipulator.ManipulatorIOTalonFX;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
@@ -44,6 +53,12 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
+  private final TunableController driver2 =
+      new TunableController(1)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
+
   private final TunableController reefTargetingSystem = new TunableController(2);
 
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -51,6 +66,8 @@ public class RobotContainer {
   public final Drive drivetrain;
   public final Manipulator manipulator;
   public final Elevator elevator;
+  public final Roller roller;
+  public final Claw claw;
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
@@ -63,6 +80,7 @@ public class RobotContainer {
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   public RobotContainer() {
+    roller = new Roller();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
@@ -70,6 +88,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
+        claw = new Claw(new ClawIOCTRE());
 
         new Vision(
             drivetrain::addVisionData,
@@ -83,7 +102,9 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOSim());
-        elevator = new Elevator(new ElevatorIOSIM());
+        ElevatorIOSIM iosim = new ElevatorIOSIM();
+        elevator = new Elevator(iosim);
+        claw = new Claw(new ClawIOSIM(iosim));
 
         new Vision(
             drivetrain::addVisionData,
@@ -118,6 +139,7 @@ public class RobotContainer {
         drivetrain = new Drive(new DriveIO() {});
         manipulator = new Manipulator(new ManipulatorIO() {});
         elevator = new Elevator(new ElevatorIO() {});
+        claw = new Claw(new ClawIO() {});
 
         new Vision(
             drivetrain::addVisionData,
@@ -149,21 +171,15 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getRightY()));
-    // driver
-    //     .rightBumper()
-    //     .whileTrue(new IntakeCoral(manipulator, elevator, driver))
-    //     .whileFalse(new EndIntake(manipulator));
-    // driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
-    // driver.pov(0).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(1))));
-    // driver.pov(90).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.75))));
-    // driver.pov(270).onTrue(new InstantCommand(() -> elevator.setTargetDistance(Meters.of(0.5))));
-    // driver.pov(180).onTrue(new InstantCommand(() ->
-    // elevator.setTargetDistance(Meters.of(0.25))));
-    // driver
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> elevator.setDistance(elevator.getTargetDistance())))
-    //     .onFalse(new InstantCommand(() -> elevator.setDistance(elevator.getDistance())));
+    claw.setDefaultCommand(new WristManual(claw, () -> driver2.getRightY()));
+    elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
+    driver.pov(0).onTrue(elevator.L4());
+    driver.pov(180).onTrue(elevator.intake());
+    driver.leftBumper().whileTrue(new PlaceCoral(manipulator));
+    driver
+        .rightBumper()
+        .whileTrue(new IntakeCoral(manipulator, roller, driver))
+        .onFalse(new EndIntake(manipulator, roller));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -184,7 +200,7 @@ public class RobotContainer {
                                 .customRight()
                                 .getX())))); // Drive counterclockwise with negative X (left)
 
-    driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
+    // driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
     driver
         .b()
         .whileTrue(

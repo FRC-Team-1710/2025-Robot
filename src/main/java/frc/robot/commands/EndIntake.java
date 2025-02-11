@@ -4,7 +4,6 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.manipulator.Manipulator;
@@ -36,7 +35,8 @@ public class EndIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if ((manipulator.beam1Broken() && !manipulator.beam2Broken()) || (manipulator.beam1Broken() && manipulator.beam2Broken())) {
+    if ((manipulator.beam1Broken() && !manipulator.beam2Broken())
+        || (manipulator.beam1Broken() && manipulator.beam2Broken())) {
       timer.reset();
       timer.stop();
       manipulator.runPercent(ManipulatorConstants.insideSpeed);

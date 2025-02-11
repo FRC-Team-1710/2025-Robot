@@ -99,7 +99,7 @@ public final class Constants {
     REPLAY
   }
 
-  public static double stickDeadband = 0.07;
+  public static double stickDeadband = 0.3;
 
   static {
     RobotConfig config;

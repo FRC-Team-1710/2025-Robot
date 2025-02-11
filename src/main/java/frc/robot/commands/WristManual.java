@@ -7,19 +7,21 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.claw.Claw;
 import java.util.function.DoubleSupplier;
 
-public class ElevationManual extends Command {
-  private Elevator m_elevatorSubsystem;
-  double m_speed;
-  DoubleSupplier axis;
-  boolean locked = false;
+/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+public class WristManual extends Command {
+  private Claw claw;
+  private DoubleSupplier axis;
+  boolean locked;
 
-  public ElevationManual(Elevator elevate, DoubleSupplier axis) {
-    m_elevatorSubsystem = elevate;
-    this.axis = axis;
-    addRequirements(elevate);
+  /** Creates a new WristManual. */
+  public WristManual(Claw claw, DoubleSupplier power) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    this.axis = power;
+    this.claw = claw;
+    addRequirements(claw);
   }
 
   // Called when the command is initially scheduled.
@@ -32,12 +34,12 @@ public class ElevationManual extends Command {
     double Power = axis.getAsDouble();
     Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
     if (Math.abs(Power) > 0) {
-      m_elevatorSubsystem.setManual(Power);
+      claw.setManual(Power);
       locked = false;
     } else {
       if (!locked) {
-        m_elevatorSubsystem.setManual(0);
-        m_elevatorSubsystem.stopHere();
+        claw.setManual(0);
+        claw.setAngle(claw.getAngle());
         locked = true;
       }
     }
