@@ -66,10 +66,12 @@ public class TargetingComputer {
 
   public static void setTargetByTag(int tagID, boolean rightSide) {
     if (tagID == 7 || tagID == 18) setTargetBranch(rightSide ? Targets.ALPHA : Targets.BRAVO);
-    else if (tagID == 8 || tagID == 17) setTargetBranch(rightSide ? Targets.CHARLIE : Targets.DELTA);
+    else if (tagID == 8 || tagID == 17)
+      setTargetBranch(rightSide ? Targets.CHARLIE : Targets.DELTA);
     else if (tagID == 9 || tagID == 22) setTargetBranch(rightSide ? Targets.ECHO : Targets.FOXTROT);
     else if (tagID == 10 || tagID == 21) setTargetBranch(rightSide ? Targets.GOLF : Targets.HOTEL);
-    else if (tagID == 11 || tagID == 20) setTargetBranch(rightSide ? Targets.INDIA : Targets.JULIET);
+    else if (tagID == 11 || tagID == 20)
+      setTargetBranch(rightSide ? Targets.INDIA : Targets.JULIET);
     else if (tagID == 6 || tagID == 19) setTargetBranch(rightSide ? Targets.KILO : Targets.LIMA);
     else if (tagID == 1 || tagID == 13) setTargetBranch(Targets.SOURCE_LEFT);
     else if (tagID == 2 || tagID == 12) setTargetBranch(Targets.SOURCE_RIGHT);
