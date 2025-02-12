@@ -17,11 +17,8 @@ import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
-
 import java.util.*;
 import java.util.function.Supplier;
-
-import frc.robot.utils.TargetingComputer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
@@ -190,7 +187,7 @@ public class VisionIOPhotonVision implements VisionIO {
     if (latestResult.hasTargets()) {
       for (var target : latestResult.getTargets()) {
         if (target.fiducialId == id) {
-            return target.bestCameraToTarget.plus(robotToCamera);
+          return target.bestCameraToTarget.plus(robotToCamera);
         }
       }
     }
