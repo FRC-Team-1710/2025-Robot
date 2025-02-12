@@ -10,23 +10,21 @@ package frc.robot.utils;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public class AllianceFlipUtil {
-  public static double fieldWidth = Units.feetToMeters(26.0) + Units.inchesToMeters(5.0);
-  public static double fieldLength = Units.feetToMeters(57.0) + Units.inchesToMeters(6.875);
 
-  public static double applyX(double x) {
-    return shouldFlip() ? fieldLength - x : x;
+  public static Distance applyX(Distance x) {
+    return shouldFlip() ? FieldConstants.fieldLength.minus(x) : x;
   }
 
-  public static double applyY(double y) {
-    return shouldFlip() ? fieldWidth - y : y;
+  public static Distance applyY(Distance y) {
+    return shouldFlip() ? FieldConstants.fieldWidth.minus(y) : y;
   }
 
   public static Translation2d apply(Translation2d translation) {
-    return new Translation2d(applyX(translation.getX()), applyY(translation.getY()));
+    return new Translation2d(applyX(translation.getMeasureX()), applyY(translation.getMeasureY()));
   }
 
   public static Rotation2d apply(Rotation2d rotation) {

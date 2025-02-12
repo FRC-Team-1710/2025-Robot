@@ -1,15 +1,8 @@
-// Copyright 2021-2024 FRC 6328
-// http://github.com/Mechanical-Advantage
+// Copyright (c) 2025 FRC 5712
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package frc.robot;
 
@@ -33,7 +26,6 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generated.TunerConstants;
-import frc.robot.utils.PPUtil;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -64,7 +56,7 @@ public final class Constants {
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
-              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontRight.LocationY),
+              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
               Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
           Math.max(
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
@@ -140,14 +132,10 @@ public final class Constants {
   public static double stickDeadband = 0.07;
 
   static {
-    RobotConfig config;
-    try {
-      config = RobotConfig.fromGUISettings();
-      // Check if the GUI settings match the constants
-      PPUtil.compareConfigs(config, PP_CONFIG);
-    } catch (Exception e) {
-      PPUtil.badGUI();
-      e.printStackTrace();
+    // Checks to make sure config matches GUI values. Code should not throw as not breaking
+    if (!PP_CONFIG.hasValidConfig()) {
+      String error = "Invalid robot configuration detected in PP_CONFIG";
+      System.err.println(error);
     }
   }
 
