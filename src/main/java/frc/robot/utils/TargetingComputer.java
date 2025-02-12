@@ -95,10 +95,12 @@ public class TargetingComputer {
     double sourceCutoffDistance = 4.5;
     if (isRedAlliance) {
       return (pose.getY() > FieldConstants.fieldWidth.magnitude() / 2) // red
-          ? (pose.getX() >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // top half
+          ? (pose.getX()
+                  >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // top half
               ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
               : Targets.PROCESSOR.getTargetingAngle() // far
-          : (pose.getX() >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // bottom half
+          : (pose.getX()
+                  >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // bottom half
               ? Targets.SOURCE_LEFT.getTargetingAngle() // close
               : Targets.NET.getTargetingAngle(); // far
     } else {

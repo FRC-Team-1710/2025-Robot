@@ -1,7 +1,5 @@
 package frc.robot.subsystems.manipulator;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
@@ -16,6 +14,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
+import java.util.function.Supplier;
 
 /**
  * This CoralIntake implementation is for a Talon FX driving a motor like the Falon 500 or Kraken
