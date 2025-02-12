@@ -181,6 +181,12 @@ public class Vision extends SubsystemBase {
     return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
+  public double getDistanceToTag(int tagID) {
+    return Math.sqrt(
+        Math.pow(calculateOffset(tagID, new Translation2d()).getX(), 2)
+            + Math.pow(calculateOffset(tagID, new Translation2d()).getY(), 2));
+  }
+
   /**
    * Processes vision data from all cameras and combines the results.
    *
