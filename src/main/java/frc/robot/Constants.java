@@ -1,15 +1,8 @@
-// Copyright 2021-2024 FRC 6328
-// http://github.com/Mechanical-Advantage
+// Copyright (c) 2025 FRC 5712
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package frc.robot;
 
@@ -22,7 +15,10 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -30,7 +26,6 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generated.TunerConstants;
-import frc.robot.utils.PPUtil;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -41,7 +36,7 @@ public final class Constants {
 
   public static final Mode simMode = Mode.SIM;
 
-  public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.5);
+  public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.75);
   public static final AngularVelocity MaxModuleRate = RotationsPerSecond.of(20.0);
 
   // PathPlanner config constants
@@ -61,7 +56,7 @@ public final class Constants {
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
-              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontRight.LocationY),
+              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
               Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
           Math.max(
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
@@ -74,7 +69,7 @@ public final class Constants {
               SWERVE_MODULE_CONSTANTS.WheelRadius,
               TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
               WHEEL_COF,
-              DCMotor.getKrakenX60Foc(1).withReduction(SWERVE_MODULE_CONSTANTS.DriveMotorGearRatio),
+              DCMotor.getKrakenX60(1).withReduction(SWERVE_MODULE_CONSTANTS.DriveMotorGearRatio),
               SWERVE_MODULE_CONSTANTS.SlipCurrent,
               1),
           SWERVE_MODULE_OFFSETS);
@@ -83,6 +78,45 @@ public final class Constants {
       new SwerveSetpointGenerator(Constants.PP_CONFIG, Units.rotationsToRadians(10.0));
 
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  // Vision constants
+
+  public static final String kFrontLeftCameraName = "Front Left";
+  public static final String kFrontRightCameraName = "Front Right";
+  public static final String kBackLeftCameraName = "Back Left";
+  public static final String kbackRightCameraName = "Back Right";
+
+  public static final Transform3d kFrontLeftStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(9.91887103),
+              Units.inchesToMeters(12.04442909),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(30)));
+
+  public static final Transform3d kFrontRightStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(9.91887103),
+              Units.inchesToMeters(-12.04442909),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(330)));
+
+  public static final Transform3d kBackLeftStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(-9.79622433),
+              Units.inchesToMeters(10.87979715),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(210)));
+
+  public static final Transform3d kBackRightStdDev =
+      new Transform3d(
+          new Translation3d(
+              Units.inchesToMeters(-9.79622433),
+              Units.inchesToMeters(-10.87979715),
+              Units.inchesToMeters(8.55647482)),
+          new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(150)));
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -98,14 +132,10 @@ public final class Constants {
   public static double stickDeadband = 0.07;
 
   static {
-    RobotConfig config;
-    try {
-      config = RobotConfig.fromGUISettings();
-      // Check if the GUI settings match the constants
-      PPUtil.compareConfigs(config, PP_CONFIG);
-    } catch (Exception e) {
-      PPUtil.badGUI();
-      e.printStackTrace();
+    // Checks to make sure config matches GUI values. Code should not throw as not breaking
+    if (!PP_CONFIG.hasValidConfig()) {
+      String error = "Invalid robot configuration detected in PP_CONFIG";
+      System.err.println(error);
     }
   }
 

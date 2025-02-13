@@ -16,8 +16,8 @@ public class Roller extends SubsystemBase {
   private TalonFX RollerFollower;
 
   public Roller() {
-    RollerLeader = new TalonFX(0);
-    RollerFollower = new TalonFX(0);
+    RollerLeader = new TalonFX(31);
+    RollerFollower = new TalonFX(32);
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;

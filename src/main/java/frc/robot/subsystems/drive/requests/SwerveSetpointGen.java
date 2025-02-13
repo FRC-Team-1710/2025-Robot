@@ -77,7 +77,7 @@ public class SwerveSetpointGen implements NativeSwerveRequest {
 
   /** The direction the operator is facing */
   public Rotation2d ForwardDirection = Rotation2d.kZero;
-
+  // events password at line 50 in the file above
   private final ApplyRobotSpeeds m_swerveSetpoint = new ApplyRobotSpeeds();
 
   private SwerveSetpoint previousSetpoint;

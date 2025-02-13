@@ -1,3 +1,9 @@
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
@@ -6,10 +12,12 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -28,7 +36,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
+import frc.robot.utils.ArrayBuilder;
 import java.util.List;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -39,34 +49,29 @@ import org.littletonrobotics.junction.Logger;
  * be used in command-based projects.
  */
 public class Drive extends SubsystemBase {
+
+  // Load the path we want to pathfind to and follow
+  // private PathPlannerPath path = PathPlannerPath.fromPathFile("Align Alpha");
+
   private final DriveIO io;
   private final DriveIOInputsAutoLogged inputs;
-  private final ModuleIOInputsAutoLogged[] modules =
-      new ModuleIOInputsAutoLogged[] {
-        new ModuleIOInputsAutoLogged(),
-        new ModuleIOInputsAutoLogged(),
-        new ModuleIOInputsAutoLogged(),
-        new ModuleIOInputsAutoLogged()
-      };
+  private final ModuleIOInputsAutoLogged[] modules = ArrayBuilder.buildModuleAutoLogged();
 
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(Constants.SWERVE_MODULE_OFFSETS);
   private SwerveDrivePoseEstimator poseEstimator = null;
   private Trigger estimatorTrigger =
       new Trigger(() -> poseEstimator != null).and(() -> Constants.currentMode == Mode.REPLAY);
-  private SwerveModulePosition[] currentPositions =
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
+  private SwerveModulePosition[] currentPositions = ArrayBuilder.buildSwerveModulePosition();
 
-  private Alert[] driveDisconnectedAlert = new Alert[4];
-  private Alert[] turnDisconnectedAlert = new Alert[4];
-  private Alert[] turnEncoderDisconnectedAlert = new Alert[4];
+  private Alert[] driveDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected drive motor on module");
+  private Alert[] turnDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected turn motor on module");
+  private Alert[] turnEncoderDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected turn encoder on module");
 
-  private Alert gyroDisconnectedAlert;
+  private Alert gyroDisconnectedAlert = new Alert("Gyro Disconnected", AlertType.kError);
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -89,6 +94,27 @@ public class Drive extends SubsystemBase {
       new SwerveRequest.SysIdSwerveSteerGains();
   private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
       new SwerveRequest.SysIdSwerveRotation();
+
+  // Example TorqueCurrent SysID - Others are avalible.
+  private final SysIdSwerveTranslation_Torque m_translationTorqueCharacterization =
+      new SysIdSwerveTranslation_Torque();
+
+  /* SysId routine for characterizing torque translation. This is used to find PID gains for Torque Current of the drive motors. */
+  private final SysIdRoutine m_sysIdRoutineTorqueTranslation =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              Volts.of(5).per(Second), // Use ramp rate of 5 A/s
+              Volts.of(10), // Use dynamic step of 10 A
+              Seconds.of(5), // Use timeout of 5 seconds
+              // Log state with SignalLogger class
+              state -> Logger.recordOutput("SysIdTranslation_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              output ->
+                  setControl(
+                      m_translationTorqueCharacterization.withTorqueCurrent(
+                          output.in(Volts))), // treat volts as amps
+              null,
+              this));
 
   /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
   private final SysIdRoutine m_sysIdRoutineTranslation =
@@ -140,31 +166,24 @@ public class Drive extends SubsystemBase {
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
   public Drive(DriveIO io) {
 
     this.io = io;
     inputs = new DriveIOInputsAutoLogged();
 
-    configureAlerts();
     configureAutoBuilder();
-  }
 
-  private void configureAlerts() {
-    gyroDisconnectedAlert = new Alert("Gyro Disconnected", AlertType.kError);
-
-    for (int i = 0; i < modules.length; i++) {
-      driveDisconnectedAlert[i] =
-          new Alert(
-              "Disconnected drive motor on module " + Integer.toString(i) + ".", AlertType.kError);
-      turnDisconnectedAlert[i] =
-          new Alert(
-              "Disconnected turn motor on module " + Integer.toString(i) + ".", AlertType.kError);
-      turnEncoderDisconnectedAlert[i] =
-          new Alert(
-              "Disconnected turn encoder on module " + Integer.toString(i) + ".", AlertType.kError);
-    }
+    PathPlannerLogging.setLogActivePathCallback(
+        (activePath) -> {
+          Logger.recordOutput(
+              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+        });
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (targetPose) -> {
+          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+        });
   }
 
   private void configureAutoBuilder() {
@@ -274,6 +293,26 @@ public class Drive extends SubsystemBase {
     io.resetPose(pose);
   }
 
+  /*
+  public Command goToPoint(int x, int y) {
+    Pose2d targetPose = new Pose2d(x, y, Rotation2d.fromDegrees(180));
+    PathConstraints constraints =
+        new PathConstraints(4.0, 5.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return AutoBuilder.pathfindToPose(targetPose, constraints);
+  }
+  /*
+   * flips if needed
+   */
+  /*
+  public Command goToPoint(Pose2d pose) {
+    PathConstraints constraints =
+        new PathConstraints(3.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return new ConditionalCommand(
+        AutoBuilder.pathfindToPoseFlipped(pose, constraints),
+        AutoBuilder.pathfindToPose(pose, constraints),
+        () -> Robot.getAlliance());
+  }*/
+
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
@@ -296,8 +335,8 @@ public class Drive extends SubsystemBase {
   }
 
   public Angle[] getDrivePositions() {
-    Angle[] values = new Angle[4];
-    for (int i = 0; i < 4; i++) {
+    Angle[] values = new Angle[Constants.PP_CONFIG.numModules];
+    for (int i = 0; i < values.length; i++) {
       values[i] = modules[i].drivePosition;
     }
     return values;
@@ -323,6 +362,14 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() {
     return inputs.speeds;
+  }
+
+  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured/velocity")
+  public double getChassisVelocity() {
+
+    return Math.sqrt(
+        Math.pow(inputs.speeds.vxMetersPerSecond, 2)
+            + Math.pow(inputs.speeds.vyMetersPerSecond, 2));
   }
 
   /**
@@ -364,7 +411,11 @@ public class Drive extends SubsystemBase {
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
     this.addVisionMeasurement(
-        visionMeasurement.poseEstimate().pose().toPose2d(),
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            this.getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }

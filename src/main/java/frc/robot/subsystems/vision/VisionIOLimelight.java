@@ -1,3 +1,9 @@
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
@@ -43,6 +49,7 @@ public class VisionIOLimelight implements VisionIO {
     inputs.connected =
         ((RobotController.getFPGATime() - latencySubscriber.getLastChange()) / 1000) < 250;
 
+    // Tricks for setting up L4 https://www.chiefdelphi.com/t/introducing-limelight-4/480329/185
     LimelightHelpers.SetRobotOrientation(
         cameraName,
         currentParams.robotPose().getRotation().getDegrees(),

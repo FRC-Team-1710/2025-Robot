@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
@@ -51,6 +52,7 @@ public class Elevator extends SubsystemBase {
   public Elevator(ElevatorIO io) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
+    SmartDashboard.putData(this);
   }
 
   @Override
@@ -99,11 +101,13 @@ public class Elevator extends SubsystemBase {
   /** Enumeration of available arm distances with their corresponding target angles. */
   private enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
-    INTAKE(Inches.of(0)), // Elevator tucked in
-    L1(Inches.of(12)), // Position for scoring in L1
-    L2(Inches.of(15.75)), // Position for scoring in L2
-    L3(Inches.of(30.25)), // Position for scoring in L3
-    L4(Inches.of(53.25)); // Position for scoring in L4
+    INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
+    L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
+    L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
+    L3(Inches.of(30.25), Inches.of(.5)), // Position for scoring in L3
+    L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
+    ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
+    ALGAE_HIGH(Inches.of(25), Inches.of(1)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
@@ -130,12 +134,14 @@ public class Elevator extends SubsystemBase {
   /**
    * Sets a new arm distance and schedules the corresponding command.
    *
-   * @param distance The desired ElevatorPosition
+   * @param mode The desired ElevatorPosition
    */
-  private void setElevatorPosition(ElevatorPosition distance) {
-    currentCommand.cancel();
-    currentMode = distance;
-    currentCommand.schedule();
+  private void setElevatorPosition(ElevatorPosition mode) {
+    if (currentMode != mode) {
+      currentCommand.cancel();
+      currentMode = mode;
+      currentCommand.schedule();
+    }
   }
 
   // Command that runs the appropriate routine based on the current distance
@@ -153,7 +159,11 @@ public class Elevator extends SubsystemBase {
               ElevatorPosition.L3,
               createPositionCommand(ElevatorPosition.L3),
               ElevatorPosition.L4,
-              createPositionCommand(ElevatorPosition.L4)),
+              createPositionCommand(ElevatorPosition.L4),
+              ElevatorPosition.ALGAE_LOW,
+              createPositionCommand(ElevatorPosition.ALGAE_LOW),
+              ElevatorPosition.ALGAE_HIGH,
+              createPositionCommand(ElevatorPosition.ALGAE_HIGH)),
           this::getMode);
 
   /**
@@ -228,6 +238,20 @@ public class Elevator extends SubsystemBase {
    */
   public final Command L4() {
     return setPositionCommand(ElevatorPosition.L4);
+  }
+
+  /**
+   * @return Command to move the arm to the low algae distance
+   */
+  public final Command AlgaeLow() {
+    return setPositionCommand(ElevatorPosition.ALGAE_LOW);
+  }
+
+  /**
+   * @return Command to move the arm to the high algae distance
+   */
+  public final Command AlgaeHigh() {
+    return setPositionCommand(ElevatorPosition.ALGAE_HIGH);
   }
 
   /**

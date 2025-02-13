@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to kilo start"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Kilo near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to Lima near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Lima near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "flipped to alpha near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "flipped back alpha near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "flipped to bravo near"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

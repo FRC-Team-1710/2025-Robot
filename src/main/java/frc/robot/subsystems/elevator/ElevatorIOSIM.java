@@ -7,6 +7,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
@@ -15,10 +16,10 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color8Bit;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.*;
 
 /**
  * Simulation implementation of the elevator subsystem. This class extends ElevatorIOCTRE to provide
@@ -48,17 +49,36 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       LinearSystemId.createElevatorSystem(
           m_elevatorGearbox, Units.lbsToKilograms(5.5), Units.inchesToMeters(2.383), 6);
   private final ElevatorSim m_ElevatorSim =
-      new ElevatorSim(elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, 0.5);
+      new ElevatorSim(
+          elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, Units.inchesToMeters(1));
   private final Encoder enc = new Encoder(3, 4);
   private final EncoderSim m_EncoderSim = new EncoderSim(enc);
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(0);
   // private final TalonFXSimState pwmTalonFX = new TalonFXSimState();
   private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
-  private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
-  private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 10, 0);
-  private final MechanismLigament2d m_elevatorMech2d =
+  private final LoggedMechanism2d m_mech2d =
+      new LoggedMechanism2d(Units.inchesToMeters(28), Units.inchesToMeters(80));
+
+  private final LoggedMechanismRoot2d m_mech2dRoot =
+      m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(19), Units.inchesToMeters(5.75));
+  private final LoggedMechanismRoot2d m_mech2dRoot2d =
+      m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(19), Units.inchesToMeters(4.75));
+
+  private final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
       m_mech2dRoot.append(
-          new MechanismLigament2d("ElevatorSimulator", m_ElevatorSim.getPositionMeters(), 90));
+          new LoggedMechanismLigament2d("SecondStageSim", m_ElevatorSim.getPositionMeters(), 90));
+  private final LoggedMechanismLigament2d m_elevatorMechFirstStage2d =
+      m_mech2dRoot2d.append(
+          new LoggedMechanismLigament2d("FirstStageSim", m_ElevatorSim.getPositionMeters(), 90));
+
+  private final LoggedMechanismLigament2d m_secondStage2d =
+      m_elevatorMechSecondStage2d.append(
+          new LoggedMechanismLigament2d(
+              "SecondStage", Units.inchesToMeters(25), 0)); // Max height 27in
+  private final LoggedMechanismLigament2d m_firstStage2d =
+      m_elevatorMechFirstStage2d.append(
+          new LoggedMechanismLigament2d(
+              "FirstStage", Units.inchesToMeters(37), 0)); // Max height 28in
 
   /**
    * Constructs a new ElevatorIOSIM instance. Initializes the physics simulation with realistic
@@ -67,8 +87,10 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
    */
   public ElevatorIOSIM() {
     super();
+    m_firstStage2d.setColor(new Color8Bit(0, 255, 0));
+    m_secondStage2d.setColor(new Color8Bit(0, 255, 255));
     enc.setDistancePerPulse((2 * Math.PI * Units.inchesToMeters(2.383)) / 4096);
-    SmartDashboard.putData("Elevator Sim", m_mech2d);
+    Logger.recordOutput("Elevator Sim", m_mech2d);
     SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
     SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
     SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
@@ -88,8 +110,17 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     super.updateInputs(inputs);
+    inputs.elevatorDistance =
+        Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
     tempPIDTuning();
-    m_elevatorMech2d.setLength(enc.getDistance());
+    m_elevatorMechSecondStage2d.setLength(
+        enc.getDistance() > 0
+            ? Units.inchesToMeters(enc.getDistance())
+            : Units.inchesToMeters(0.000001));
+    m_elevatorMechFirstStage2d.setLength(
+        enc.getDistance() > 0.001
+            ? (Units.inchesToMeters(enc.getDistance() * (28.0 / 55.0)))
+            : Units.inchesToMeters(0.000001));
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
@@ -103,9 +134,11 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     }
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_ElevatorSim.getCurrentDrawAmps()));
-    SmartDashboard.putNumber("ElevatorSIM/Position", enc.getDistance());
-    SmartDashboard.putNumber("ElevatorSIM/Goal", elevatorPID.getGoal().position);
-    SmartDashboard.putNumber("ElevatorSIM/Setpoint", elevatorPID.getSetpoint().position);
+
+    Logger.recordOutput("Elevator Sim", m_mech2d);
+    Logger.recordOutput("ElevatorSIM/Position", enc.getDistance());
+    Logger.recordOutput("ElevatorSIM/Goal", elevatorPID.getGoal().position);
+    Logger.recordOutput("ElevatorSIM/Setpoint", elevatorPID.getSetpoint().position);
   }
 
   private void tempPIDTuning() {
