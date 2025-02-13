@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.AlignmentForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climber.Climber;
@@ -56,7 +58,7 @@ public class RobotContainer {
           .withDeadband(0.125);
 
   private final TunableController mech =
-      new TunableController(0)
+      new TunableController(1)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
@@ -242,6 +244,34 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
+
+        NamedCommands.registerCommand(
+            "Align to Alpha", new AlignmentForAuto(vision, drivetrain, Targets.ALPHA));
+        NamedCommands.registerCommand(
+            "Align to Bravo", new AlignmentForAuto(vision, drivetrain, Targets.BRAVO));
+        NamedCommands.registerCommand(
+            "Align to Charlie", new AlignmentForAuto(vision, drivetrain, Targets.CHARLIE));
+        NamedCommands.registerCommand(
+            "Align to Delta", new AlignmentForAuto(vision, drivetrain, Targets.DELTA));
+        NamedCommands.registerCommand(
+            "Align to Echo", new AlignmentForAuto(vision, drivetrain, Targets.ECHO));
+        NamedCommands.registerCommand(
+            "Align to Foxtrot", new AlignmentForAuto(vision, drivetrain, Targets.FOXTROT));
+        NamedCommands.registerCommand(
+            "Align to Golf", new AlignmentForAuto(vision, drivetrain, Targets.GOLF));
+        NamedCommands.registerCommand(
+            "Align to Hotel", new AlignmentForAuto(vision, drivetrain, Targets.HOTEL));
+        NamedCommands.registerCommand(
+            "Align to India", new AlignmentForAuto(vision, drivetrain, Targets.INDIA));
+        NamedCommands.registerCommand(
+            "Align to Juliet", new AlignmentForAuto(vision, drivetrain, Targets.JULIET));
+        NamedCommands.registerCommand(
+            "Align to Kilo", new AlignmentForAuto(vision, drivetrain, Targets.KILO));
+        NamedCommands.registerCommand(
+            "Align to Lima", new AlignmentForAuto(vision, drivetrain, Targets.LIMA));
+        NamedCommands.registerCommand("Coral Intake", new IntakeCoral(manipulator, roller, driver));
+        NamedCommands.registerCommand("outtake Coral", new OuttakeCoral(manipulator));
+        
         break;
 
       default:
@@ -277,10 +307,12 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive Wheel Radius Characterization",
         DriveCommands.wheelRadiusCharacterization(drivetrain));
+
     configureBindings();
   }
 
   private void configureBindings() {
+
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     driver.a().onTrue(elevator.L2()).onFalse(elevator.intake());
     driver.x().onTrue(elevator.L3()).onFalse(elevator.intake());
@@ -305,10 +337,10 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                            driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            -driver.customLeft().getX())) // Drive left with negative X (left)
+                            driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             -driver
@@ -537,10 +569,10 @@ public class RobotContainer {
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single
 
-    mech.rightBumper().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    mech.rightBumper().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    mech.leftBumper().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    mech.leftBumper().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    mech.rightBumper().and(mech.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    mech.rightBumper().and(mech.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    mech.leftBumper().and(mech.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    mech.leftBumper().and(mech.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
     driver

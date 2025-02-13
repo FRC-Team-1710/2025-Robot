@@ -11,6 +11,18 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back delta near"
@@ -20,6 +32,18 @@
           "type": "path",
           "data": {
             "pathName": "to charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Charlie"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         },
         {
@@ -35,15 +59,45 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back bravo near"
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to alpha near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         }
       ]

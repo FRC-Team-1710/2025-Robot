@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Delta"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back delta near"
@@ -23,6 +29,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Charlie"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back charlie near"
@@ -32,6 +44,12 @@
           "type": "path",
           "data": {
             "pathName": "to echo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Echo"
           }
         },
         {

@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -60,7 +61,7 @@ public interface DriveIO {
     // Position and motion state
     public Pose2d pose = Pose2d.kZero;
     public ChassisSpeeds speeds = new ChassisSpeeds();
-    public Rotation2d operatorForwardDirection = Rotation2d.kZero;
+    public Rotation2d operatorForwardDirection = new Rotation2d(Units.degreesToRadians(270));
 
     // Diagnostic data
     public double odometryPeriod = 0.0;

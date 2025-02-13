@@ -17,6 +17,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back bravo far"
@@ -29,6 +35,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back bravo far"
@@ -41,6 +53,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back alpha far"
@@ -50,6 +68,12 @@
           "type": "path",
           "data": {
             "pathName": "to alpha far"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
           }
         },
         {

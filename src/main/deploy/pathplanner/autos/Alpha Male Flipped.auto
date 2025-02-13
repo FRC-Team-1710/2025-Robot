@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Kilo"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back Kilo near"
@@ -20,6 +26,12 @@
           "type": "path",
           "data": {
             "pathName": "to Lima near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Lima"
           }
         },
         {
@@ -35,6 +47,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "flipped back alpha near"
@@ -44,6 +62,12 @@
           "type": "path",
           "data": {
             "pathName": "flipped to bravo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
           }
         }
       ]
