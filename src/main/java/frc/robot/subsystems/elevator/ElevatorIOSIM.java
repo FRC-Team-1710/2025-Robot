@@ -56,22 +56,22 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(0);
   // private final TalonFXSimState pwmTalonFX = new TalonFXSimState();
   private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
-  private final LoggedMechanism2d m_mech2d =
+  public final LoggedMechanism2d m_mech2d =
       new LoggedMechanism2d(Units.inchesToMeters(28), Units.inchesToMeters(80));
 
-  private final LoggedMechanismRoot2d m_mech2dRoot =
+  public final LoggedMechanismRoot2d m_mech2dRootSecondStage =
       m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(19), Units.inchesToMeters(5.75));
-  private final LoggedMechanismRoot2d m_mech2dRoot2d =
+  private final LoggedMechanismRoot2d m_mech2dRootFirstStage =
       m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(19), Units.inchesToMeters(4.75));
 
-  private final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
-      m_mech2dRoot.append(
+  public final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
+      m_mech2dRootSecondStage.append(
           new LoggedMechanismLigament2d("SecondStageSim", m_ElevatorSim.getPositionMeters(), 90));
   private final LoggedMechanismLigament2d m_elevatorMechFirstStage2d =
-      m_mech2dRoot2d.append(
+      m_mech2dRootFirstStage.append(
           new LoggedMechanismLigament2d("FirstStageSim", m_ElevatorSim.getPositionMeters(), 90));
 
-  private final LoggedMechanismLigament2d m_secondStage2d =
+  public final LoggedMechanismLigament2d m_secondStage2d =
       m_elevatorMechSecondStage2d.append(
           new LoggedMechanismLigament2d(
               "SecondStage", Units.inchesToMeters(25), 0)); // Max height 27in

@@ -19,19 +19,17 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
-import frc.robot.commands.EndIntake;
-import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.WristManual;
 import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
+import frc.robot.commands.WristManual;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.claw.ClawIO;
 import frc.robot.subsystems.claw.ClawIOCTRE;
 import frc.robot.subsystems.claw.ClawIOSIM;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -149,7 +147,7 @@ public class RobotContainer {
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
 
   public RobotContainer() {
-    //claw = new Claw();
+    // claw = new Claw();
     climber = new Climber();
     roller = new Roller();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
@@ -326,10 +324,10 @@ public class RobotContainer {
 
   private void configureBindings() {
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
-    elevator.setDefaultCommand(new ElevationManual(elevator, () -> driver.getLeftY()));
-    driver.pov(0).onTrue(elevator.L4());
-    driver.pov(180).onTrue(elevator.intake());
-    driver.leftBumper().whileTrue(new OuttakeCoral(manipulator));
+    elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
+    mech.pov(0).onTrue(elevator.L4());
+    mech.pov(180).onTrue(elevator.intake());
+    mech.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
         .rightBumper()
         .whileTrue(new IntakeCoral(manipulator, roller, driver))

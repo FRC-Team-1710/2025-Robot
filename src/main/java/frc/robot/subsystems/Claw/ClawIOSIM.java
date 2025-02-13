@@ -18,11 +18,11 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.subsystems.elevator.ElevatorIOSIM;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
 public class ClawIOSIM extends ClawIOCTRE {
   private DCMotorSim sim =
@@ -36,7 +36,7 @@ public class ClawIOSIM extends ClawIOCTRE {
   private double ki = 0.0;
   private double kd = 0.0;
 
-  private final MechanismLigament2d m_wrist;
+  private final LoggedMechanismLigament2d m_wrist;
   private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
   private final ProfiledPIDController m_bottomController =
       new ProfiledPIDController(kp, ki, kd, new TrapezoidProfile.Constraints(5, 5));
@@ -58,8 +58,13 @@ public class ClawIOSIM extends ClawIOCTRE {
   public ClawIOSIM(ElevatorIOSIM elevator) {
     m_topEncoder.setDistancePerPulse(kArmEncoderDistPerPulse);
     m_wrist =
-        elevator.m_elevatorMech2d.append(
-            new MechanismLigament2d("Wrist", 0.5, 0, 4, new Color8Bit(Color.kPurple)));
+        elevator.m_secondStage2d.append(
+            new LoggedMechanismLigament2d(
+                "Wrist",
+                Units.inchesToMeters(15),
+                Units.degreesToRadians(0),
+                4,
+                new Color8Bit(Color.kPurple)));
     SmartDashboard.putNumber("Claw/p", kp);
     SmartDashboard.putNumber("Claw/i", ki);
     SmartDashboard.putNumber("Claw/d", kd);
@@ -82,11 +87,8 @@ public class ClawIOSIM extends ClawIOCTRE {
     }
     m_arm_topSim.setInput(pwmTalonFX.get() * RobotController.getBatteryVoltage());
 
+    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
     m_arm_topSim.update(0.02);
-
-    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
-
-    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
 
     if (kp != SmartDashboard.getNumber("Claw/p", kp)) {
       kp = SmartDashboard.getNumber("Claw/p", kp);
