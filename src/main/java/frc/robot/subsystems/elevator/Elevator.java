@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
@@ -51,6 +52,7 @@ public class Elevator extends SubsystemBase {
   public Elevator(ElevatorIO io) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
+    SmartDashboard.putData(this);
   }
 
   @Override
@@ -132,12 +134,14 @@ public class Elevator extends SubsystemBase {
   /**
    * Sets a new arm distance and schedules the corresponding command.
    *
-   * @param distance The desired ElevatorPosition
+   * @param mode The desired ElevatorPosition
    */
-  private void setElevatorPosition(ElevatorPosition distance) {
-    currentCommand.cancel();
-    currentMode = distance;
-    currentCommand.schedule();
+  private void setElevatorPosition(ElevatorPosition mode) {
+    if (currentMode != mode) {
+      currentCommand.cancel();
+      currentMode = mode;
+      currentCommand.schedule();
+    }
   }
 
   // Command that runs the appropriate routine based on the current distance

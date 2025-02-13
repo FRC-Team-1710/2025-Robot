@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -139,17 +141,17 @@ public class TargetingComputer {
   public static double getSourceTargetingAngle(Pose2d pose) {
     double sourceCutoffDistance = 4.5;
     if (isRedAlliance) {
-      return (pose.getY() > FieldConstants.fieldWidth.magnitude() / 2) // red
+      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
           ? (pose.getX()
-                  >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // top half
+                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
               ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
               : Targets.PROCESSOR.getTargetingAngle() // far
           : (pose.getX()
-                  >= FieldConstants.fieldLength.magnitude() - sourceCutoffDistance) // bottom half
+                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
               ? Targets.SOURCE_LEFT.getTargetingAngle() // close
               : Targets.NET.getTargetingAngle(); // far
     } else {
-      return (pose.getY() > FieldConstants.fieldWidth.magnitude() / 2) // blue
+      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
           ? (pose.getX() <= sourceCutoffDistance) // top half
               ? Targets.SOURCE_LEFT.getTargetingAngle() // close
               : Targets.NET.getTargetingAngle() // far
