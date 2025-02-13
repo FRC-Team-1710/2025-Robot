@@ -12,6 +12,12 @@
 package frc.robot.subsystems.claw;
 
 import edu.wpi.first.units.measure.Angle;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -25,6 +31,20 @@ public class Claw extends SubsystemBase {
   private final ClawIO io;
   private final ClawIOInputsAutoLogged inputs;
 
+  private TalonFX clawRollers;
+  private TalonFX wrist;
+  private CANcoder ClawEncoder;
+
+  private double CanEncoderOffset = 0;
+  private double setPoint = 0;
+  private double ClawGearing = 9 * (48 / 18);
+
+  // PID
+  private PIDController PIDWrist;
+  private double VelocityP = 0;
+  private double VelocityI = 0;
+  private double VelocityD = 0;
+
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
@@ -33,6 +53,32 @@ public class Claw extends SubsystemBase {
   public Claw(ClawIO io) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
+    
+    clawRollers = new TalonFX(0);
+    wrist = new TalonFX(0);
+
+    var config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    clawRollers.getConfigurator().apply(config);
+    wrist.getConfigurator().apply(config);
+
+    PIDWrist = new PIDController(VelocityP, VelocityI, VelocityD);
+
+    wrist.setPosition(wrist.getPosition().getValueAsDouble() - CanEncoderOffset);
+  }
+
+  public void setClawPower(double power) {
+    clawRollers.set(power);
+  }
+
+  public double getPosition() {
+    return clawRollers.getPosition().getValueAsDouble() / ClawGearing;
+  }
+
+  public void setWrist(double position) {
+    setPoint = position * ClawGearing;
   }
 
   @Override
