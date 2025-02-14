@@ -44,6 +44,9 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+
+import java.lang.annotation.Target;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -126,6 +129,7 @@ public class RobotContainer {
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
 
   private final Trigger overrideTargetingController = new Trigger(mech.povDown());
+  // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
@@ -395,19 +399,23 @@ public class RobotContainer {
                     && elevator.isAtTarget())
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
-    previousTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID - 1))));
+    previousTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID - 1))));
 
-    nextTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID + 1))));
+    nextTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID + 1))));
 
     // driver
     //     .b()
@@ -421,8 +429,7 @@ public class RobotContainer {
     targetReef
         .and(() -> TargetingComputer.targetingControllerOverride)
         .onTrue(
-            new InstantCommand(
-                    () -> TargetingComputer.setTargetBranchByOrientation(drivetrain.getPose()))
+            new InstantCommand(() -> vision.autoBranchTargeting())
                 .alongWith(
                     new InstantCommand(
                         () ->
@@ -591,7 +598,7 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, roller));
 
     overrideTargetingController.onTrue(
-        new InstantCommand(() -> TargetingComputer.toggleTargetingControllerOverride()));
+        new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));

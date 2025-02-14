@@ -17,8 +17,8 @@ import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.*;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -183,27 +183,49 @@ public class VisionIOPhotonVision implements VisionIO {
     return tagToCameraPose;
   }
 
+  /**
+   * Provides the Transform3d that represents the robots position relative to the provided AprilTag
+   * @param id Requested tag ID
+   * @return Returns the robots position relative to the AprilTag
+   */
   @AutoLogOutput
   public Transform3d getTransformToTag(int id) {
     if (latestResult.hasTargets()) {
       for (var target : latestResult.getTargets()) {
         if (target.fiducialId == id) {
-          var name = target.bestCameraToTarget.plus(robotToCamera);
-          return name;
+          return target.bestCameraToTarget.plus(robotToCamera);
         }
       }
     }
     return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
   }
 
+  /**
+   * Checks to make sure that the camera has AprilTag results/targets
+   * @return Boolean to represent the presence of AprilTag results
+   */
   public boolean hasTargets() {
     return !cameraTargets.isEmpty();
   }
 
+  /**
+   * Redundant perchance.
+   */
   public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
+  /**
+   * Also probably redundant perchance.
+   */
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
+  }
+
+  /**
+   * Provides the camera's most recent targets
+   * @return List of targets
+   */
+  public List<PhotonTrackedTarget> getCameraTargets() {
+    return cameraTargets;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
@@ -219,20 +241,16 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /** Updates the local vision results variables */
   private void updateResults() {
-    PhotonPipelineResult nullResult = new PhotonPipelineResult();
     cameraResults = camera.getAllUnreadResults();
     if (!cameraResults.isEmpty()) {
       latestResult = cameraResults.get(cameraResults.size() - 1);
     } else {
       latestResult = new PhotonPipelineResult();
     }
-    // this.latestResult = !cameraResults.isEmpty() ? cameraResults.get(cameraResults.size() - 1) :
-    // nullResult;
     if (latestResult.hasTargets()) {
       cameraTargets = latestResult.targets;
     } else {
       cameraTargets = new ArrayList<>();
     }
-    Logger.recordOutput("camera results", cameraResults.toString());
   }
 }
