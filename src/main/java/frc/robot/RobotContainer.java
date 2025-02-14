@@ -44,6 +44,9 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+
+import java.lang.annotation.Target;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -396,19 +399,23 @@ public class RobotContainer {
                     && elevator.isAtTarget())
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
-    previousTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID - 1))));
+    previousTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID - 1))));
 
-    nextTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID + 1))));
+    nextTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID + 1))));
 
     // driver
     //     .b()

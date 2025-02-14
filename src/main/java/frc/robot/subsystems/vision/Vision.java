@@ -122,6 +122,12 @@ public class Vision extends SubsystemBase {
     return (VisionIOPhotonVision) io[index];
   }
 
+  /**
+   * Calculates the robot's offset from the specified tag using only the front 2 cameras
+   * @param id The requested AprilTag's id
+   * @param desiredOffset The desired offset of the robot relative to the tag
+   * @return Transform3d that represents the robots position relative to the offset
+   */
   public Transform3d calculateOffset(int id, Translation2d desiredOffset) {
     Transform3d leftCamToTag = getCamera(0).getRobotToTargetOffset(id);
     Transform3d rightCamToTag = getCamera(1).getRobotToTargetOffset(id);
@@ -180,10 +186,20 @@ public class Vision extends SubsystemBase {
     return result;
   }
 
+  /**
+   * Checks the front 2 cameras to see if there is a result with the fiducial ID requested
+   * @param id Requested tag's fiducial ID 
+   * @return If one of the front 2 cameras have the requested target, returns true
+   */
   public boolean containsRequestedTarget(int id) {
     return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
+  /**
+   * Calculates the distance to the requested tag; Make sure to check if the tag exists before you call this command
+   * @param tagID Requested tag's ID
+   * @return Distance from the robot's center to the target found
+   */
   public double getDistanceToTag(int tagID) {
     return Math.sqrt(
         Math.pow(calculateOffset(tagID, new Translation2d()).getX(), 2)
@@ -194,6 +210,10 @@ public class Vision extends SubsystemBase {
     return Arrays.stream(branchIDs).anyMatch(id -> id == value);
   }
 
+  /**
+   * The most optimized function with just over O(n^2) time complexity. Uses a hashmap to make up for time complexity.
+   * <p>When this is called, it will set the reef target to the closest tag to the robot's center.
+   */
   public void autoBranchTargeting() {
     var availableTags = new HashMap<Integer, Double>();
     for (int i = 0; i < io.length; i++) {
@@ -214,10 +234,6 @@ public class Vision extends SubsystemBase {
                   .getTranslation()
                   .getY()
               < 0);
-      Logger.recordOutput(
-          "Offset Pose",
-          getCamera(getCameraIDWithTarget(targetTagID)).getRobotToTargetOffset(targetTagID));
-      Logger.recordOutput("Left Side?", leftSide);
       TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }

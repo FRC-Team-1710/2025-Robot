@@ -182,6 +182,11 @@ public class VisionIOPhotonVision implements VisionIO {
     return tagToCameraPose;
   }
 
+  /**
+   * Provides the Transform3d that represents the robots position relative to the provided AprilTag
+   * @param id Requested tag ID
+   * @return Returns the robots position relative to the AprilTag
+   */
   @AutoLogOutput
   public Transform3d getTransformToTag(int id) {
     if (latestResult.hasTargets()) {
@@ -194,16 +199,30 @@ public class VisionIOPhotonVision implements VisionIO {
     return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
   }
 
+  /**
+   * Checks to make sure that the camera has AprilTag results/targets
+   * @return Boolean to represent the presence of AprilTag results
+   */
   public boolean hasTargets() {
     return !cameraTargets.isEmpty();
   }
 
+  /**
+   * Redundant perchance.
+   */
   public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
+  /**
+   * Also probably redundant perchance.
+   */
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
+  /**
+   * Provides the camera's most recent targets
+   * @return List of targets
+   */
   public List<PhotonTrackedTarget> getCameraTargets() {
     return cameraTargets;
   }
