@@ -518,7 +518,7 @@ public class RobotContainer {
         .onTrue(new ElevatorToTargetLevel(elevator))
         .onFalse(elevator.intake());
 
-    targetSource.whileTrue(
+    targetSource.and(targetReef.negate()).whileTrue(
         drivetrain.applyRequest(
             () ->
                 drive
