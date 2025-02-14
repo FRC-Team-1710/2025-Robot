@@ -36,12 +36,10 @@ public class WristManual extends Command {
     if (Math.abs(Power) > 0) {
       claw.setManual(Power);
       locked = false;
-    } else {
-      if (!locked) {
-        claw.setManual(0);
-        claw.setAngle(claw.getAngle());
-        locked = true;
-      }
+    } else if (!locked) {
+      claw.setManual(0);
+      claw.setAngle(claw.getAngle());
+      locked = true;
     }
   }
 
