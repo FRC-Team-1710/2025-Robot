@@ -179,7 +179,7 @@ public class VisionIOPhotonVision implements VisionIO {
     } catch (Exception e) {
       return new Transform3d();
     }
-    Logger.recordOutput("tagToCameraPose via " + camera.getName(), tagToCameraPose);
+    Logger.recordOutput("VisionDebugging/tagToCameraPose via " + camera.getName(), tagToCameraPose);
     return tagToCameraPose;
   }
 

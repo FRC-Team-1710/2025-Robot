@@ -38,11 +38,11 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.elevator.ElevatorIOSIM;
+import frc.robot.subsystems.funnel.Funnel;
 import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorIO;
 import frc.robot.subsystems.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.manipulator.ManipulatorIOTalonFX;
-import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -77,7 +77,7 @@ public class RobotContainer {
   public final Drive drivetrain;
   public final Manipulator manipulator;
   public final Elevator elevator;
-  public final Roller roller;
+  public final Funnel funnel;
   public final Climber climber;
   public final Claw claw;
 
@@ -149,7 +149,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     climber = new Climber();
-    roller = new Roller();
+    funnel = new Funnel();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
@@ -330,8 +330,8 @@ public class RobotContainer {
     mech.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     driver
         .rightBumper()
-        .whileTrue(new IntakeCoral(manipulator, roller, driver))
-        .onFalse(new EndIntake(manipulator, roller));
+        .whileTrue(new IntakeCoral(manipulator, funnel, driver))
+        .onFalse(new EndIntake(manipulator, funnel));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -541,23 +541,27 @@ public class RobotContainer {
         .onFalse(elevator.intake()
         .alongWith(claw.IDLE()));
 
-    targetSource.whileTrue(
-        drivetrain.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(
-                        MaxSpeed.times(
-                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            (new Rotation2d(
-                                        Units.degreesToRadians(
-                                            TargetingComputer.getSourceTargetingAngle(
-                                                drivetrain.getPose())))
-                                    .minus(drivetrain.getPose().getRotation())
-                                    .getRadians())
-                                * rotP))));
+    targetSource
+        .and(targetReef.negate())
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getSourceTargetingAngle(
+                                                    drivetrain.getPose())))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
@@ -606,8 +610,8 @@ public class RobotContainer {
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
-        .whileTrue(new IntakeCoral(manipulator, roller, driver))
-        .onFalse(new EndIntake(manipulator, roller));
+        .whileTrue(new IntakeCoral(manipulator, funnel, driver))
+        .onFalse(new EndIntake(manipulator, funnel));
 
     overrideTargetingController.onTrue(
         new InstantCommand(() -> TargetingComputer.toggleTargetingControllerOverride()));
