@@ -538,23 +538,27 @@ public class RobotContainer {
         .onTrue(new ElevatorToTargetLevel(elevator))
         .onFalse(elevator.intake());
 
-    targetSource.whileTrue(
-        drivetrain.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(
-                        MaxSpeed.times(
-                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            (new Rotation2d(
-                                        Units.degreesToRadians(
-                                            TargetingComputer.getSourceTargetingAngle(
-                                                drivetrain.getPose())))
-                                    .minus(drivetrain.getPose().getRotation())
-                                    .getRadians())
-                                * rotP))));
+    targetSource
+        .and(targetReef.negate())
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getSourceTargetingAngle(
+                                                    drivetrain.getPose())))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
