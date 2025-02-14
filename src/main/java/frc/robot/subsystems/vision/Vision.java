@@ -224,7 +224,6 @@ public class Vision extends SubsystemBase {
         }
       }
     }
-    System.out.println(!availableTags.isEmpty());
     if (!availableTags.isEmpty()) {
       int targetTagID =
           Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
@@ -234,6 +233,8 @@ public class Vision extends SubsystemBase {
                   .getTranslation()
                   .getY()
               < 0);
+
+      Logger.recordOutput("LeftSide?", leftSide);
       TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
