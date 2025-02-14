@@ -11,13 +11,13 @@
 
 package frc.robot.subsystems.claw;
 
-import edu.wpi.first.units.measure.Angle;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -53,7 +53,7 @@ public class Claw extends SubsystemBase {
   public Claw(ClawIO io) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
-    
+
     clawRollers = new TalonFX(0);
     wrist = new TalonFX(0);
 
