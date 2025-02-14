@@ -8,21 +8,20 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.manipulator.Manipulator;
 import frc.robot.subsystems.manipulator.ManipulatorConstants;
-import frc.robot.subsystems.roller.Roller;
-import frc.robot.subsystems.roller.RollerConstants;
+import frc.robot.subsystems.funnel.Funnel;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class EndIntake extends Command {
   private Manipulator manipulator;
-  private Roller roller;
+  private Funnel funnel;
   public final Timer timer = new Timer();
 
   /** Creates a new EndIntake. */
-  public EndIntake(Manipulator manipulator, Roller roller) {
+  public EndIntake(Manipulator manipulator, Funnel funnel) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.roller = roller;
+    this.funnel = funnel;
     this.manipulator = manipulator;
-    addRequirements(manipulator, roller);
+    addRequirements(manipulator, funnel);
   }
 
   // Called when the command is initially scheduled.
@@ -40,13 +39,13 @@ public class EndIntake extends Command {
       timer.reset();
       timer.stop();
       manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      roller.SetRollerPower(RollerConstants.insideSpeed);
+      funnel.SetRollerPower(.2);
     } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
       if (!timer.isRunning()) {
         timer.start();
       }
       manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      roller.SetRollerPower(RollerConstants.insideSpeed);
+      funnel.SetRollerPower(.2);
     }
   }
 
@@ -54,7 +53,7 @@ public class EndIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     manipulator.runPercent(0);
-    roller.SetRollerPower(0);
+    funnel.SetRollerPower(0);
   }
 
   // Returns true when the command should end.
