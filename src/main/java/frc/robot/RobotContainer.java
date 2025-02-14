@@ -422,8 +422,7 @@ public class RobotContainer {
     targetReef
         .and(() -> TargetingComputer.targetingControllerOverride)
         .onTrue(
-            new InstantCommand(
-                    () -> TargetingComputer.setTargetBranchByOrientation(drivetrain.getPose()))
+            new InstantCommand(() -> vision.autoBranchTargeting())
                 .alongWith(
                     new InstantCommand(
                         () ->

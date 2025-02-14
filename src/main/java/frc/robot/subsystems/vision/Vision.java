@@ -204,16 +204,20 @@ public class Vision extends SubsystemBase {
         }
       }
     }
+    System.out.println(!availableTags.isEmpty());
     if (!availableTags.isEmpty()) {
       int targetTagID =
           Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
       boolean leftSide =
-          !(getCamera(getCameraIDWithTarget(targetTagID))
+          (getCamera(getCameraIDWithTarget(targetTagID))
                   .getRobotToTargetOffset(targetTagID)
                   .getTranslation()
-                  .getX()
+                  .getY()
               < 0);
-      Logger.recordOutput("LeftSide?", leftSide);
+      Logger.recordOutput(
+          "Offset Pose",
+          getCamera(getCameraIDWithTarget(targetTagID)).getRobotToTargetOffset(targetTagID));
+      Logger.recordOutput("Left Side?", leftSide);
       TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
