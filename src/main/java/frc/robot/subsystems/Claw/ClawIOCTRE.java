@@ -35,8 +35,8 @@ public class ClawIOCTRE implements ClawIO {
   private double kI = 0.0;
   private double kD = 0.0;
 
-  public final TalonFX wrist = new TalonFX(11);
-  public final TalonFX intake = new TalonFX(12);
+  public final TalonFX wrist = new TalonFX(21);
+  public final TalonFX intake = new TalonFX(22);
 
   private final PIDController wristPID = new PIDController(kP, kI, kD);
 
