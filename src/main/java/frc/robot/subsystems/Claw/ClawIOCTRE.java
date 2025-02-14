@@ -12,15 +12,21 @@
 package frc.robot.subsystems.claw;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -34,11 +40,18 @@ public class ClawIOCTRE implements ClawIO {
   private double kP = 0.0;
   private double kI = 0.0;
   private double kD = 0.0;
+  private double kS = 0.0;
+  private double kG = 0.0;
+  private double kV = 0.0;
+  private double kA = 0.0;
+  private double kacel = 0.0;
+  private double kvel = 0.0;
 
-  public final TalonFX wrist = new TalonFX(11);
-  public final TalonFX intake = new TalonFX(12);
+  public final TalonFX wrist = new TalonFX(21);
+  public final TalonFX intake = new TalonFX(22);
 
-  private final PIDController wristPID = new PIDController(kP, kI, kD);
+  private final ProfiledPIDController wristPID = new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
+  private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
 
   private final StatusSignal<Angle> wristPosition = wrist.getPosition();
   private final StatusSignal<AngularVelocity> wristVelocity = wrist.getVelocity();
@@ -50,7 +63,10 @@ public class ClawIOCTRE implements ClawIO {
   private final StatusSignal<Current> intakeStatorCurrent = intake.getStatorCurrent();
   private final StatusSignal<Current> intakeSupplyCurrent = intake.getSupplyCurrent();
 
-  private Angle SetAngle = Rotations.of(0);
+  private final Debouncer clawDebounce = new Debouncer(0.5);
+  private final Debouncer wristDebounce = new Debouncer(0.5);
+
+  private Angle SetAngle = Degrees.of(0);
   private double wristManual = 0.0;
   private double runPercent = 0.0;
 
@@ -77,8 +93,8 @@ public class ClawIOCTRE implements ClawIO {
   }
 
   @Override
-  public void updateInputs(ClawIOInputsAutoLogged inputs) {
-    var leaderStatus =
+  public void updateInputs(ClawIOInputs inputs) {
+    StatusCode wristStatus =
         BaseStatusSignal.refreshAll(
             wristPosition,
             wristVelocity,
@@ -86,14 +102,19 @@ public class ClawIOCTRE implements ClawIO {
             wristStatorCurrent,
             wristSupplyCurrent);
 
-    var followerStatus =
+    StatusCode clawStatus =
         BaseStatusSignal.refreshAll(
             intakeVelocity, intakeAppliedVolts, intakeStatorCurrent, intakeSupplyCurrent);
 
-    inputs.wristMotorRotations = wristPosition.getValue().div(GEAR_RATIO);
+    inputs.clawConnected = clawDebounce.calculate(clawStatus.isOK());
+    inputs.wristConnected = wristDebounce.calculate(wristStatus.isOK());
 
-    inputs.wristVelocity = wristVelocity.getValue().div(GEAR_RATIO);
-    inputs.intakeVelocity = intakeVelocity.getValue().div(GEAR_RATIO);
+    inputs.wristMotorAngle = Degrees.of(wristPosition.getValue().magnitude() * 360 / GEAR_RATIO);
+
+    inputs.wristVelocity =
+        DegreesPerSecond.of(wristVelocity.getValue().magnitude() * 360 / GEAR_RATIO);
+    inputs.intakeVelocity =
+        DegreesPerSecond.of(intakeVelocity.getValue().magnitude() * 360 / GEAR_RATIO);
 
     inputs.wristAppliedVoltage = wristAppliedVolts.getValue();
     inputs.wristStatorCurrent = wristStatorCurrent.getValue();
@@ -106,50 +127,45 @@ public class ClawIOCTRE implements ClawIO {
     inputs.wristManual = wristManual;
     inputs.intakePercent = runPercent;
 
-    inputs.angle = Degrees.of((wristPosition.getValueAsDouble() / GEAR_RATIO));
+    inputs.angle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
 
-    SmartDashboard.putNumber("Claw/Motors/Wrist/Position", wristPosition.getValue().magnitude());
-    SmartDashboard.putNumber("Claw/Motors/Wrist/Velocity", wristVelocity.getValue().magnitude());
-    SmartDashboard.putNumber("Claw/Motors/Intake/Velocity", intakeVelocity.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Wrist/Applied Volt", wristAppliedVolts.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Wrist/Stator Current", wristStatorCurrent.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Wrist/Supply Current", wristSupplyCurrent.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Intake/Applied Volt", intakeAppliedVolts.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Intake/Stator Current", intakeStatorCurrent.getValue().magnitude());
-    SmartDashboard.putNumber(
-        "Claw/Motors/Intake/Supply Current", intakeSupplyCurrent.getValue().magnitude());
-  }
-
-  @Override
-  public void updatePID(ClawIOInputsAutoLogged inputs) {
     tempPIDTuning();
+
     if (locked) {
       wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude()));
     }
-    SmartDashboard.putNumber("Claw/Angle DEGREES", inputs.angle.magnitude());
-    SmartDashboard.putNumber("Claw/Setpoint", wristPID.getSetpoint());
+
+    //If intake drawing too much current, algae is in
+    if (inputs.intakeStatorCurrent.magnitude() > 40) { 
+      inputs.isAlgaeIn = true;
+    } else {
+      inputs.isAlgaeIn = false;
+    }
   }
 
   @Override
   public void setAngle(Angle angle) {
     SetAngle = angle;
+    wristPID.setGoal(angle.magnitude());
     locked = true;
   }
 
   @Override
-  public void setManual(double power) {
+  public void stopHere() {
+    wristPID.reset(((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO)), 0);
+    SetAngle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
+    locked = true;
+  }
+
+  @Override
+  public void wristManual(double power) {
     locked = false;
     wristManual = power;
     wrist.set(wristManual);
   }
 
   @Override
-  public void runPercent(double power) {
+  public void runClaw(double power) {
     runPercent = power;
     intake.set(power);
   }

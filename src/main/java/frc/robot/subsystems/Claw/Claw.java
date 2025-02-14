@@ -11,14 +11,18 @@
 
 package frc.robot.subsystems.claw;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.units.measure.Angle;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Map;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -31,19 +35,14 @@ public class Claw extends SubsystemBase {
   private final ClawIO io;
   private final ClawIOInputsAutoLogged inputs;
 
-  private TalonFX clawRollers;
-  private TalonFX wrist;
-  private CANcoder ClawEncoder;
+  // Current arm distance mode
+  private ClawPosition currentMode = ClawPosition.IDLE;
 
-  private double CanEncoderOffset = 0;
-  private double setPoint = 0;
-  private double ClawGearing = 9 * (48 / 18);
+  private boolean isIn = false;
 
-  // PID
-  private PIDController PIDWrist;
-  private double VelocityP = 0;
-  private double VelocityI = 0;
-  private double VelocityD = 0;
+  // Alerts for motor connection status
+  private final Alert wrisAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
+  private final Alert clawAlert = new Alert("Claw motor isn't connected", AlertType.kError);
 
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
@@ -53,32 +52,7 @@ public class Claw extends SubsystemBase {
   public Claw(ClawIO io) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
-    
-    clawRollers = new TalonFX(0);
-    wrist = new TalonFX(0);
-
-    var config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
-    clawRollers.getConfigurator().apply(config);
-    wrist.getConfigurator().apply(config);
-
-    PIDWrist = new PIDController(VelocityP, VelocityI, VelocityD);
-
-    wrist.setPosition(wrist.getPosition().getValueAsDouble() - CanEncoderOffset);
-  }
-
-  public void setClawPower(double power) {
-    clawRollers.set(power);
-  }
-
-  public double getPosition() {
-    return clawRollers.getPosition().getValueAsDouble() / ClawGearing;
-  }
-
-  public void setWrist(double position) {
-    setPoint = position * ClawGearing;
+    SmartDashboard.putData(this);
   }
 
   @Override
@@ -87,42 +61,176 @@ public class Claw extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Claw", inputs);
 
-    io.updatePID(inputs);
+    // Update motor connection status alerts
+    wrisAlert.set(!inputs.wristConnected);
+    clawAlert.set(!inputs.clawConnected);
+
+    isIn = inputs.isAlgaeIn;
   }
 
   /**
-   * Runs the claw in closed-loop position mode to the specified angle.
+   * Runs the arm in closed-loop distance mode to the specified angle.
    *
-   * @param distance The target angle (degrees)
+   * @param distance The target angle distance
    */
-  public void setAngle(Angle angle) {
+  private void setAngle(Angle angle) {
     io.setAngle(angle);
   }
 
+  public void wristManual(double power) {
+    io.wristManual(power);
+  }
+
+  public void stopHere() {
+    io.stopHere();
+  }
+
+  /** Stops all motors. */
+  private void stop() {
+    io.stopAll();
+  }
+
+  public boolean isAlgaeIn() {
+    return isIn;
+  }
+
   /**
-   * Current position of claw
+   * Returns the current distance of the arm.
    *
-   * @return Current angle in degrees
+   * @return The current angular distance
    */
-  public Angle getAngle() {
+  @AutoLogOutput
+  public Angle getPosition() {
     return inputs.angle;
   }
 
-  /**
-   * Set the claw angular speed manualy. WARNING: WILL OVERRIDE THE SET ANGLE!!!
-   *
-   * @param double Power from 1 to -1
-   */
-  public void setManual(double power) {
-    io.setManual(power);
+  /** Enumeration of available arm distances with their corresponding target angles. */
+  private enum ClawPosition {
+    STOP(Degrees.of(0)), // Stop the wrist
+    IDLE(Degrees.of(0), Degrees.of(.5)), // Wrist tucked in
+    REEF(Degrees.of(45), Degrees.of(.5)), // Position for grabing on reef
+    NET(Degrees.of(90), Degrees.of(.5)); // Position for scoring in net
+
+    private final Angle targetAngle;
+    private final Angle angleTolerance;
+
+    ClawPosition(Angle targetAngle, Angle angleTolerance) {
+      this.targetAngle = targetAngle;
+      this.angleTolerance = angleTolerance;
+    }
+
+    ClawPosition(Angle targetAngle) {
+      this(targetAngle, Degrees.of(2)); // 2 degree default tolerance
+    }
   }
 
   /**
-   * Set the claw intake speed manualy.
+   * Gets the current arm distance mode.
    *
-   * @param double Power from 1 to -1
+   * @return The current ClawPosition
    */
-  public void runPercent(double power) {
-    io.runPercent(power);
+  public ClawPosition getMode() {
+    return currentMode;
+  }
+
+  /**
+   * Sets a new arm distance and schedules the corresponding command.
+   *
+   * @param mode The desired ClawPosition
+   */
+  private void setClawPosition(ClawPosition mode) {
+    if (currentMode != mode) {
+      currentCommand.cancel();
+      currentMode = mode;
+      currentCommand.schedule();
+    }
+  }
+
+  // Command that runs the appropriate routine based on the current distance
+  private final Command currentCommand =
+      new SelectCommand<>(
+          Map.of(
+              ClawPosition.STOP,
+              Commands.runOnce(this::stop).withName("Stop Elevator"),
+              ClawPosition.IDLE,
+              createPositionCommand(ClawPosition.IDLE),
+              ClawPosition.REEF,
+              createPositionCommand(ClawPosition.REEF),
+              ClawPosition.NET,
+              createPositionCommand(ClawPosition.NET)),
+          this::getMode);
+
+  /**
+   * Creates a command for a specific arm distance that moves the arm and checks the target
+   * distance.
+   *
+   * @param position The arm distance to create a command for
+   * @return A command that implements the arm movement
+   */
+  private Command createPositionCommand(ClawPosition position) {
+    return Commands.runOnce(() -> setAngle(position.targetAngle))
+        .withName("Move to " + position.toString());
+  }
+
+  /**
+   * Checks if the arm is at its target distance.
+   *
+   * @return true if at target distance, false otherwise
+   */
+  @AutoLogOutput
+  public boolean isAtTarget() {
+    if (currentMode == ClawPosition.STOP) return true;
+    return getPosition().isNear(currentMode.targetAngle, currentMode.angleTolerance);
+  }
+
+  /**
+   * Logs target angle for given mode.
+   *
+   * @return The target angle for the current mode
+   */
+  @AutoLogOutput
+  private Angle targetAngle() {
+    return currentMode.targetAngle;
+  }
+
+  /**
+   * Creates a command to set the arm to a specific distance.
+   *
+   * @param angle The desired arm distance
+   * @return Command to set the distance
+   */
+  private Command setPositionCommand(ClawPosition angle) {
+    return Commands.runOnce(() -> setClawPosition(angle))
+        .withName("SetElevatorPosition(" + angle.toString() + ")");
+  }
+
+  /** Factory methods for common distance commands */
+
+  /**
+   * @return Command to move the arm to L1 scoring distance
+   */
+  public final Command IDLE() {
+    return setPositionCommand(ClawPosition.IDLE);
+  }
+
+  /**
+   * @return Command to move the arm to L2 scoring distance
+   */
+  public final Command REEF() {
+    return setPositionCommand(ClawPosition.REEF);
+  }
+
+  /**
+   * @return Command to move the arm to L3 distance
+   */
+  public final Command NET() {
+    return setPositionCommand(ClawPosition.NET);
+  }
+
+  /**
+   * @return Command to stop the arm
+   */
+  public final Command stopCommand() {
+    return setPositionCommand(ClawPosition.STOP);
   }
 }

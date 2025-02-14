@@ -13,8 +13,7 @@ package frc.robot.subsystems.claw;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
@@ -31,11 +30,16 @@ public interface ClawIO {
 
     public Angle setpoint = Degrees.of(0);
 
-    public Angle wristMotorRotations = Rotations.of(0);
+    public boolean clawConnected = false;
+    public boolean wristConnected = false;
+    
+    public boolean isAlgaeIn = false;
+    
+    public Angle wristMotorAngle = Degrees.of(0);
     public Angle angle = Degrees.of(0);
 
-    public AngularVelocity wristVelocity = RotationsPerSecond.of(0);
-    public AngularVelocity intakeVelocity = RotationsPerSecond.of(0);
+    public AngularVelocity wristVelocity = DegreesPerSecond.of(0);
+    public AngularVelocity intakeVelocity = DegreesPerSecond.of(0);
 
     public Voltage wristAppliedVoltage = Volts.of(0.0);
     public Current wristStatorCurrent = Amps.of(0);
@@ -46,21 +50,18 @@ public interface ClawIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ClawIOInputsAutoLogged inputs) {}
+  public default void updateInputs(ClawIOInputs inputs) {}
 
   /** Run closed loop to the specified angle. */
   public default void setAngle(Angle angle) {}
 
   /** Set power to the angle motor from 1 to -1 */
-  public default void setManual(double power) {}
+  public default void wristManual(double power) {}
 
   /** Set power to the intake motor from 1 to -1 */
-  public default void runPercent(double power) {}
+  public default void runClaw(double power) {}
 
-  /**
-   * Updates pid loop in ClawIOCTRE
-   *
-   * @param inputs
-   */
-  public default void updatePID(ClawIOInputsAutoLogged inputs) {}
+  public default void stopHere() {}
+
+  public default void stopAll() {}
 }

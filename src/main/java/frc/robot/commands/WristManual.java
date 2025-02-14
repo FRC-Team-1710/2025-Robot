@@ -34,12 +34,12 @@ public class WristManual extends Command {
     double Power = axis.getAsDouble();
     Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
     if (Math.abs(Power) > 0) {
-      claw.setManual(Power);
+      claw.wristManual(Power);
       locked = false;
     } else {
       if (!locked) {
-        claw.setManual(0);
-        claw.setAngle(claw.getAngle());
+        claw.wristManual(0);
+        claw.stopHere();
         locked = true;
       }
     }
