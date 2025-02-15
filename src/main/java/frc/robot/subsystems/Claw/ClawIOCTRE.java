@@ -21,9 +21,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -50,7 +48,8 @@ public class ClawIOCTRE implements ClawIO {
   public final TalonFX wrist = new TalonFX(21);
   public final TalonFX intake = new TalonFX(22);
 
-  private final ProfiledPIDController wristPID = new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
+  private final ProfiledPIDController wristPID =
+      new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
   private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
 
   private final StatusSignal<Angle> wristPosition = wrist.getPosition();
@@ -135,11 +134,11 @@ public class ClawIOCTRE implements ClawIO {
       wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude()));
     }
 
-    //If intake drawing too much current, algae is in
-    if (inputs.intakeStatorCurrent.magnitude() > 40) { 
-      inputs.isAlgaeIn = true;
+    // If intake drawing too much current, algae is in
+    if (inputs.intakeStatorCurrent.magnitude() > 40) {
+      inputs.hasAlgae = true;
     } else {
-      inputs.isAlgaeIn = false;
+      inputs.hasAlgae = false;
     }
   }
 

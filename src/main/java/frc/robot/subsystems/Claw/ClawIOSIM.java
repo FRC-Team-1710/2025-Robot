@@ -64,11 +64,11 @@ public class ClawIOSIM extends ClawIOCTRE {
     m_topEncoderSim.setDistancePerPulse(kArmEncoderDistPerPulse);
     m_wristEXTENSION =
         elevator.m_secondStage2d.append(
-            new LoggedMechanismLigament2d("Extension", Units.inchesToMeters(7.5), 270));
+            new LoggedMechanismLigament2d("Extension", Units.inchesToMeters(9.643), 230));
     m_wrist =
         m_wristEXTENSION.append(
             new LoggedMechanismLigament2d(
-                "Wrist", Units.inchesToMeters(14), 0, 4, new Color8Bit(Color.kPurple)));
+                "Wrist", Units.inchesToMeters(14), 0, 4.8, new Color8Bit(Color.kPurple)));
     SmartDashboard.putNumber("Claw/p", kp);
     SmartDashboard.putNumber("Claw/i", ki);
     SmartDashboard.putNumber("Claw/d", kd);
@@ -102,7 +102,7 @@ public class ClawIOSIM extends ClawIOCTRE {
     }
     m_arm_topSim.setInput(pwmTalonFX.get() * RobotController.getBatteryVoltage());
 
-    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
+    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()) + 40);
     m_arm_topSim.update(0.02);
 
     if (kp != SmartDashboard.getNumber("Claw/p", kp)) {

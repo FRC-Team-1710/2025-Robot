@@ -38,7 +38,7 @@ public class Claw extends SubsystemBase {
   // Current arm distance mode
   private ClawPosition currentMode = ClawPosition.IDLE;
 
-  private boolean isIn = false;
+  private boolean hasAlgae = false;
 
   // Alerts for motor connection status
   private final Alert wrisAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
@@ -65,7 +65,7 @@ public class Claw extends SubsystemBase {
     wrisAlert.set(!inputs.wristConnected);
     clawAlert.set(!inputs.clawConnected);
 
-    isIn = inputs.isAlgaeIn;
+    hasAlgae = inputs.hasAlgae;
   }
 
   /**
@@ -75,6 +75,10 @@ public class Claw extends SubsystemBase {
    */
   private void setAngle(Angle angle) {
     io.setAngle(angle);
+  }
+
+  public void runClaw(double power) {
+    io.runClaw(power);
   }
 
   public void wristManual(double power) {
@@ -90,8 +94,8 @@ public class Claw extends SubsystemBase {
     io.stopAll();
   }
 
-  public boolean isAlgaeIn() {
-    return isIn;
+  public boolean hasAlgae() {
+    return hasAlgae;
   }
 
   /**
@@ -107,9 +111,9 @@ public class Claw extends SubsystemBase {
   /** Enumeration of available arm distances with their corresponding target angles. */
   private enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
-    IDLE(Degrees.of(0), Degrees.of(.5)), // Wrist tucked in
-    REEF(Degrees.of(45), Degrees.of(.5)), // Position for grabing on reef
-    NET(Degrees.of(90), Degrees.of(.5)); // Position for scoring in net
+    IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
+    REEF(Degrees.of(90), Degrees.of(2.5)), // Position for grabing on reef
+    NET(Degrees.of(45), Degrees.of(2.5)); // Position for scoring in net
 
     private final Angle targetAngle;
     private final Angle angleTolerance;

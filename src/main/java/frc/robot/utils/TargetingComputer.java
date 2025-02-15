@@ -21,6 +21,7 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
   public static boolean readyToGrabAlgae = false;
+  public static boolean attemptingToGrabAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
 
@@ -187,6 +188,10 @@ public class TargetingComputer {
 
   public static void setReadyToGrabAlgae(boolean value) {
     readyToGrabAlgae = value;
+  }
+
+  public static void setAttemptingToGrabAlgae(boolean value) {
+    attemptingToGrabAlgae = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {
