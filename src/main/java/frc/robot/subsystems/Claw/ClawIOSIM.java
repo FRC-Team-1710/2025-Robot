@@ -1,6 +1,7 @@
 package frc.robot.subsystems.claw;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radian;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.subsystems.elevator.ElevatorIOSIM;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
 public class ClawIOSIM extends ClawIOCTRE {
@@ -83,6 +85,9 @@ public class ClawIOSIM extends ClawIOCTRE {
   @Override
   public void updateInputs(ClawIOInputs inputs) {
     super.updateInputs(inputs);
+    inputs.angle =
+        Angle.ofRelativeUnits(
+            Units.degreesToRadians(90) - (m_arm_topSim.getAngleRads() - (2 * Math.PI)), Radian);
     sim.setInputVoltage(appliedVolts);
     sim.update(0.02);
 
@@ -103,6 +108,11 @@ public class ClawIOSIM extends ClawIOCTRE {
     m_arm_topSim.setInput(pwmTalonFX.get() * RobotController.getBatteryVoltage());
 
     m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()) + 40);
+
+    Logger.recordOutput(
+        "Claw angle por favor",
+        Units.radiansToDegrees(
+            Units.degreesToRadians(90) - (m_arm_topSim.getAngleRads() - (2 * Math.PI))));
     m_arm_topSim.update(0.02);
 
     if (kp != SmartDashboard.getNumber("Claw/p", kp)) {

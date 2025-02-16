@@ -21,7 +21,7 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
   public static boolean readyToGrabAlgae = false;
-  public static boolean attemptingToGrabAlgae = false;
+  public static boolean aligningWithAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
 
@@ -125,22 +125,27 @@ public class TargetingComputer {
 
   public static void setTargetLevel(Levels level) {
     currentTargetLevel = level;
+    targetingAlgae = false;
   }
 
   public static Targets getCurrentTargetBranch() {
     return currentTargetBranch;
   }
 
+  public static boolean getAligningWithAlgae() {
+    return aligningWithAlgae;
+  }
+
   public static Levels getCurrentTargetLevel() {
-    if (!targetingAlgae) {
+    if (!aligningWithAlgae) {
       return currentTargetLevel;
     } else {
-      return getCurrentTargetBranch().getAlgaeLevel();
+      return targetingAlgae ? getCurrentTargetBranch().getAlgaeLevel() : currentTargetLevel;
     }
   }
 
   public static double getSourceTargetingAngle(Pose2d pose) {
-    double sourceCutoffDistance = 4.5;
+    double sourceCutoffDistance = 7.5;
     if (isRedAlliance) {
       return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
           ? (pose.getX()
@@ -190,8 +195,8 @@ public class TargetingComputer {
     readyToGrabAlgae = value;
   }
 
-  public static void setAttemptingToGrabAlgae(boolean value) {
-    attemptingToGrabAlgae = value;
+  public static void setAligningWithAlgae(boolean value) {
+    aligningWithAlgae = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {
@@ -347,7 +352,7 @@ public class TargetingComputer {
     }
 
     public Translation2d getOffset() {
-      return targetingAlgae
+      return aligningWithAlgae
           ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset
           : offset;
     }

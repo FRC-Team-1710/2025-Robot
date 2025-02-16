@@ -36,7 +36,7 @@ public class PlaceCoral extends Command {
     if (elevator.isAtTarget()) {
       manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
       if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
-        controller.setRumble(RumbleType.kBothRumble, .75);
+        controller.setRumble(RumbleType.kBothRumble, 1);
       }
     }
   }

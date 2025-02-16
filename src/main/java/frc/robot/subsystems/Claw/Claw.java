@@ -26,16 +26,16 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Elevator subsystem controls a dual-motor arm mechanism for game piece manipulation. It
- * supports multiple distances for different game actions and provides both open-loop and
- * closed-loop control options.
+ * The Claw subsystem controls a single-motor claw mechanism for game piece manipulation. It
+ * supports multiple angles for different game actions and provides both open-loop and closed-loop
+ * control options.
  */
 public class Claw extends SubsystemBase {
   // Hardware interface and inputs
   private final ClawIO io;
   private final ClawIOInputsAutoLogged inputs;
 
-  // Current arm distance mode
+  // Current claw angle mode
   private ClawPosition currentMode = ClawPosition.IDLE;
 
   private boolean hasAlgae = false;
@@ -47,7 +47,7 @@ public class Claw extends SubsystemBase {
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
-   * @param io The hardware interface implementation for the arm
+   * @param io The hardware interface implementation for the claw
    */
   public Claw(ClawIO io) {
     this.io = io;
@@ -69,9 +69,9 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Runs the arm in closed-loop distance mode to the specified angle.
+   * Runs the claw in closed-loop angle mode to the specified angle.
    *
-   * @param distance The target angle distance
+   * @param angle The target angle
    */
   private void setAngle(Angle angle) {
     io.setAngle(angle);
@@ -99,20 +99,21 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Returns the current distance of the arm.
+   * Returns the current angle of the claw.
    *
-   * @return The current angular distance
+   * @return The current angle
    */
   @AutoLogOutput
-  public Angle getPosition() {
+  public Angle getAngle() {
     return inputs.angle;
   }
 
-  /** Enumeration of available arm distances with their corresponding target angles. */
+  /** Enumeration of available claw angles with their corresponding target angles. */
   private enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
     IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
-    REEF(Degrees.of(90), Degrees.of(2.5)), // Position for grabing on reef
+    GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
+    HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(45), Degrees.of(2.5)); // Position for scoring in net
 
     private final Angle targetAngle;
@@ -129,7 +130,7 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Gets the current arm distance mode.
+   * Gets the current claw angle mode.
    *
    * @return The current ClawPosition
    */
@@ -138,7 +139,7 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Sets a new arm distance and schedules the corresponding command.
+   * Sets a new claw angle and schedules the corresponding command.
    *
    * @param mode The desired ClawPosition
    */
@@ -150,7 +151,7 @@ public class Claw extends SubsystemBase {
     }
   }
 
-  // Command that runs the appropriate routine based on the current distance
+  // Command that runs the appropriate routine based on the current angle
   private final Command currentCommand =
       new SelectCommand<>(
           Map.of(
@@ -158,18 +159,19 @@ public class Claw extends SubsystemBase {
               Commands.runOnce(this::stop).withName("Stop Elevator"),
               ClawPosition.IDLE,
               createPositionCommand(ClawPosition.IDLE),
-              ClawPosition.REEF,
-              createPositionCommand(ClawPosition.REEF),
+              ClawPosition.GRAB,
+              createPositionCommand(ClawPosition.GRAB),
+              ClawPosition.HOLD,
+              createPositionCommand(ClawPosition.HOLD),
               ClawPosition.NET,
               createPositionCommand(ClawPosition.NET)),
           this::getMode);
 
   /**
-   * Creates a command for a specific arm distance that moves the arm and checks the target
-   * distance.
+   * Creates a command for a specific claw angle that moves the claw and checks the target angle.
    *
-   * @param position The arm distance to create a command for
-   * @return A command that implements the arm movement
+   * @param position The claw angle to create a command for
+   * @return A command that implements the claw movement
    */
   private Command createPositionCommand(ClawPosition position) {
     return Commands.runOnce(() -> setAngle(position.targetAngle))
@@ -177,14 +179,14 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Checks if the arm is at its target distance.
+   * Checks if the claw is at its target angle.
    *
-   * @return true if at target distance, false otherwise
+   * @return true if at target angle, false otherwise
    */
   @AutoLogOutput
   public boolean isAtTarget() {
     if (currentMode == ClawPosition.STOP) return true;
-    return getPosition().isNear(currentMode.targetAngle, currentMode.angleTolerance);
+    return getAngle().isNear(currentMode.targetAngle, currentMode.angleTolerance);
   }
 
   /**
@@ -198,41 +200,48 @@ public class Claw extends SubsystemBase {
   }
 
   /**
-   * Creates a command to set the arm to a specific distance.
+   * Creates a command to set the claw to a specific angle.
    *
-   * @param angle The desired arm distance
-   * @return Command to set the distance
+   * @param angle The desired claw angle
+   * @return Command to set the angle
    */
   private Command setPositionCommand(ClawPosition angle) {
     return Commands.runOnce(() -> setClawPosition(angle))
         .withName("SetElevatorPosition(" + angle.toString() + ")");
   }
 
-  /** Factory methods for common distance commands */
+  /** Factory methods for common angle commands */
 
   /**
-   * @return Command to move the arm to L1 scoring distance
+   * @return Command to move the claw to idling angle
    */
   public final Command IDLE() {
     return setPositionCommand(ClawPosition.IDLE);
   }
 
   /**
-   * @return Command to move the arm to L2 scoring distance
+   * @return Command to move the claw to grabbing angle
    */
-  public final Command REEF() {
-    return setPositionCommand(ClawPosition.REEF);
+  public final Command GRAB() {
+    return setPositionCommand(ClawPosition.GRAB);
   }
 
   /**
-   * @return Command to move the arm to L3 distance
+   * @return Command to move the claw to algae-holding angle
+   */
+  public final Command HOLD() {
+    return setPositionCommand(ClawPosition.HOLD);
+  }
+
+  /**
+   * @return Command to move the claw to net angle
    */
   public final Command NET() {
     return setPositionCommand(ClawPosition.NET);
   }
 
   /**
-   * @return Command to stop the arm
+   * @return Command to stop the claw
    */
   public final Command stopCommand() {
     return setPositionCommand(ClawPosition.STOP);
