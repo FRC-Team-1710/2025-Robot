@@ -15,6 +15,8 @@ public class Funnel extends SubsystemBase {
   private TalonFX RollerLeader; // Right
   private TalonFX RollerFollower;
 
+  private RollerStates rollerState = RollerStates.Off;
+
   public Funnel() {
     RollerLeader = new TalonFX(31);
     RollerFollower = new TalonFX(32);
@@ -28,12 +30,51 @@ public class Funnel extends SubsystemBase {
     RollerFollower.setControl(new Follower(RollerLeader.getDeviceID(), true));
   }
 
-  public void SetRollerPower(double power) {
+  public enum AngleStates {
+    Up(0),
+    Down(0);
+
+    private final double angle;
+
+    AngleStates(double angle) {
+      this.angle = angle;
+    }
+  }
+
+  public enum RollerStates {
+    Intake(0.5),
+    Inside(0.25),
+    Off;
+
+    private final double percent;
+
+    RollerStates() {
+      this.percent = 0.0;
+    }
+
+    RollerStates(double percent) {
+      this.percent = percent;
+    }
+  }
+
+  private void setRollerPower(double power) {
     RollerLeader.set(power);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    setRollerPower(rollerState.percent);
+  }
+
+  public void Off() {
+    this.rollerState = RollerStates.Off;
+  }
+
+  public void Intake() {
+    this.rollerState = RollerStates.Intake;
+  }
+
+  public void Inside() {
+    this.rollerState = RollerStates.Inside;
   }
 }

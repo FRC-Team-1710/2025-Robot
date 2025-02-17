@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climber extends SubsystemBase {
   private TalonFX climber; // Right
 
+  private States state = States.Off;
+
   public Climber() {
     climber = new TalonFX(41);
 
@@ -22,12 +24,40 @@ public class Climber extends SubsystemBase {
     climber.getConfigurator().apply(config);
   }
 
-  public void SetClimberPower(double power) {
+  public void setClimberPower(double power) {
     climber.set(power);
+  }
+
+  public enum States {
+    Up(0.25),
+    Down(0.25),
+    Off;
+
+    private final double percent;
+
+    States() {
+      this.percent = 0.0;
+    }
+
+    States(double percent) {
+      this.percent = percent;
+    }
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    setClimberPower(state.percent);
+  }
+
+  public void Off() {
+    this.state = States.Off;
+  }
+
+  public void Up() {
+    this.state = States.Up;
+  }
+
+  public void Down() {
+    this.state = States.Down;
   }
 }

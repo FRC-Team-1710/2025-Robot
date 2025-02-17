@@ -257,7 +257,7 @@ public class Elevator extends SubsystemBase {
   /**
    * @return Command to intake the arm
    */
-  public final Command intake() {
+  public final Command Intake() {
     return setPositionCommand(ElevatorPosition.INTAKE);
   }
 

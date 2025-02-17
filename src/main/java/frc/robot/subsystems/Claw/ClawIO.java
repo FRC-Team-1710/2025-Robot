@@ -32,9 +32,9 @@ public interface ClawIO {
 
     public boolean clawConnected = false;
     public boolean wristConnected = false;
-    
+
     public boolean isAlgaeIn = false;
-    
+
     public Angle wristMotorAngle = Degrees.of(0);
     public Angle angle = Degrees.of(0);
 

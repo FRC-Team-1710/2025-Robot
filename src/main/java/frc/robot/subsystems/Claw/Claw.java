@@ -36,7 +36,9 @@ public class Claw extends SubsystemBase {
   private final ClawIOInputsAutoLogged inputs;
 
   // Current arm distance mode
-  private ClawPosition currentMode = ClawPosition.IDLE;
+  private ClawState currentMode = ClawState.IDLE;
+
+  private double eject = 0.0;
 
   private boolean isIn = false;
 
@@ -65,6 +67,12 @@ public class Claw extends SubsystemBase {
     wrisAlert.set(!inputs.wristConnected);
     clawAlert.set(!inputs.clawConnected);
 
+    if (eject == 0) {
+      runPercent(currentMode.percent);
+    } else {
+      runPercent(eject);
+    }
+
     isIn = inputs.isAlgaeIn;
   }
 
@@ -77,8 +85,16 @@ public class Claw extends SubsystemBase {
     io.setAngle(angle);
   }
 
+  private void runPercent(double amount) {
+    io.runClaw(amount);
+  }
+
   public void wristManual(double power) {
     io.wristManual(power);
+  }
+
+  public void setEject(double amount) {
+    this.eject = amount;
   }
 
   public void stopHere() {
@@ -105,22 +121,27 @@ public class Claw extends SubsystemBase {
   }
 
   /** Enumeration of available arm distances with their corresponding target angles. */
-  private enum ClawPosition {
-    STOP(Degrees.of(0)), // Stop the wrist
-    IDLE(Degrees.of(0), Degrees.of(.5)), // Wrist tucked in
-    REEF(Degrees.of(45), Degrees.of(.5)), // Position for grabing on reef
-    NET(Degrees.of(90), Degrees.of(.5)); // Position for scoring in net
+  public enum ClawState {
+    STOP(0.0, Degrees.of(0)), // Stop the wrist
+    IDLE(0.0, Degrees.of(0), Degrees.of(.5)), // Wrist tucked in
+    REEF(0.0, Degrees.of(45), Degrees.of(.5)),
+    ALGAEIDLE(0.0, Degrees.of(35), Degrees.of(.5)),
+    INTAKE(0.5, Degrees.of(45), Degrees.of(.5)), // Position for grabing on reef
+    PROCESSER(0.0, Degrees.of(35), Degrees.of(.5)),
+    NET(0.0, Degrees.of(90), Degrees.of(.5)); // Position for scoring in net
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
+    private final double percent;
 
-    ClawPosition(Angle targetAngle, Angle angleTolerance) {
+    ClawState(double percent, Angle targetAngle, Angle angleTolerance) {
       this.targetAngle = targetAngle;
       this.angleTolerance = angleTolerance;
+      this.percent = percent;
     }
 
-    ClawPosition(Angle targetAngle) {
-      this(targetAngle, Degrees.of(2)); // 2 degree default tolerance
+    ClawState(double percent, Angle targetAngle) {
+      this(percent, targetAngle, Degrees.of(2)); // 2 degree default tolerance
     }
   }
 
@@ -129,7 +150,7 @@ public class Claw extends SubsystemBase {
    *
    * @return The current ClawPosition
    */
-  public ClawPosition getMode() {
+  public ClawState getMode() {
     return currentMode;
   }
 
@@ -138,7 +159,7 @@ public class Claw extends SubsystemBase {
    *
    * @param mode The desired ClawPosition
    */
-  private void setClawPosition(ClawPosition mode) {
+  private void setClawState(ClawState mode) {
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;
@@ -150,14 +171,20 @@ public class Claw extends SubsystemBase {
   private final Command currentCommand =
       new SelectCommand<>(
           Map.of(
-              ClawPosition.STOP,
-              Commands.runOnce(this::stop).withName("Stop Elevator"),
-              ClawPosition.IDLE,
-              createPositionCommand(ClawPosition.IDLE),
-              ClawPosition.REEF,
-              createPositionCommand(ClawPosition.REEF),
-              ClawPosition.NET,
-              createPositionCommand(ClawPosition.NET)),
+              ClawState.STOP,
+              Commands.runOnce(this::stop).withName("Stop Claw"),
+              ClawState.IDLE,
+              createPositionCommand(ClawState.IDLE),
+              ClawState.ALGAEIDLE,
+              createPositionCommand(ClawState.ALGAEIDLE),
+              ClawState.INTAKE,
+              createPositionCommand(ClawState.INTAKE),
+              ClawState.PROCESSER,
+              createPositionCommand(ClawState.PROCESSER),
+              ClawState.REEF,
+              createPositionCommand(ClawState.REEF),
+              ClawState.NET,
+              createPositionCommand(ClawState.NET)),
           this::getMode);
 
   /**
@@ -167,7 +194,7 @@ public class Claw extends SubsystemBase {
    * @param position The arm distance to create a command for
    * @return A command that implements the arm movement
    */
-  private Command createPositionCommand(ClawPosition position) {
+  private Command createPositionCommand(ClawState position) {
     return Commands.runOnce(() -> setAngle(position.targetAngle))
         .withName("Move to " + position.toString());
   }
@@ -179,7 +206,7 @@ public class Claw extends SubsystemBase {
    */
   @AutoLogOutput
   public boolean isAtTarget() {
-    if (currentMode == ClawPosition.STOP) return true;
+    if (currentMode == ClawState.STOP) return true;
     return getPosition().isNear(currentMode.targetAngle, currentMode.angleTolerance);
   }
 
@@ -193,15 +220,23 @@ public class Claw extends SubsystemBase {
     return currentMode.targetAngle;
   }
 
+  public boolean targetingReef() {
+    if (currentMode == ClawState.REEF) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   /**
    * Creates a command to set the arm to a specific distance.
    *
    * @param angle The desired arm distance
    * @return Command to set the distance
    */
-  private Command setPositionCommand(ClawPosition angle) {
-    return Commands.runOnce(() -> setClawPosition(angle))
-        .withName("SetElevatorPosition(" + angle.toString() + ")");
+  private Command setPositionCommand(ClawState angle) {
+    return Commands.runOnce(() -> setClawState(angle))
+        .withName("SetClawPosition(" + angle.toString() + ")");
   }
 
   /** Factory methods for common distance commands */
@@ -209,28 +244,49 @@ public class Claw extends SubsystemBase {
   /**
    * @return Command to move the arm to L1 scoring distance
    */
-  public final Command IDLE() {
-    return setPositionCommand(ClawPosition.IDLE);
+  public final Command Idle() {
+    return setPositionCommand(ClawState.IDLE);
+  }
+
+  /**
+   * @return Command to move the arm to L1 scoring distance
+   */
+  public final Command AlgaeIdle() {
+    return setPositionCommand(ClawState.ALGAEIDLE);
   }
 
   /**
    * @return Command to move the arm to L2 scoring distance
    */
   public final Command REEF() {
-    return setPositionCommand(ClawPosition.REEF);
+    return setPositionCommand(ClawState.REEF);
+  }
+
+  /**
+   * @return Command to move the arm to L2 scoring distance
+   */
+  public final Command INTAKE() {
+    return setPositionCommand(ClawState.INTAKE);
   }
 
   /**
    * @return Command to move the arm to L3 distance
    */
   public final Command NET() {
-    return setPositionCommand(ClawPosition.NET);
+    return setPositionCommand(ClawState.NET);
+  }
+
+  /**
+   * @return Command to move the arm to L3 distance
+   */
+  public final Command PROCESSER() {
+    return setPositionCommand(ClawState.PROCESSER);
   }
 
   /**
    * @return Command to stop the arm
    */
   public final Command stopCommand() {
-    return setPositionCommand(ClawPosition.STOP);
+    return setPositionCommand(ClawState.STOP);
   }
 }
