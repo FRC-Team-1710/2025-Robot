@@ -60,9 +60,9 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       new LoggedMechanism2d(Units.inchesToMeters(28), Units.inchesToMeters(80));
 
   public final LoggedMechanismRoot2d m_mech2dRootSecondStage =
-      m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(25), Units.inchesToMeters(5.75));
+      m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(19), Units.inchesToMeters(5.75));
   private final LoggedMechanismRoot2d m_mech2dRootFirstStage =
-      m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(25), Units.inchesToMeters(4.75));
+      m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(19), Units.inchesToMeters(4.75));
 
   public final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
       m_mech2dRootSecondStage.append(
@@ -74,7 +74,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   public final LoggedMechanismLigament2d m_secondStage2d =
       m_elevatorMechSecondStage2d.append(
           new LoggedMechanismLigament2d(
-              "SecondStage", Units.inchesToMeters(25), 0)); // Max height 27in
+              "SecondStage", Units.inchesToMeters(26.32), 0)); // Max height 27in
   private final LoggedMechanismLigament2d m_firstStage2d =
       m_elevatorMechFirstStage2d.append(
           new LoggedMechanismLigament2d(

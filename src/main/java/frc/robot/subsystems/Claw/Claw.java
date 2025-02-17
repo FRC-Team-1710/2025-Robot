@@ -123,12 +123,12 @@ public class Claw extends SubsystemBase {
   /** Enumeration of available arm distances with their corresponding target angles. */
   public enum ClawState {
     STOP(0.0, Degrees.of(0)), // Stop the wrist
-    IDLE(0.0, Degrees.of(0), Degrees.of(.5)), // Wrist tucked in
-    REEF(0.0, Degrees.of(45), Degrees.of(.5)),
-    ALGAEIDLE(0.0, Degrees.of(35), Degrees.of(.5)),
-    INTAKE(0.5, Degrees.of(45), Degrees.of(.5)), // Position for grabing on reef
-    PROCESSER(0.0, Degrees.of(35), Degrees.of(.5)),
-    NET(0.0, Degrees.of(90), Degrees.of(.5)); // Position for scoring in net
+    IDLE(0.0, Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
+    REEF(0.0, Degrees.of(90), Degrees.of(2.5)),
+    ALGAEIDLE(0.0, Degrees.of(35), Degrees.of(2.5)),
+    INTAKE(0.5, Degrees.of(90), Degrees.of(2.5)), // Position for grabing on reef
+    PROCESSER(0.0, Degrees.of(160), Degrees.of(.25)),
+    NET(0.0, Degrees.of(45), Degrees.of(2.5)); // Position for scoring in net
 
     private final Angle targetAngle;
     private final Angle angleTolerance;

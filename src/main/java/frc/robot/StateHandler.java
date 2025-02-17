@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.generated.TunerConstants;
@@ -59,6 +60,7 @@ public class StateHandler extends SubsystemBase {
   private Vision vision;
   private TunableController driver;
   private TunableController mech;
+  private Command elevatorToTargetLevel;
 
   /** Creates a new StateHandler. */
   public StateHandler(
@@ -80,6 +82,7 @@ public class StateHandler extends SubsystemBase {
     this.vision = vision;
     this.driver = driver;
     this.mech = mech;
+    elevatorToTargetLevel = new ElevatorToTargetLevel(elevator);
   }
 
   public void resetToIdle() {
@@ -137,12 +140,12 @@ public class StateHandler extends SubsystemBase {
               || schedueledState == States.Net
               || schedueledState == States.Processer)) {
         state = schedueledState;
-      } else if (state == States.IntakeFromSource && (schedueledState == States.Idle)) {
+      } else if (state == States.IntakeFromSource && (schedueledState == States.Idle || schedueledState == States.PrepCoralPlace)) {
         state = schedueledState;
       } else if (state == States.PrepCoralPlace
           && (schedueledState == States.PlaceCoral
               || schedueledState == States.Idle
-              || schedueledState == States.PrepAlgaeGrab)) {
+              || schedueledState == States.PrepAlgaeGrab || schedueledState == States.IntakeFromSource)) {
         state = schedueledState;
       } else if (state == States.PlaceCoral
           && (schedueledState == States.Idle
@@ -155,11 +158,11 @@ public class StateHandler extends SubsystemBase {
         state = schedueledState;
       } else if (state == States.EjectAlgae && (schedueledState == States.Idle)) {
         state = schedueledState;
-      } else if (state == States.Net && (schedueledState == States.PlaceAlgae)) {
+      } else if (state == States.Net && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
-      } else if (state == States.Processer && (schedueledState == States.PlaceAlgae)) {
+      } else if (state == States.Processer && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
-      } else if (state == States.PlaceAlgae && (schedueledState == States.Idle)) {
+      } else if (state == States.PlaceAlgae && (schedueledState == States.Idle || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
       } else if (state == States.PrepClimb
           && (schedueledState == States.Climb
@@ -211,8 +214,9 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToIdle() {
-    elevator.Intake().execute();
-    claw.Idle().execute();
+    elevator.Intake().schedule();
+    claw.setEject(0);
+    claw.Idle().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Down();
@@ -220,8 +224,8 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToClimb() {
-    elevator.Intake().execute();
-    claw.Idle().execute();
+    elevator.Intake().schedule();
+    claw.Idle().schedule();
     manipulator.Off();
     climber.Down();
     // funnel.Up();
@@ -229,8 +233,8 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToUnClimb() {
-    elevator.Intake().execute();
-    claw.Idle().execute();
+    elevator.Intake().schedule();
+    claw.Idle().schedule();
     manipulator.Off();
     climber.Up();
     // funnel.Up();
@@ -238,8 +242,8 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToPrepClimb() {
-    elevator.Intake().execute();
-    claw.Idle().execute();
+    elevator.Intake().schedule();
+    claw.Idle().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Up();
@@ -247,8 +251,8 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToNet() {
-    elevator.L4().execute();
-    claw.NET().execute();
+    elevator.L4().schedule();
+    claw.NET().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Down();
@@ -256,8 +260,8 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToProcesser() {
-    elevator.Intake().execute();
-    claw.PROCESSER().execute();
+    elevator.Intake().schedule();
+    claw.PROCESSER().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Down();
@@ -285,8 +289,8 @@ public class StateHandler extends SubsystemBase {
   private void moveToAlgaeIdle() {
     TargetingComputer.setTargetingAlgae(false);
     TargetingComputer.setReadyToGrabAlgae(false);
-    elevator.Intake().execute();
-    claw.AlgaeIdle().execute();
+    elevator.Intake().schedule();
+    claw.AlgaeIdle().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Down();
@@ -294,18 +298,19 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToPlaceCoral() {
+    elevatorToTargetLevel.schedule();
     if (elevator.isAtTarget()) {
       manipulator.Place();
     }
-    claw.Idle().execute();
+    claw.Idle().schedule();
     climber.Off();
     // funnel.Down();
     funnel.Off();
   }
 
   private void moveToIntakeFromSource() {
-    elevator.Intake().execute();
-    claw.Idle().execute();
+    elevator.Intake().schedule();
+    claw.Idle().schedule();
     manipulator.Intake();
     climber.Off();
     // funnel.Down();
@@ -319,12 +324,20 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToPrepCoralPlace() {
-    if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) < 1.5) {
-      new ElevatorToTargetLevel(elevator);
+    if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) < 2
+        && (vision.containsRequestedTarget(TargetingComputer.getCurrentTargetBranch().getApriltag())
+            || Math.abs(
+                    new Rotation2d(
+                            Units.degreesToRadians(
+                                TargetingComputer.getCurrentTargetBranch().getTargetingAngle()))
+                        .minus(drive.getPose().getRotation())
+                        .getDegrees())
+                > 5)) {
+      elevatorToTargetLevel.schedule();
     } else {
-      elevator.Intake().execute();
+      elevator.Intake().schedule();
     }
-    claw.AlgaeIdle().execute();
+    claw.Idle().schedule();
     manipulator.Off();
     climber.Off();
     // funnel.Down();
@@ -334,20 +347,19 @@ public class StateHandler extends SubsystemBase {
   private void moveToGrabAlgaeOffReef() {
     if (!claw.isAlgaeIn()) {
       TargetingComputer.setReadyToGrabAlgae(true);
-      new ElevatorToTargetLevel(elevator).execute();
-      claw.INTAKE().execute();
+      elevatorToTargetLevel.schedule();
+      claw.INTAKE().schedule();
     } else if (claw.isAlgaeIn()) {
       TargetingComputer.setReadyToGrabAlgae(false);
-      new ElevatorToTargetLevel(elevator).execute();
-      claw.INTAKE().execute();
-    } else if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-        > 0.75) {
+      new ElevatorToTargetLevel(elevator).schedule();
+      claw.INTAKE().schedule();
+    }
+    if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) > 0.75
+        && claw.isAlgaeIn()) {
       TargetingComputer.setTargetingAlgae(false);
-      claw.AlgaeIdle().execute();
-      elevator.Intake().execute();
-      if (claw.isAlgaeIn()) {
-        state = States.AlgaeIdle;
-      }
+      claw.AlgaeIdle().schedule();
+      elevator.Intake().schedule();
+      state = States.AlgaeIdle;
     }
     manipulator.Off();
     climber.Off();
@@ -356,18 +368,19 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToPrepAlgaeGrab() {
-    if (TargetingComputer.getCurrentTargetLevel() != Levels.ALGAE_HIGH
-        || TargetingComputer.getCurrentTargetLevel() != Levels.ALGAE_LOW) {
-      new ElevatorToTargetLevel(elevator).execute();
-      claw.Idle().execute();
-    } else if (!elevator.isAtTarget() || (!claw.targetingReef() || !claw.isAtTarget())) {
-      new ElevatorToTargetLevel(elevator).execute();
-      if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-          > 0.75) {
-        claw.REEF().execute();
+    if (TargetingComputer.getCurrentTargetLevel() == Levels.ALGAE_HIGH
+        || TargetingComputer.getCurrentTargetLevel() == Levels.ALGAE_LOW) {
+      elevatorToTargetLevel.schedule();
+      if (!elevator.isAtTarget() || (!claw.targetingReef() || !claw.isAtTarget())) {
+        if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
+            > 0.75) {
+          claw.REEF().schedule();
+        } else {
+          claw.Idle().schedule();
+        }
+      } else {
+        state = States.GrabAlgaeOffReef; // Auto grab algae when ready
       }
-    } else {
-      state = States.GrabAlgaeOffReef; // Auto grab algae when ready
     }
     manipulator.Off();
     climber.Off();
@@ -394,7 +407,7 @@ public class StateHandler extends SubsystemBase {
                                       .minus(drive.getPose().getRotation())
                                       .getRadians())
                                   * rotP)))
-          .execute();
+          .schedule();
     } else if (state == States.GrabAlgaeOffReef
         || state == States.PlaceCoral
         || state == States.PrepAlgaeGrab
@@ -427,7 +440,7 @@ public class StateHandler extends SubsystemBase {
                                         .minus(drive.getPose().getRotation())
                                         .getRadians())
                                     * rotP)))
-            .execute();
+            .schedule();
       } else if (vision.containsRequestedTarget(
               TargetingComputer.getCurrentTargetBranch().getApriltag())
           && Math.abs(
@@ -472,7 +485,7 @@ public class StateHandler extends SubsystemBase {
                                         .minus(drive.getPose().getRotation())
                                         .getRadians())
                                     * rotP)))
-            .execute();
+            .schedule();
       }
     } else { // Driver has full controll
       drive
@@ -488,7 +501,7 @@ public class StateHandler extends SubsystemBase {
                           Constants.MaxAngularRate.times(
                               -driverRight
                                   .getX()))) // Drive counterclockwise with negative X (left)
-          .execute();
+          .schedule();
     }
   }
 }
