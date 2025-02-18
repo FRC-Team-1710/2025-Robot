@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean gameMode = true;
+  public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
   public static final Translation2d secondaryAlgaeOffset =
@@ -24,6 +24,9 @@ public class TargetingComputer {
   public static boolean aligningWithAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
+  public static double sourceCutoffDistance = 7.5;
+  public static boolean stillOuttakingAlgae = false;
+  public static boolean goForClimb = false;
 
   private static boolean isRedAlliance;
 
@@ -144,8 +147,16 @@ public class TargetingComputer {
     }
   }
 
+  public static void updateSourceCutoffDistance(boolean hasAlgae) {
+    sourceCutoffDistance = hasAlgae ? 4.5 : 8.5;
+  }
+
+  public static void setStillOuttakingAlgae(boolean value) {
+    stillOuttakingAlgae = value;
+  }
+
   public static double getSourceTargetingAngle(Pose2d pose) {
-    double sourceCutoffDistance = 7.5;
+    if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
     if (isRedAlliance) {
       return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
           ? (pose.getX()
@@ -197,6 +208,10 @@ public class TargetingComputer {
 
   public static void setAligningWithAlgae(boolean value) {
     aligningWithAlgae = value;
+  }
+
+  public static void setGoForClimb(boolean value) {
+    goForClimb = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {

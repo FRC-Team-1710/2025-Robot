@@ -42,7 +42,7 @@ public class Claw extends SubsystemBase {
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
   // Alerts for motor connection status
-  private final Alert wrisAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
+  private final Alert wristAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
   private final Alert clawAlert = new Alert("Claw motor isn't connected", AlertType.kError);
 
   /**
@@ -63,13 +63,17 @@ public class Claw extends SubsystemBase {
     Logger.processInputs("Claw", inputs);
 
     // Update motor connection status alerts
-    wrisAlert.set(!inputs.wristConnected);
+    wristAlert.set(!inputs.wristConnected);
     clawAlert.set(!inputs.clawConnected);
 
-    hasAlgae = inputs.hasAlgae;
+    // hasAlgae = inputs.hasAlgae;
 
-    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1)
-      hasAlgae = false;
+    // if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
+    //   hasAlgae = false;
+    // }
+
+    Logger.recordOutput("Claw/hasAlgae", hasAlgae);
+    Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
   }
 
   /**
@@ -87,6 +91,10 @@ public class Claw extends SubsystemBase {
 
   public void setAlgaeStatus(boolean status) {
     hasAlgae = status;
+  }
+
+  public void toggleAlgaeStatus() {
+    hasAlgae = !hasAlgae;
   }
 
   public double getRollerCurrent() {
@@ -134,7 +142,8 @@ public class Claw extends SubsystemBase {
     IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(45), Degrees.of(2.5)); // Position for scoring in net
+    NET(Degrees.of(45), Degrees.of(2.5)), // Position for scoring in net
+    PROCESSOR(Degrees.of(120));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
@@ -185,7 +194,9 @@ public class Claw extends SubsystemBase {
               ClawPosition.HOLD,
               createPositionCommand(ClawPosition.HOLD),
               ClawPosition.NET,
-              createPositionCommand(ClawPosition.NET)),
+              createPositionCommand(ClawPosition.NET),
+              ClawPosition.PROCESSOR,
+              createPositionCommand(ClawPosition.PROCESSOR)),
           this::getMode);
 
   /**
@@ -259,6 +270,13 @@ public class Claw extends SubsystemBase {
    */
   public final Command NET() {
     return setPositionCommand(ClawPosition.NET);
+  }
+
+  /**
+   * @return Command to move the claw to processor angle
+   */
+  public final Command PROCESSOR() {
+    return setPositionCommand(ClawPosition.PROCESSOR);
   }
 
   /**

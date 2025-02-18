@@ -62,6 +62,8 @@ public interface ClawIO {
   /** Set power to the intake motor from 1 to -1 */
   public default void setRollers(double power) {}
 
+  public default void setAlgaeStatus(boolean status) {}
+
   public default void stopHere() {}
 
   public default void stopAll() {}

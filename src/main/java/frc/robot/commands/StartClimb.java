@@ -4,28 +4,24 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
-import frc.robot.subsystems.superstructure.claw.Claw;
+import frc.robot.subsystems.superstructure.climber.Climber;
+import frc.robot.utils.TargetingComputer;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class GrabAlgae extends Command {
-  Claw claw;
-  Timer timer = new Timer();
-  /** Creates a new GrabAlgae. */
-  public GrabAlgae(Claw claw) {
-    this.claw = claw;
+public class StartClimb extends Command {
+  Climber climber;
+  /** Creates a new StartClimb. */
+  public StartClimb(Climber climber) {
+    this.climber = climber;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(claw);
+    addRequirements(climber);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.setRollers(.25);
-    timer.restart();
+    TargetingComputer.setGoForClimb(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -34,19 +30,11 @@ public class GrabAlgae extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    claw.setRollers(0);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (Constants.currentMode == Mode.SIM) return true;
-    if (timer.get() > .25 && claw.getRollerCurrent() > 40) {
-      claw.setAlgaeStatus(true);
-      claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
-      return true;
-    }
     return false;
   }
 }

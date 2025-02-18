@@ -134,13 +134,6 @@ public class ClawIOCTRE implements ClawIO {
     if (locked) {
       wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude()));
     }
-
-    // If intake drawing too much current, algae is in
-    if (inputs.rollerStatorCurrent.magnitude() > 40) {
-      inputs.hasAlgae = true;
-    } else {
-      inputs.hasAlgae = false;
-    }
   }
 
   @Override

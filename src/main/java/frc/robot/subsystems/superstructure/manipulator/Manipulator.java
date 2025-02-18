@@ -18,6 +18,7 @@ public class Manipulator extends SubsystemBase {
   public Manipulator(ManipulatorIO io) {
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
+    hasCoral = beam2Broken() && !beam1Broken();
   }
 
   @Override
