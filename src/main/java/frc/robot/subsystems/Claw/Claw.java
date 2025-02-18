@@ -16,11 +16,13 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -41,6 +43,10 @@ public class Claw extends SubsystemBase {
   private double eject = 0.0;
 
   private boolean isIn = false;
+
+  private boolean isSim = RobotContainer.isSim();
+
+  private Timer timer = new Timer();
 
   // Alerts for motor connection status
   private final Alert wrisAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
@@ -66,6 +72,12 @@ public class Claw extends SubsystemBase {
     // Update motor connection status alerts
     wrisAlert.set(!inputs.wristConnected);
     clawAlert.set(!inputs.clawConnected);
+
+    if (currentMode == ClawState.INTAKE && isSim) {
+      timer.start();
+    } else {
+      timer.reset();
+    }
 
     if (eject == 0) {
       runPercent(currentMode.percent);
@@ -107,6 +119,13 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean isAlgaeIn() {
+    if (isSim) {
+      if (timer.get() > 1 || currentMode == ClawState.ALGAEIDLE) {
+        return true;
+      } else {
+        return false;
+      }
+    }
     return isIn;
   }
 

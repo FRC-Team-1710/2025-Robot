@@ -140,12 +140,14 @@ public class StateHandler extends SubsystemBase {
               || schedueledState == States.Net
               || schedueledState == States.Processer)) {
         state = schedueledState;
-      } else if (state == States.IntakeFromSource && (schedueledState == States.Idle || schedueledState == States.PrepCoralPlace)) {
+      } else if (state == States.IntakeFromSource
+          && (schedueledState == States.Idle || schedueledState == States.PrepCoralPlace)) {
         state = schedueledState;
       } else if (state == States.PrepCoralPlace
           && (schedueledState == States.PlaceCoral
               || schedueledState == States.Idle
-              || schedueledState == States.PrepAlgaeGrab || schedueledState == States.IntakeFromSource)) {
+              || schedueledState == States.PrepAlgaeGrab
+              || schedueledState == States.IntakeFromSource)) {
         state = schedueledState;
       } else if (state == States.PlaceCoral
           && (schedueledState == States.Idle
@@ -158,11 +160,14 @@ public class StateHandler extends SubsystemBase {
         state = schedueledState;
       } else if (state == States.EjectAlgae && (schedueledState == States.Idle)) {
         state = schedueledState;
-      } else if (state == States.Net && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
+      } else if (state == States.Net
+          && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
-      } else if (state == States.Processer && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
+      } else if (state == States.Processer
+          && (schedueledState == States.PlaceAlgae || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
-      } else if (state == States.PlaceAlgae && (schedueledState == States.Idle || schedueledState == States.AlgaeIdle)) {
+      } else if (state == States.PlaceAlgae
+          && (schedueledState == States.Idle || schedueledState == States.AlgaeIdle)) {
         state = schedueledState;
       } else if (state == States.PrepClimb
           && (schedueledState == States.Climb
@@ -324,7 +329,7 @@ public class StateHandler extends SubsystemBase {
   }
 
   private void moveToPrepCoralPlace() {
-    if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) < 2
+    if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) < 3
         && (vision.containsRequestedTarget(TargetingComputer.getCurrentTargetBranch().getApriltag())
             || Math.abs(
                     new Rotation2d(
@@ -352,7 +357,7 @@ public class StateHandler extends SubsystemBase {
     } else if (claw.isAlgaeIn()) {
       TargetingComputer.setReadyToGrabAlgae(false);
       new ElevatorToTargetLevel(elevator).schedule();
-      claw.INTAKE().schedule();
+      claw.AlgaeIdle().schedule();
     }
     if (vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag()) > 0.75
         && claw.isAlgaeIn()) {

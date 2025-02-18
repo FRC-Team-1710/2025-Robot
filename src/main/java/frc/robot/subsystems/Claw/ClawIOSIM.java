@@ -38,8 +38,8 @@ public class ClawIOSIM extends ClawIOCTRE {
   private double kg = 0.035100;
   private double kv = 0.019;
   private double ka = 0.0;
-  private double maxacel = 500.0;
-  private double maxvel = 200.0;
+  private double maxacel = 600.0;
+  private double maxvel = 300.0;
 
   private final LoggedMechanismLigament2d m_wrist;
   private final LoggedMechanismLigament2d m_wristEXTENSION;
