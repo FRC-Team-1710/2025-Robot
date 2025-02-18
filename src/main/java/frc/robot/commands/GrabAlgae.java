@@ -5,9 +5,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
-
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.superstructure.claw.Claw;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class GrabAlgae extends Command {
@@ -40,7 +39,7 @@ public class GrabAlgae extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (timer.get() > .25 && claw.getRollerCurrent() > 40){
+    if (timer.get() > .25 && claw.getRollerCurrent() > 40) {
       claw.setAlgaeStatus(true);
       claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
       return true;

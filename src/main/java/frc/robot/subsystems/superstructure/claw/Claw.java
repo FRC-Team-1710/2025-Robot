@@ -9,12 +9,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -68,8 +67,9 @@ public class Claw extends SubsystemBase {
     clawAlert.set(!inputs.clawConnected);
 
     hasAlgae = inputs.hasAlgae;
-    
-    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) hasAlgae = false;
+
+    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1)
+      hasAlgae = false;
   }
 
   /**
