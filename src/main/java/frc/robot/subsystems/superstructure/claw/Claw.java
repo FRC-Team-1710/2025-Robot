@@ -9,7 +9,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -39,6 +39,7 @@ public class Claw extends SubsystemBase {
   private ClawPosition currentMode = ClawPosition.IDLE;
 
   private boolean hasAlgae = false;
+  private double rollerPositionWhenAlgaeGrabbed = 0;
 
   // Alerts for motor connection status
   private final Alert wrisAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
@@ -66,6 +67,9 @@ public class Claw extends SubsystemBase {
     clawAlert.set(!inputs.clawConnected);
 
     hasAlgae = inputs.hasAlgae;
+
+    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1)
+      hasAlgae = false;
   }
 
   /**
@@ -77,8 +81,20 @@ public class Claw extends SubsystemBase {
     io.setAngle(angle);
   }
 
-  public void runClaw(double power) {
-    io.runClaw(power);
+  public void setRollers(double power) {
+    io.setRollers(power);
+  }
+
+  public void setAlgaeStatus(boolean status) {
+    hasAlgae = status;
+  }
+
+  public double getRollerCurrent() {
+    return inputs.rollerStatorCurrent.baseUnitMagnitude();
+  }
+
+  public double getRollerPosition() {
+    return inputs.rollerPosition;
   }
 
   public void wristManual(double power) {
@@ -96,6 +112,10 @@ public class Claw extends SubsystemBase {
 
   public boolean hasAlgae() {
     return hasAlgae;
+  }
+
+  public void setRollerPositionWhenAlgaeGrabbed(double position) {
+    rollerPositionWhenAlgaeGrabbed = position;
   }
 
   /**
@@ -144,6 +164,7 @@ public class Claw extends SubsystemBase {
    * @param mode The desired ClawPosition
    */
   private void setClawPosition(ClawPosition mode) {
+    if (mode == ClawPosition.IDLE) mode = hasAlgae ? ClawPosition.HOLD : ClawPosition.IDLE;
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;

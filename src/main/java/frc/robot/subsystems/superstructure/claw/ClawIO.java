@@ -9,7 +9,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
@@ -43,10 +43,11 @@ public interface ClawIO {
 
     public Voltage wristAppliedVoltage = Volts.of(0.0);
     public Current wristStatorCurrent = Amps.of(0);
-    public Current intakeStatorCurrent = Amps.of(0);
     public Current wristSupplyCurrent = Amps.of(0);
-    public Current intakeSupplyCurrent = Amps.of(0);
-    public Voltage intakeAppliedVoltage = Volts.of(0.0);
+    public Current rollerStatorCurrent = Amps.of(0);
+    public Current rollerSupplyCurrent = Amps.of(0);
+    public Voltage rollerAppliedVoltage = Volts.of(0.0);
+    public double rollerPosition = 0.0;
   }
 
   /** Updates the set of loggable inputs. */
@@ -59,7 +60,7 @@ public interface ClawIO {
   public default void wristManual(double power) {}
 
   /** Set power to the intake motor from 1 to -1 */
-  public default void runClaw(double power) {}
+  public default void setRollers(double power) {}
 
   public default void stopHere() {}
 
