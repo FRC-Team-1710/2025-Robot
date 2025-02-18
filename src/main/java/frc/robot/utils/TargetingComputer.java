@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean gameMode = false;
+  public static final boolean gameMode = true;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
   public static final Translation2d secondaryAlgaeOffset =

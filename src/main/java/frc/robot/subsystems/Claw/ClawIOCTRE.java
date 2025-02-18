@@ -46,7 +46,7 @@ public class ClawIOCTRE implements ClawIO {
   private double kvel = 0.0;
 
   public final TalonFX wrist = new TalonFX(21);
-  public final TalonFX intake = new TalonFX(22);
+  public final TalonFX rollers = new TalonFX(22);
 
   private final ProfiledPIDController wristPID =
       new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
@@ -57,10 +57,10 @@ public class ClawIOCTRE implements ClawIO {
   private final StatusSignal<Voltage> wristAppliedVolts = wrist.getMotorVoltage();
   private final StatusSignal<Current> wristStatorCurrent = wrist.getStatorCurrent();
   private final StatusSignal<Current> wristSupplyCurrent = wrist.getSupplyCurrent();
-  private final StatusSignal<AngularVelocity> intakeVelocity = intake.getVelocity();
-  private final StatusSignal<Voltage> intakeAppliedVolts = intake.getMotorVoltage();
-  private final StatusSignal<Current> intakeStatorCurrent = intake.getStatorCurrent();
-  private final StatusSignal<Current> intakeSupplyCurrent = intake.getSupplyCurrent();
+  private final StatusSignal<AngularVelocity> intakeVelocity = rollers.getVelocity();
+  private final StatusSignal<Voltage> intakeAppliedVolts = rollers.getMotorVoltage();
+  private final StatusSignal<Current> intakeStatorCurrent = rollers.getStatorCurrent();
+  private final StatusSignal<Current> intakeSupplyCurrent = rollers.getSupplyCurrent();
 
   private final Debouncer clawDebounce = new Debouncer(0.5);
   private final Debouncer wristDebounce = new Debouncer(0.5);
@@ -74,7 +74,7 @@ public class ClawIOCTRE implements ClawIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     wrist.getConfigurator().apply(config);
-    intake.getConfigurator().apply(config);
+    rollers.getConfigurator().apply(config);
 
     SmartDashboard.putNumber("Claw/PID/P", kP);
     SmartDashboard.putNumber("Claw/PID/I", kI);
@@ -118,9 +118,10 @@ public class ClawIOCTRE implements ClawIO {
     inputs.wristAppliedVoltage = wristAppliedVolts.getValue();
     inputs.wristStatorCurrent = wristStatorCurrent.getValue();
     inputs.wristSupplyCurrent = wristSupplyCurrent.getValue();
-    inputs.intakeAppliedVoltage = intakeAppliedVolts.getValue();
-    inputs.intakeStatorCurrent = intakeStatorCurrent.getValue();
-    inputs.intakeSupplyCurrent = intakeSupplyCurrent.getValue();
+    inputs.rollerAppliedVoltage = intakeAppliedVolts.getValue();
+    inputs.rollerStatorCurrent = intakeStatorCurrent.getValue();
+    inputs.rollerSupplyCurrent = intakeSupplyCurrent.getValue();
+    inputs.rollerPosition = rollers.getPosition().getValueAsDouble();
 
     inputs.setpoint = SetAngle;
     inputs.wristManual = wristManual;
@@ -135,7 +136,7 @@ public class ClawIOCTRE implements ClawIO {
     }
 
     // If intake drawing too much current, algae is in
-    if (inputs.intakeStatorCurrent.magnitude() > 40) {
+    if (inputs.rollerStatorCurrent.magnitude() > 40) {
       inputs.hasAlgae = true;
     } else {
       inputs.hasAlgae = false;
@@ -164,9 +165,9 @@ public class ClawIOCTRE implements ClawIO {
   }
 
   @Override
-  public void runClaw(double power) {
+  public void setRollers(double power) {
     runPercent = power;
-    intake.set(power);
+    rollers.set(power);
   }
 
   private void tempPIDTuning() {
