@@ -32,18 +32,18 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class ClawIOCTRE implements ClawIO {
-  public static final double GEAR_RATIO = 1;
+  public static final double GEAR_RATIO = 24;
   private boolean locked = false;
 
-  private double kP = 0.0;
+  private double kP = 0.05;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
   private double kG = 0.0;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kacel = 0.0;
-  private double kvel = 0.0;
+  private double kacel = 600;
+  private double kvel = 300;
 
   public final TalonFX wrist = new TalonFX(21);
   public final TalonFX rollers = new TalonFX(22);
