@@ -13,6 +13,7 @@ package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -132,7 +133,7 @@ public class ClawIOCTRE implements ClawIO {
     tempPIDTuning();
 
     if (locked) {
-      wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude()));
+      wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude())+wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
     }
 
     // If intake drawing too much current, algae is in
