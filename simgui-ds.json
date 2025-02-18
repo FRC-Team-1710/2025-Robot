@@ -26,7 +26,9 @@
           "keyRate": 0.009999999776482582
         },
         {
+          "decKey": 52,
           "decayRate": 0.5,
+          "incKey": 51,
           "keyRate": 0.5
         },
         {
@@ -108,12 +110,6 @@
     }
   ],
   "robotJoysticks": [
-    {
-      "guid": "78696e70757401000000000000000000",
-      "useGamepad": true
-    },
-    {},
-    {},
     {
       "guid": "Keyboard0"
     }
