@@ -131,6 +131,10 @@ public class Elevator extends SubsystemBase {
     return currentMode;
   }
 
+  public boolean isAtIntake() {
+    return isAtTarget() && getMode() == ElevatorPosition.INTAKE;
+  }
+
   /**
    * Sets a new arm distance and schedules the corresponding command.
    *

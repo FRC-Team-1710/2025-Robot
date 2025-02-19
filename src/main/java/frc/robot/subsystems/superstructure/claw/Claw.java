@@ -38,7 +38,7 @@ public class Claw extends SubsystemBase {
   // Current claw angle mode
   private ClawPosition currentMode = ClawPosition.IDLE;
 
-  private boolean hasAlgae = false;
+  private static boolean hasAlgae = false;
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
   // Alerts for motor connection status

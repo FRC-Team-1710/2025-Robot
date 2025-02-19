@@ -29,7 +29,7 @@ public class IntakeCoral extends Command {
   @Override
   public void initialize() {
     m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
-    funnel.SetRollerPower(.4);
+    funnel.setRollerPower(.4);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }
 
@@ -39,10 +39,10 @@ public class IntakeCoral extends Command {
     if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
       m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
       controller.setRumble(RumbleType.kBothRumble, 0);
-      funnel.SetRollerPower(.2);
+      funnel.setRollerPower(.2);
     } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
       m_Manipulator.runPercent(0);
-      funnel.SetRollerPower(0);
+      funnel.setRollerPower(0);
       controller.setRumble(RumbleType.kBothRumble, 1);
     }
   }
@@ -51,7 +51,7 @@ public class IntakeCoral extends Command {
   @Override
   public void end(boolean interrupted) {
     m_Manipulator.runPercent(0);
-    funnel.SetRollerPower(0);
+    funnel.setRollerPower(0);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }
 

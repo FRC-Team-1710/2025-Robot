@@ -133,7 +133,9 @@ public class ClawIOCTRE implements ClawIO {
     tempPIDTuning();
 
     if (locked) {
-      wrist.setVoltage(wristPID.calculate(inputs.angle.magnitude())+wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
+      wrist.setVoltage(
+          wristPID.calculate(inputs.angle.magnitude())
+              + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
     }
   }
 

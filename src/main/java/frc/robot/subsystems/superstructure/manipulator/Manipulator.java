@@ -12,7 +12,7 @@ public class Manipulator extends SubsystemBase {
   private final ManipulatorIOInputsAutoLogged inputs;
   private final ManipulatorIO io;
 
-  public static boolean hasCoral;
+  private static boolean hasCoral;
 
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io) {
@@ -31,6 +31,14 @@ public class Manipulator extends SubsystemBase {
   public void runPercent(double percent) {
     SmartDashboard.putNumber("Manipulator/ClawPercent", percent);
     io.setVoltage(percent * 12);
+  }
+
+  public boolean hasCoral() {
+    return hasCoral;
+  }
+
+  public void toggleCoralStatus() {
+    hasCoral = !hasCoral;
   }
 
   /*Boolean */

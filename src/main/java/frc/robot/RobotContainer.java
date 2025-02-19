@@ -41,6 +41,7 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
+import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
@@ -345,6 +346,7 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> claw.setRollers(0)));
 
     driverUp.onTrue(new InstantCommand(() -> claw.toggleAlgaeStatus()));
+    driverDown.onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
 
     new Trigger(() -> claw.hasAlgae())
         .onTrue(new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(true)))
@@ -357,6 +359,15 @@ public class RobotContainer {
         .onFalse(
             new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(false))
                 .unless(() -> claw.hasAlgae()));
+
+    new Trigger(() -> funnel.hasCoral())
+        .onTrue(
+            new InstantCommand(() -> funnel.setRollerPower(0))
+                .onlyIf(() -> !elevator.isAtIntake())
+                .alongWith(elevator.intake())
+                .onlyIf(() -> !elevator.isAtIntake()))
+        .and(() -> elevator.isAtIntake())
+        .onTrue(new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed)));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -679,7 +690,36 @@ public class RobotContainer {
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
         .onTrue(new ElevatorToTargetLevel(elevator))
-        .and(() -> elevator.isAtTarget())
+        .and(
+            () ->
+                vision.containsRequestedTarget(
+                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    && Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        < 5
+                    && Math.abs(
+                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
+                                - vision
+                                    .calculateOffset(
+                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
+                                        TargetingComputer.getCurrentTargetBranch().getOffset())
+                                    .getY())
+                        < Units.inchesToMeters(1)
+                    && Math.abs(
+                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
+                                - vision
+                                    .calculateOffset(
+                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
+                                        TargetingComputer.getCurrentTargetBranch().getOffset())
+                                    .getX())
+                        < Units.inchesToMeters(1)
+                    && elevator.isAtTarget()
+                    && manipulator.hasCoral())
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
@@ -704,7 +744,7 @@ public class RobotContainer {
                                                     drivetrain.getPose())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))));
+                                    * rotP)))).and(() -> !TargetingComputer.stillOuttakingAlgae).whileTrue(new IntakeCoral(manipulator, funnel, driver)).onFalse(new EndIntake(manipulator, funnel));
 
     targetSource
         .and(() -> claw.hasAlgae())

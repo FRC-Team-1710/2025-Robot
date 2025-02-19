@@ -39,13 +39,13 @@ public class EndIntake extends Command {
       timer.reset();
       timer.stop();
       manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      funnel.SetRollerPower(.2);
+      funnel.setRollerPower(.2);
     } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
       if (!timer.isRunning()) {
         timer.start();
       }
       manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      funnel.SetRollerPower(.2);
+      funnel.setRollerPower(.2);
     }
   }
 
@@ -53,7 +53,7 @@ public class EndIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     manipulator.runPercent(0);
-    funnel.SetRollerPower(0);
+    funnel.setRollerPower(0);
   }
 
   // Returns true when the command should end.

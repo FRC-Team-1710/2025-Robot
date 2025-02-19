@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Funnel extends SubsystemBase {
   private TalonFX RollerLeader; // Right
   private TalonFX RollerFollower;
+  private static boolean hasCoral;
 
   public Funnel() {
     RollerLeader = new TalonFX(31);
@@ -28,8 +29,12 @@ public class Funnel extends SubsystemBase {
     RollerFollower.setControl(new Follower(RollerLeader.getDeviceID(), true));
   }
 
-  public void SetRollerPower(double power) {
+  public void setRollerPower(double power) {
     RollerLeader.set(power);
+  }
+
+  public boolean hasCoral() {
+    return hasCoral;
   }
 
   @Override
