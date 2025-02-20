@@ -18,10 +18,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.AlignmentForAuto;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.AlignmentForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climber.Climber;
@@ -245,10 +245,10 @@ public class RobotContainer {
                         ),
                     drivetrain::getVisionParameters));
 
-        NamedCommands.registerCommand(
-            "Align to Alpha", new AlignmentForAuto(vision, drivetrain, Targets.ALPHA));
-        NamedCommands.registerCommand(
-            "Align to Bravo", new AlignmentForAuto(vision, drivetrain, Targets.BRAVO));
+        // NamedCommands.registerCommand(
+        //     "Align to Alpha", new AlignmentForAuto(vision, drivetrain, Targets.ALPHA));
+        // NamedCommands.registerCommand(
+        //     "Align to Bravo", new AlignmentForAuto(vision, drivetrain, Targets.BRAVO));
         NamedCommands.registerCommand(
             "Align to Charlie", new AlignmentForAuto(vision, drivetrain, Targets.CHARLIE));
         NamedCommands.registerCommand(
@@ -271,7 +271,9 @@ public class RobotContainer {
             "Align to Lima", new AlignmentForAuto(vision, drivetrain, Targets.LIMA));
         NamedCommands.registerCommand("Coral Intake", new IntakeCoral(manipulator, roller, driver));
         NamedCommands.registerCommand("outtake Coral", new OuttakeCoral(manipulator));
-        
+        NamedCommands.registerCommand(
+            "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision));
+
         break;
 
       default:

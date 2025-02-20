@@ -7,19 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to Delta start"
+            "pathName": "to foxtrot start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Foxtrot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to delta near"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Align to Delta"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake Coral"
           }
         },
         {
@@ -41,12 +53,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "outtake Coral"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "back charlie near"
@@ -65,21 +71,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "outtake Coral"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "back bravo near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake Coral"
           }
         },
         {
@@ -92,12 +86,6 @@
           "type": "named",
           "data": {
             "name": "Align to Alpha"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake Coral"
           }
         }
       ]

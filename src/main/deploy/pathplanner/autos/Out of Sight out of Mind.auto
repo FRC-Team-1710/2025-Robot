@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "pass by far"
+            "pathName": "to Charlie from start"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back charlie far"
           }
         },
         {
@@ -74,12 +80,6 @@
           "type": "named",
           "data": {
             "name": "Align to Alpha"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back alpha far"
           }
         }
       ]

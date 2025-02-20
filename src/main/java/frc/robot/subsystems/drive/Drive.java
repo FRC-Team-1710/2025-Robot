@@ -2,7 +2,9 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
@@ -30,8 +33,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
+import frc.robot.utils.TargetingComputer.Targets;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -215,6 +222,43 @@ public class Drive extends SubsystemBase {
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> io.setControl(requestSupplier.get()));
+  }
+
+  public BooleanSupplier hasSpeed(Targets target, Vision vision) {
+    BooleanSupplier yes =
+        (() ->
+            target.getOffset().getX()
+                    - vision.calculateOffset(target.getApriltag(), target.getOffset()).getX()
+                < 0.01);
+    return yes;
+  }
+
+  public Command Alignment(RobotCentric requestSupplier, Targets target, Vision vision) {
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            -(target.getOffset().getX()
+                                    - vision
+                                        .calculateOffset(target.getApriltag(), target.getOffset())
+                                        .getX())
+                                * 0.25))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            -(target.getOffset().getY()
+                                    - vision
+                                        .calculateOffset(target.getApriltag(), target.getOffset())
+                                        .getY())
+                                * 0.25))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.25))))
+        .until(hasSpeed(target, vision));
   }
 
   public void setControl(SwerveRequest request) {

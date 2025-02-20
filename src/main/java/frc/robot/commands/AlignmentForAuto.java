@@ -46,12 +46,16 @@ public class AlignmentForAuto extends Command {
             .withVelocityX(
                 TunerConstants.kSpeedAt12Volts.times(
                     -(target.getOffset().getX()
-                            - vision.calculateOffset(target.getApriltag(), target.getOffset()).getX())
+                            - vision
+                                .calculateOffset(target.getApriltag(), target.getOffset())
+                                .getX())
                         * 0.25))
             .withVelocityY(
                 TunerConstants.kSpeedAt12Volts.times(
                     -(target.getOffset().getY()
-                            - vision.calculateOffset(target.getApriltag(), target.getOffset()).getY())
+                            - vision
+                                .calculateOffset(target.getApriltag(), target.getOffset())
+                                .getY())
                         * 0.25))
             .withRotationalRate(
                 Constants.MaxAngularRate.times(
@@ -73,7 +77,7 @@ public class AlignmentForAuto extends Command {
   @Override
   public boolean isFinished() {
     return target.getOffset().getX()
-    - vision.calculateOffset(target.getApriltag(), target.getOffset()).getX()
-< 0.01;
+            - vision.calculateOffset(target.getApriltag(), target.getOffset()).getX()
+        < 0.01;
   }
 }

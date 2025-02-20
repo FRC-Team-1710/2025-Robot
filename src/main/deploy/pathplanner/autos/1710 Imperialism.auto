@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to Delta start"
+            "pathName": "to foxtrot start"
           }
         },
         {
@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "back delta near"
+            "pathName": "back foxtrot near"
           }
         },
         {
@@ -43,7 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to echo near"
+            "pathName": "to delta near"
           }
         },
         {
@@ -55,7 +55,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "back echo near"
+            "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to echo near"
           }
         }
       ]
