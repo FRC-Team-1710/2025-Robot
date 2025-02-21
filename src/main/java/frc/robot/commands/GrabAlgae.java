@@ -41,8 +41,11 @@ public class GrabAlgae extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (Constants.currentMode == Mode.SIM) return true;
-    if (timer.get() > .25 && claw.getRollerCurrent() > 40) {
+    if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
+      claw.setAlgaeStatus(true);
+      return true;
+    }
+    if (timer.get() > .25 && claw.getRollerCurrent() > 40 && Constants.currentMode != Mode.SIM) {
       claw.setAlgaeStatus(true);
       claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
       return true;
