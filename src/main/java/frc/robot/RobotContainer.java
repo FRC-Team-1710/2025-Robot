@@ -105,7 +105,39 @@ public class RobotContainer {
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
   /** Driver RT */
+  /** Driver Y */
+  private final Trigger placeL4 = new Trigger(driver.y());
+  /** Driver X */
+  private final Trigger placeL3 = new Trigger(driver.x());
+  /** Driver A */
+  private final Trigger placeL2 = new Trigger(driver.a());
+  /** Driver B */
+  private final Trigger grabAlgae = new Trigger(driver.b());
+  /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
+  /** Driver LT */
+  private final Trigger targetSource = new Trigger(driver.leftTrigger());
+  /** Driver Left */
+  private final Trigger previousTarget = new Trigger(driver.povLeft());
+  /** Driver Right */
+  private final Trigger nextTarget = new Trigger(driver.povRight());
+  /** Driver Start */
+  private final Trigger resetGyro = new Trigger(driver.start());
+
+  /** Mech Y */
+  private final Trigger targetL4 = new Trigger(mech.y());
+  /** Mech X */
+  private final Trigger targetL3 = new Trigger(mech.x());
+  /** Mech A */
+  private final Trigger targetL2 = new Trigger(mech.a());
+  /** Mech B */
+  private final Trigger targetAlgae = new Trigger(mech.b());
+  /** Mech LB */
+  private final Trigger outtakeCoral = new Trigger(mech.leftBumper());
+  /** Mech RB */
+  private final Trigger intakeCoral = new Trigger(mech.rightBumper());
+
+  private final Trigger overrideTargetingController = new Trigger(mech.povDown());
   /** Driver LT */
   private final Trigger targetSource = new Trigger(driver.leftTrigger());
   /** Driver Left */
@@ -383,7 +415,28 @@ public class RobotContainer {
                                 .getX())))); // Drive counterclockwise with negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
+    // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
 
+    /* Driver Bindings */
+    placeL2
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
+        .onFalse(elevator.intake().unless(targetReef));
+
+    placeL3
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
+        .onFalse(elevator.intake().unless(targetReef));
+
+    placeL4
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
+        .onFalse(elevator.intake().unless(targetReef));
+
+    grabAlgae
     /* Driver Bindings */
     placeL2
         .onTrue(
@@ -585,6 +638,31 @@ public class RobotContainer {
                                     .minus(drivetrain.getPose().getRotation())
                                     .getRadians())
                                 * rotP))));
+                                    * rotP))))
+        .and(
+            (() ->
+                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    < 1.5))
+        .onTrue(new ElevatorToTargetLevel(elevator))
+        .onFalse(elevator.intake());
+
+    targetSource.whileTrue(
+        drivetrain.applyRequest(
+            () ->
+                drive
+                    .withVelocityX(
+                        MaxSpeed.times(
+                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(
+                                            TargetingComputer.getSourceTargetingAngle(
+                                                drivetrain.getPose())))
+                                    .minus(drivetrain.getPose().getRotation())
+                                    .getRadians())
+                                * rotP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
@@ -656,54 +734,99 @@ public class RobotContainer {
     // InstantCommand(() -> climber.SetClimberPower(0))));
 
     /* Targeting Controller Bindings */
+    // driver.a().onTrue(Commands.runOnce(() -> drivetrain.resetPose(Pose2d.kZero)));
+
+    /*  Mech Controller Bindings */
+    targetL4.onTrue(
+        new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4)));
+    targetL3.onTrue(
+        new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3)));
+    targetL2.onTrue(
+        new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2)));
+
+    outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
+    intakeCoral
+        .whileTrue(new IntakeCoral(manipulator, roller, driver))
+        .onFalse(new EndIntake(manipulator, roller));
+
+    overrideTargetingController.onTrue(
+        new InstantCommand(() -> TargetingComputer.toggleTargetingControllerOverride()));
+
+    // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+    // mech.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
+    // InstantCommand(() -> climber.SetClimberPower(0))));
+
+    /* Targeting Controller Bindings */
     alphaButton
         .and(bravoButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ALPHA)));
     bravoButton
         .and(alphaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.BRAVO)));
     charlieButton
         .and(deltaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.CHARLIE)));
     deltaButton
         .and(charlieButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.DELTA)));
     echoButton
         .and(foxtrotButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ECHO)));
     foxtrotButton
         .and(echoButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.FOXTROT)));
     golfButton
         .and(hotelButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.GOLF)));
     hotelButton
         .and(golfButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.HOTEL)));
     indiaButton
         .and(julietButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.INDIA)));
     julietButton
         .and(indiaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.JULIET)));
     kiloButton
         .and(limaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.KILO)));
     limaButton
         .and(kiloButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
+
+    /* SysID Bindings */
+    // Run SysId routines when holding back/start and X/Y.
+    // Note that each routine should be run exactly once in a single
+
+    sysID.rightBumper().and(sysID.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     /* SysID Bindings */
     // Run SysId routines when holding back/start and X/Y.
