@@ -18,7 +18,6 @@ import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
 import java.util.*;
-import java.util.*;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -185,6 +184,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Provides the Transform3d that represents the robots position relative to the provided AprilTag
+   *
    * @param id Requested tag ID
    * @return Returns the robots position relative to the AprilTag
    */
@@ -202,26 +202,24 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Checks to make sure that the camera has AprilTag results/targets
+   *
    * @return Boolean to represent the presence of AprilTag results
    */
   public boolean hasTargets() {
     return !cameraTargets.isEmpty();
   }
 
-  /**
-   * Redundant perchance.
-   */
+  /** Redundant perchance. */
   public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
-  /**
-   * Also probably redundant perchance.
-   */
+  /** Also probably redundant perchance. */
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
   /**
    * Provides the camera's most recent targets
+   *
    * @return List of targets
    */
   public List<PhotonTrackedTarget> getCameraTargets() {

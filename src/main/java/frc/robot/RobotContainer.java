@@ -44,9 +44,6 @@ import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-
-import java.lang.annotation.Target;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -425,55 +422,57 @@ public class RobotContainer {
     //                 point.withModuleDirection(
     //                     new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    // AprilTag Alignment
-    targetReef
-        .and(() -> TargetingComputer.targetingControllerOverride)
-        .onTrue(
-            new InstantCommand(() -> vision.autoBranchTargeting())
-                .alongWith(
-                    new InstantCommand(
-                        () ->
-                            Logger.recordOutput(
-                                "Overide Target", TargetingComputer.getCurrentTargetBranch()))));
-
+    // Variables for AprilTag Targeting
     double alignP = 1;
     double rotP = .75;
-    targetReef
+
+    // AprilTag Alignment
+
+    targetReef // Get the closest reef AprilTag and set it to the target tag
+        .onTrue(
+        new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
+            .alongWith( // Log the curent target branch for debugging
+                new InstantCommand(
+                    () ->
+                        Logger.recordOutput(
+                            "Overide Target", TargetingComputer.getCurrentTargetBranch())))
+            .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
+                // move to the set target)
+                new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
+
+    targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .and(
             () ->
-                !vision.containsRequestedTarget(
-                        TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    || Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        > 5)
+                !previousTarget.getAsBoolean()
+                    && !nextTarget.getAsBoolean()
+                    && !TargetingComputer.targetSet)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -driver
-                                    .customLeft()
-                                    .getY())) // Drive forward with negative Y (forward)
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        .withRotationalRate(
-                            Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getTargetingAngle()))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP))));
-    targetReef
+                    drive.withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(
+                                            TargetingComputer.getCurrentTargetBranch()
+                                                .getTargetingAngle()))
+                                    .minus(drivetrain.getPose().getRotation())
+                                    .getRadians())
+                                * rotP))));
+
+    targetReef // Allows the robot to start moving and also sets whether the left side is true or
+        // not
+        .and(() -> previousTarget.getAsBoolean() || nextTarget.getAsBoolean())
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetSet(true))
+                .alongWith(
+                    new InstantCommand(
+                        () -> vision.autoBranchTargeting(previousTarget.getAsBoolean()))));
+
+    targetReef // Robot moves to the current target
         .and(
             () ->
-                vision.containsRequestedTarget(
+                TargetingComputer.targetSet
+                    && vision.containsRequestedTarget(
                         TargetingComputer.getCurrentTargetBranch().getApriltag())
                     && Math.abs(
                             new Rotation2d(

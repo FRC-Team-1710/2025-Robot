@@ -22,6 +22,9 @@ public class TargetingComputer {
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
 
+  // AprilTag Targeting
+  public static boolean targetSet;
+
   private static boolean isRedAlliance;
 
   public static int alphaTag,
@@ -164,6 +167,10 @@ public class TargetingComputer {
               ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
               : Targets.PROCESSOR.getTargetingAngle(); // far
     }
+  }
+
+  public static void setTargetSet(boolean isTargetSet) {
+    targetSet = isTargetSet;
   }
 
   public static void randomizeTargetBranch() {
