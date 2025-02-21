@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
@@ -125,6 +126,10 @@ public class RobotContainer {
   private final Trigger driverDown = new Trigger(driver.povDown());
   /** Driver Start */
   private final Trigger resetGyro = new Trigger(driver.start());
+  /** Driver RB */
+  private final Trigger shootAlgae = new Trigger(driver.rightBumper());
+  /** Driver LB */
+  private final Trigger grabAlgaeFromFloor = new Trigger(driver.leftBumper());
 
   /** Mech Y */
   private final Trigger targetL4 = new Trigger(mech.y());
@@ -495,6 +500,7 @@ public class RobotContainer {
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
+
     placeL4
         .and(
             () ->
@@ -517,7 +523,9 @@ public class RobotContainer {
                 .alongWith(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .and(() -> elevator.isAtTarget() && targetReef.getAsBoolean())
-        .onTrue(claw.GRAB().andThen(new GrabAlgae(claw)));
+        .onTrue(claw.GRAB())
+        .and(() -> claw.isAtTarget())
+        .onTrue(new GrabAlgae(claw));
 
     grabAlgae
         .and(() -> !claw.hasAlgae())
@@ -557,6 +565,12 @@ public class RobotContainer {
         .and(() -> claw.hasAlgae() && !targetReef.getAsBoolean())
         .onTrue(claw.PROCESSOR())
         .onFalse(claw.IDLE());
+
+    shootAlgae
+        .onTrue(new InstantCommand(() -> claw.setRollers(.5)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
     previousTarget.onTrue(
         new InstantCommand(
@@ -719,7 +733,7 @@ public class RobotContainer {
                                     .getX())
                         < Units.inchesToMeters(1)
                     && elevator.isAtTarget()
-                    && manipulator.hasCoral())
+            /*&& manipulator.hasCoral()*/ )
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
