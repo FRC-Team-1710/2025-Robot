@@ -23,6 +23,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
+import frc.robot.commands.OuttakeForAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
@@ -244,35 +245,7 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-
-        // NamedCommands.registerCommand(
-        //     "Align to Alpha", new AlignmentForAuto(vision, drivetrain, Targets.ALPHA));
-        // NamedCommands.registerCommand(
-        //     "Align to Bravo", new AlignmentForAuto(vision, drivetrain, Targets.BRAVO));
-        NamedCommands.registerCommand(
-            "Align to Charlie", new AlignmentForAuto(vision, drivetrain, Targets.CHARLIE));
-        NamedCommands.registerCommand(
-            "Align to Delta", new AlignmentForAuto(vision, drivetrain, Targets.DELTA));
-        NamedCommands.registerCommand(
-            "Align to Echo", new AlignmentForAuto(vision, drivetrain, Targets.ECHO));
-        NamedCommands.registerCommand(
-            "Align to Foxtrot", new AlignmentForAuto(vision, drivetrain, Targets.FOXTROT));
-        NamedCommands.registerCommand(
-            "Align to Golf", new AlignmentForAuto(vision, drivetrain, Targets.GOLF));
-        NamedCommands.registerCommand(
-            "Align to Hotel", new AlignmentForAuto(vision, drivetrain, Targets.HOTEL));
-        NamedCommands.registerCommand(
-            "Align to India", new AlignmentForAuto(vision, drivetrain, Targets.INDIA));
-        NamedCommands.registerCommand(
-            "Align to Juliet", new AlignmentForAuto(vision, drivetrain, Targets.JULIET));
-        NamedCommands.registerCommand(
-            "Align to Kilo", new AlignmentForAuto(vision, drivetrain, Targets.KILO));
-        NamedCommands.registerCommand(
-            "Align to Lima", new AlignmentForAuto(vision, drivetrain, Targets.LIMA));
-        NamedCommands.registerCommand("Coral Intake", new IntakeCoral(manipulator, roller, driver));
-        NamedCommands.registerCommand("outtake Coral", new OuttakeCoral(manipulator));
-        NamedCommands.registerCommand(
-            "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision));
+        
 
         break;
 
@@ -291,6 +264,34 @@ public class RobotContainer {
                 new VisionIO() {});
         break;
     }
+
+    NamedCommands.registerCommand(
+        "Align to Alpha", drivetrain.Alignment(robotCentric, Targets.ALPHA, vision));
+    NamedCommands.registerCommand(
+        "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision));
+    NamedCommands.registerCommand(
+        "Align to Charlie", drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision));
+    NamedCommands.registerCommand(
+        "Align to Delta", drivetrain.Alignment(robotCentric, Targets.DELTA, vision));
+    NamedCommands.registerCommand(
+        "Align to Echo", drivetrain.Alignment(robotCentric, Targets.ECHO, vision));
+    NamedCommands.registerCommand(
+        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision));
+    NamedCommands.registerCommand(
+        "Align to Golf", drivetrain.Alignment(robotCentric, Targets.GOLF, vision));
+    NamedCommands.registerCommand(
+        "Align to Hotel", drivetrain.Alignment(robotCentric, Targets.HOTEL, vision));
+    NamedCommands.registerCommand(
+        "Align to India", drivetrain.Alignment(robotCentric, Targets.INDIA, vision));
+    NamedCommands.registerCommand(
+        "Align to Juliet", drivetrain.Alignment(robotCentric, Targets.JULIET, vision));
+    NamedCommands.registerCommand(
+        "Align to Kilo", drivetrain.Alignment(robotCentric, Targets.KILO, vision));
+    NamedCommands.registerCommand(
+        "Align to Lima", drivetrain.Alignment(robotCentric, Targets.LIMA, vision));
+    NamedCommands.registerCommand("intake coral", new IntakeCoral(manipulator, roller, driver));
+    NamedCommands.registerCommand("end intake", new EndIntake(manipulator, roller));
+    NamedCommands.registerCommand("outtake coral", new OuttakeForAuto(manipulator));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

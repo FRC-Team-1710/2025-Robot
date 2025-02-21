@@ -13,13 +13,31 @@
         {
           "type": "named",
           "data": {
-            "name": "Align to Delta"
+            "name": "Align to Foxtrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake coral"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "end intake"
           }
         },
         {
@@ -35,9 +53,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "outtake coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "end intake"
           }
         },
         {
@@ -53,15 +89,39 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "outtake coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back delta near"
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "end intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to echo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake coral"
           }
         }
       ]
