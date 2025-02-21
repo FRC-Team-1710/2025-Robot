@@ -7,24 +7,21 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.climber.Climber;
-import frc.robot.utils.TargetingComputer;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class StartClimb extends Command {
+public class Climb extends Command {
   Climber climber;
   Timer timer = new Timer();
-  Double time = 0.1;
-  /** Creates a new StartClimb. */
-  public StartClimb(Climber climber) {
-    this.climber = climber;
-    // Use addRequirements() here to declare subsystem dependencies.
+  double time = 0.1;
+  /** Creates a new Climb. */
+  public Climb(Climber climber) {
+    this.climber = new Climber();
     addRequirements(climber);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    TargetingComputer.setGoForClimb(true);
     timer.restart();
     climber.SetClimberPower(.5);
   }
