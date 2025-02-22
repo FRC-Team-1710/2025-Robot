@@ -145,6 +145,7 @@ public class RobotContainer {
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
 
   private final Trigger overrideTargetingController = new Trigger(mech.povDown());
+  // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
@@ -572,19 +573,23 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    previousTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID - 1))));
+    previousTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID - 1))));
 
-    nextTarget.onTrue(
-        new InstantCommand(
-            () ->
-                TargetingComputer.setTargetBranch(
-                    TargetingComputer.getTargetFromGameID(
-                        TargetingComputer.getCurrentTargetBranch().gameID + 1))));
+    nextTarget
+        .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    TargetingComputer.setTargetBranch(
+                        TargetingComputer.getTargetFromGameID(
+                            TargetingComputer.getCurrentTargetBranch().gameID + 1))));
 
     // driver
     //     .b()
@@ -594,21 +599,25 @@ public class RobotContainer {
     //                 point.withModuleDirection(
     //                     new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    // AprilTag Alignment
-    targetReef
-        .and(() -> TargetingComputer.targetingControllerOverride)
-        .onTrue(
-            new InstantCommand(
-                    () -> TargetingComputer.setTargetBranchByOrientation(drivetrain.getPose()))
-                .alongWith(
-                    new InstantCommand(
-                        () ->
-                            Logger.recordOutput(
-                                "Overide Target", TargetingComputer.getCurrentTargetBranch()))));
-
+    // Variables for AprilTag Targeting
     double alignP = 1;
     double rotP = .75;
-    targetReef
+
+    // AprilTag Alignment
+
+    targetReef // Get the closest reef AprilTag and set it to the target tag
+        .onTrue(
+        new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
+            .alongWith( // Log the curent target branch for debugging
+                new InstantCommand(
+                    () ->
+                        Logger.recordOutput(
+                            "Overide Target", TargetingComputer.getCurrentTargetBranch())))
+            .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
+                // move to the set target)
+                new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
+
+    targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
             elevator
                 .intake()
@@ -617,39 +626,36 @@ public class RobotContainer {
                         .unless(() -> claw.hasAlgae())))
         .and(
             () ->
-                !vision.containsRequestedTarget(
-                        TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    || Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        > 5)
+                !previousTarget.getAsBoolean()
+                    && !nextTarget.getAsBoolean()
+                    && !TargetingComputer.targetSet)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -driver
-                                    .customLeft()
-                                    .getY())) // Drive forward with negative Y (forward)
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        .withRotationalRate(
-                            Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getTargetingAngle()))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP))));
-    targetReef
+                    drive.withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(
+                                            TargetingComputer.getCurrentTargetBranch()
+                                                .getTargetingAngle()))
+                                    .minus(drivetrain.getPose().getRotation())
+                                    .getRadians())
+                                * rotP))));
+
+    targetReef // Allows the robot to start moving and also sets whether the left side is true or
+        // not
+        .and(() -> previousTarget.getAsBoolean() || nextTarget.getAsBoolean())
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setTargetSet(true))
+                .alongWith(
+                    new InstantCommand(
+                        () -> vision.autoBranchTargeting(previousTarget.getAsBoolean()))));
+
+    targetReef // Robot moves to the current target
         .and(
             () ->
-                vision.containsRequestedTarget(
+                TargetingComputer.targetSet
+                    && vision.containsRequestedTarget(
                         TargetingComputer.getCurrentTargetBranch().getApriltag())
                     && Math.abs(
                             new Rotation2d(
@@ -823,7 +829,7 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, funnel));
 
     overrideTargetingController.onTrue(
-        new InstantCommand(() -> TargetingComputer.toggleTargetingControllerOverride()));
+        new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
     // InstantCommand(() -> climber.SetClimberPower(0))));
