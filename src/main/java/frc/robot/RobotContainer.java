@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
@@ -337,7 +336,6 @@ public class RobotContainer {
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
-    mech.leftBumper().whileTrue(new OuttakeCoral(manipulator));
     // driver
     //     .rightBumper()
     //     .whileTrue(new IntakeCoral(manipulator, funnel, driver))
@@ -500,7 +498,7 @@ public class RobotContainer {
     //             elevator.isAtTarget()
     //                 && claw.hasAlgae()
     //                 && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
-    //     .onTrue(claw.NET());
+    //     .onTrue(claw.NET()); // TODO: fix
 
     // grabAlgae
     //     .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
@@ -560,11 +558,11 @@ public class RobotContainer {
     //     .onTrue(claw.PROCESSOR())
     //     .onFalse(claw.IDLE());
 
-    shootAlgae
-        .onTrue(new InstantCommand(() -> claw.setRollers(.5)))
-        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
-        .and(() -> Constants.currentMode == Mode.SIM)
-        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+    // shootAlgae
+    //     .onTrue(new InstantCommand(() -> claw.setRollers(.5)))
+    //     .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+    //     .and(() -> Constants.currentMode == Mode.SIM)
+    //     .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
     previousTarget.onTrue(
         new InstantCommand(
@@ -757,9 +755,10 @@ public class RobotContainer {
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
         .onFalse(new EndIntake(manipulator, funnel));
 
-    targetSource
-        .and(() -> claw.hasAlgae())
-        .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true)));
+    // targetSource
+    //     .and(() -> claw.hasAlgae())
+    //     .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true))); //
+    // TODO: fix
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here

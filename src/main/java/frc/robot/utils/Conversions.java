@@ -42,4 +42,10 @@ public class Conversions {
     /* Then multiply by gear ratio to get rotor rotations */
     return RadiansPerSecond.of(wheelRadians * gearRatio);
   }
+
+  public static Distance rotationsToDistance(
+      Angle rotations, double gearRatio, Distance wheelRadius) {
+    var gearedRadians = rotations.in(Radians) / gearRatio;
+    return wheelRadius.times(gearedRadians);
+  }
 }

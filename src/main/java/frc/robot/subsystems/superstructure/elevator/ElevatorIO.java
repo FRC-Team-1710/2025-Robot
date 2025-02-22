@@ -29,6 +29,7 @@ public interface ElevatorIO {
   public class ElevatorIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
+    public boolean encoderConnected = false;
 
     public Angle leaderPosition = Rotations.of(0);
     public Angle leaderRotorPosition = Rotations.of(0);
@@ -41,6 +42,9 @@ public interface ElevatorIO {
 
     public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
     public AngularVelocity followerRotorVelocity = RotationsPerSecond.of(0);
+
+    public Angle encoderPosition = Rotations.of(0);
+    public AngularVelocity encoderVelocity = RotationsPerSecond.of(0);
 
     public Voltage appliedVoltage = Volts.of(0.0);
     public Current leaderStatorCurrent = Amps.of(0);
