@@ -1,118 +1,163 @@
-// Copyright (c) 2025 FRC 5712
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
+// package frc.robot.subsystems.arm;
 
-package frc.robot.subsystems.arm;
+// import static edu.wpi.first.units.Units.Degrees;
+// import static edu.wpi.first.units.Units.Radian;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Kilograms;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+// import edu.wpi.first.math.controller.ArmFeedforward;
+// import edu.wpi.first.math.controller.ProfiledPIDController;
+// import edu.wpi.first.math.system.plant.DCMotor;
+// import edu.wpi.first.math.system.plant.LinearSystemId;
+// import edu.wpi.first.math.trajectory.TrapezoidProfile;
+// import edu.wpi.first.math.util.Units;
+// import edu.wpi.first.units.measure.Angle;
+// import edu.wpi.first.wpilibj.Encoder;
+// import edu.wpi.first.wpilibj.RobotController;
+// import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
+// import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+// import edu.wpi.first.wpilibj.simulation.EncoderSim;
+// import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.wpilibj.util.Color;
+// import edu.wpi.first.wpilibj.util.Color8Bit;
+// import frc.robot.subsystems.elevator.ElevatorIOSIM;
+// import org.littletonrobotics.junction.Logger;
+// import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
-import com.ctre.phoenix6.sim.CANcoderSimState;
-import com.ctre.phoenix6.sim.TalonFXSimState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Mass;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+// public class ArmIOSIM extends ArmIOCTRE {
+//   private DCMotorSim sim =
+//       new DCMotorSim(
+//           LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.004, 8),
+//           DCMotor.getKrakenX60(1));
+//   private double appliedVolts = 0.0;
+//   private Angle sp = Degrees.of(0.0);
 
-/**
- * Simulation implementation of the arm subsystem. This class extends ArmIOCTRE to provide a
- * physics-based simulation of the arm mechanism using WPILib's simulation classes.
- *
- * <p>The simulation models: - Dual Kraken X60 FOC motors - Realistic arm physics including gravity
- * and moment of inertia - Position and velocity feedback through simulated encoders - Battery
- * voltage effects - Motion limits (0° to 180°)
- */
-public class ArmIOSIM extends ArmIOCTRE {
+//   private double kp = 0.0;
+//   private double ki = 0.0;
+//   private double kd = 0.0;
+//   private double ks = 0.0;
+//   private double kg = 0.0;
+//   private double kv = 0.0;
+//   private double ka = 0.0;
+//   private double maxacel = 500.0;
+//   private double maxvel = 200.0;
 
-  /** Physics simulation model for the arm mechanism */
-  private final SingleJointedArmSim motorSimModel;
+//   private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
+//   private final ProfiledPIDController m_bottomController =
+//       new ProfiledPIDController(kp, ki, kd, new TrapezoidProfile.Constraints(maxvel, maxacel));
+//   private ArmFeedforward wristff = new ArmFeedforward(ks, kg, kv, ka);
+//   private final Encoder m_topEncoder = new Encoder(11, 12);
+//   private static final double kArmEncoderDistPerPulse = 2.0 * Math.PI / 4096;
+//   private final SingleJointedArmSim m_arm_topSim =
+//       new SingleJointedArmSim(
+//           m_armGearbox,
+//           50,
+//           SingleJointedArmSim.estimateMOI(0.5, 0.5),
+//           0.5,
+//           Units.degreesToRadians(280),
+//           Units.degreesToRadians(450),
+//           true,
+//           Units.degreesToRadians(0));
+//   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(1);
+//   private final EncoderSim m_topEncoderSim = new EncoderSim(m_topEncoder);
+//   private final LoggedMechanismLigament2d m_wrist;
+//   private final LoggedMechanismLigament2d m_wristEXTENSION;
 
-  /** Simulation state for the leader motor */
-  private final TalonFXSimState leaderSim;
-  /** Simulation state for the follower motor */
-  private final TalonFXSimState followerSim;
-  /** Simulation state for the CANcoder */
-  private final CANcoderSimState encoderSim;
+//   public ArmIOSIM(ElevatorIOSIM elevator) {
+//     m_topEncoderSim.setDistancePerPulse(kArmEncoderDistPerPulse);
+//     m_wristEXTENSION =
+//         elevator.m_secondStage2d.append(
+//             new LoggedMechanismLigament2d("Extension", Units.inchesToMeters(9.643), 230));
+//     m_wrist =
+//         m_wristEXTENSION.append(
+//             new LoggedMechanismLigament2d(
+//                 "Wrist", Units.inchesToMeters(14), 0, 4.8, new Color8Bit(Color.kPurple)));
+//     SmartDashboard.putNumber("Claw/p", kp);
+//     SmartDashboard.putNumber("Claw/i", ki);
+//     SmartDashboard.putNumber("Claw/d", kd);
+//     SmartDashboard.putNumber("Claw/s", ks);
+//     SmartDashboard.putNumber("Claw/g", kg);
+//     SmartDashboard.putNumber("Claw/v", kv);
+//     SmartDashboard.putNumber("Claw/a", ka);
+//     SmartDashboard.putNumber("Claw/maxacel", maxacel);
+//     SmartDashboard.putNumber("Claw/maxvel", maxvel);
+//   }
 
-  /** Constructs a new ArmIOSIM instance. */
-  public ArmIOSIM() {
-    super(); // Initialize hardware interface components
+//   @Override
+//   public void updateInputs(ClawIOInputs inputs) {
+//     super.updateInputs(inputs);
+//     inputs.angle =
+//         Angle.ofRelativeUnits(
+//             Units.degreesToRadians(90) - (m_arm_topSim.getAngleRads() - (2 * Math.PI)), Radian);
+//     sim.setInputVoltage(appliedVolts);
+//     sim.update(0.02);
 
-    // Get simulation states for all hardware
-    leaderSim = leader.getSimState();
-    followerSim = follower.getSimState();
-    encoderSim = encoder.getSimState();
+//     sp = inputs.setpoint;
 
-    // Configure dual Kraken X60 FOC motors
-    DCMotor motor = DCMotor.getKrakenX60Foc(2);
+//     if (inputs.wristManual == 0) {
+//       pwmTalonFX.setVoltage(
+//           m_bottomController.calculate(
+//                   Units.radiansToDegrees(m_arm_topSim.getAngleRads()), 170 - sp.magnitude() + 280)
+//               + wristff.calculate(
+//                   m_arm_topSim.getAngleRads(), m_bottomController.getSetpoint().velocity));
+//       SmartDashboard.putNumber("position", Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
+//       SmartDashboard.putNumber("setpoint", 170 - sp.magnitude() + 280);
+//       SmartDashboard.putNumber("goal", m_bottomController.getSetpoint().position);
+//     } else {
+//       pwmTalonFX.set(inputs.wristManual);
+//     }
+//     m_arm_topSim.setInput(pwmTalonFX.get() * RobotController.getBatteryVoltage());
 
-    // Define arm physical properties
-    Distance armLength = Inches.of(12);
-    Mass armMass = Pounds.of(15);
+//     m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()) + 40);
 
-    // Calculate moment of inertia using WPILib helper
-    double armMOI = SingleJointedArmSim.estimateMOI(armLength.in(Meters), armMass.in(Kilograms));
+//     Logger.recordOutput(
+//         "Claw angle por favor",
+//         Units.radiansToDegrees(
+//             Units.degreesToRadians(90) - (m_arm_topSim.getAngleRads() - (2 * Math.PI))));
+//     m_arm_topSim.update(0.02);
 
-    // Create arm physics model
-    LinearSystem<N2, N1, N2> linearSystem =
-        LinearSystemId.createSingleJointedArmSystem(motor, armMOI, GEAR_RATIO);
+//     if (kp != SmartDashboard.getNumber("Claw/p", kp)) {
+//       kp = SmartDashboard.getNumber("Claw/p", kp);
+//       m_bottomController.setP(kp);
+//     }
 
-    // Initialize arm simulation
-    motorSimModel =
-        new SingleJointedArmSim(
-            linearSystem,
-            motor,
-            GEAR_RATIO,
-            armLength.in(Meters),
-            Degrees.of(0).in(Radians), // Lower limit (0°)
-            Degrees.of(180).in(Radians), // Upper limit (180)
-            true, // Enable gravity simulation
-            Degrees.of(90).in(Radians)); // Start at 90°
-  }
+//     if (ki != SmartDashboard.getNumber("Claw/i", ki)) {
+//       ki = SmartDashboard.getNumber("Claw/i", ki);
+//       m_bottomController.setI(ki);
+//     }
 
-  /**
-   * Updates the simulation model and all simulated sensor inputs.
-   *
-   * @param inputs The ArmIOInputs object to update with simulated values
-   */
-  @Override
-  public void updateInputs(ArmIOInputs inputs) {
-    // Update base class inputs first
-    super.updateInputs(inputs);
+//     if (kd != SmartDashboard.getNumber("Claw/d", kd)) {
+//       kd = SmartDashboard.getNumber("Claw/d", kd);
+//       m_bottomController.setD(kd);
+//     }
 
-    // Simulate battery voltage effects on all devices
-    leaderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    followerSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    encoderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+//     if (ks != SmartDashboard.getNumber("Claw/s", ks)) {
+//       ks = SmartDashboard.getNumber("Claw/s", ks);
+//       wristff = new ArmFeedforward(ks, kg, kv, ka);
+//     }
 
-    // Update physics simulation
-    motorSimModel.setInputVoltage(leaderSim.getMotorVoltage());
-    motorSimModel.update(0.020); // Simulate 20ms timestep (50Hz)
+//     if (kg != SmartDashboard.getNumber("Claw/g", kg)) {
+//       kg = SmartDashboard.getNumber("Claw/g", kg);
+//       wristff = new ArmFeedforward(ks, kg, kv, ka);
+//     }
 
-    // Get position and velocity from physics simulation
-    Angle position = Radians.of(motorSimModel.getAngleRads());
-    AngularVelocity velocity = RadiansPerSecond.of(motorSimModel.getVelocityRadPerSec());
+//     if (kv != SmartDashboard.getNumber("Claw/v", kv)) {
+//       kv = SmartDashboard.getNumber("Claw/v", kv);
+//       wristff = new ArmFeedforward(ks, kg, kv, ka);
+//     }
 
-    // Update simulated motor encoder readings (accounts for gear ratio)
-    leaderSim.setRawRotorPosition(position.times(GEAR_RATIO));
-    leaderSim.setRotorVelocity(velocity.times(GEAR_RATIO));
+//     if (ka != SmartDashboard.getNumber("Claw/a", ka)) {
+//       ka = SmartDashboard.getNumber("Claw/a", ka);
+//       wristff = new ArmFeedforward(ks, kg, kv, ka);
+//     }
 
-    // Update simulated CANcoder readings (direct angle measurement)
-    encoderSim.setRawPosition(position);
-    encoderSim.setVelocity(velocity);
-  }
-}
+//     if (maxacel != SmartDashboard.getNumber("Claw/maxacel", maxacel)) {
+//       maxacel = SmartDashboard.getNumber("Claw/maxacel", maxacel);
+//       m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+//     }
+
+//     if (maxvel != SmartDashboard.getNumber("Claw/maxvel", maxvel)) {
+//       maxvel = SmartDashboard.getNumber("Claw/maxvel", maxvel);
+//       m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+//     }
+//   }
+// }

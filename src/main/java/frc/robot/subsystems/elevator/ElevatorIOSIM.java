@@ -71,7 +71,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       m_mech2dRoot2d.append(
           new LoggedMechanismLigament2d("FirstStageSim", m_ElevatorSim.getPositionMeters(), 90));
 
-  private final LoggedMechanismLigament2d m_secondStage2d =
+  public final LoggedMechanismLigament2d m_secondStage2d =
       m_elevatorMechSecondStage2d.append(
           new LoggedMechanismLigament2d(
               "SecondStage", Units.inchesToMeters(25), 0)); // Max height 27in

@@ -22,23 +22,25 @@ public interface ArmIO {
   public static class ArmIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
-    public boolean encoderConnected = false;
+    public boolean angleMotorConnected = false;
 
     public Angle leaderPosition = Rotations.of(0);
     public Angle leaderRotorPosition = Rotations.of(0);
-    public Angle encoderPosition = Rotations.of(0);
+    public Angle angleMotorPosition = Rotations.of(0);
 
     public AngularVelocity leaderVelocity = RotationsPerSecond.of(0);
-    public AngularVelocity leaderRotorVelocity = RotationsPerSecond.of(0);
-    public AngularVelocity encoderVelocity = RotationsPerSecond.of(0);
-
+    public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
+    public AngularVelocity angleMotorVelocity = RotationsPerSecond.of(0);
+    
     public Voltage appliedVoltage = Volts.of(0.0);
     public Current leaderStatorCurrent = Amps.of(0);
     public Current followerStatorCurrent = Amps.of(0);
+    public Current angleMotorStatorCurrent = Amps.of(0);
     public Current leaderSupplyCurrent = Amps.of(0);
     public Current followerSupplyCurrent = Amps.of(0);
+    public Current angleMotorSupplyCurrent = Amps.of(0);
 
-    public Angle armAngle = Rotations.of(0);
+    public Angle funnelAngle = Rotations.of(0);
   }
 
   /** Updates the set of loggable inputs. */
@@ -46,6 +48,9 @@ public interface ArmIO {
 
   /** Run closed loop at the specified velocity. */
   public default void setPosition(Angle angle) {}
+
+  /** setRoller */
+  public default void setRoller(double percent) {}
 
   /** Stop in open loop. */
   public default void stop() {}

@@ -34,10 +34,11 @@ public class Arm extends SubsystemBase {
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
-      new Alert("Arm leader motor isn't connected", AlertType.kError);
+      new Alert("Arm funnelLeader motor isn't connected", AlertType.kError);
   private final Alert followerMotorAlert =
-      new Alert("Arm follower motor isn't connected", AlertType.kError);
-  private final Alert encoderAlert = new Alert("Arm encoder isn't connected", AlertType.kError);
+      new Alert("Arm funnelFollower motor isn't connected", AlertType.kError);
+  private final Alert angleMotorAlert =
+      new Alert("Arm funnelAngleMotor motor isn't connected", AlertType.kError);
 
   /**
    * Creates a new Arm subsystem with the specified hardware interface.
@@ -53,12 +54,12 @@ public class Arm extends SubsystemBase {
   public void periodic() {
     // Update and log inputs from hardware
     io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
+    Logger.processInputs("Funnel", inputs);
 
     // Update motor connection status alerts
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
-    encoderAlert.set(!inputs.encoderConnected);
+    angleMotorAlert.set(!inputs.angleMotorConnected);
   }
 
   /**
@@ -70,11 +71,6 @@ public class Arm extends SubsystemBase {
     io.setPosition(position);
   }
 
-  /** Stops the arm motors. */
-  private void stop() {
-    io.stop();
-  }
-
   /**
    * Returns the current position of the arm.
    *
@@ -82,17 +78,14 @@ public class Arm extends SubsystemBase {
    */
   @AutoLogOutput
   public Angle getPosition() {
-    return inputs.encoderPosition;
+    return inputs.funnelAngle;
   }
 
   /** Enumeration of available arm positions with their corresponding target angles. */
   private enum ArmMode {
-    STOP(Degrees.of(0)), // Stop the arm
-    INTAKE(Degrees.of(0)), // Arm tucked in
-    L1(Degrees.of(90)), // Position for scoring in L1
-    L2(Degrees.of(135)), // Position for scoring in L2
-    L3(Degrees.of(135)), // Position for scoring in L3
-    L4(Degrees.of(180)); // Position for scoring in L4
+    CLIMB(Degrees.of(0), Degrees.of(0.5)), // Arm fully raised
+    INTAKE(Degrees.of(0), Degrees.of(0.5)), // Arm tucked in
+    L1(Degrees.of(90), Degrees.of(0.5)); // Position for scoring in L1
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
@@ -100,10 +93,6 @@ public class Arm extends SubsystemBase {
     ArmMode(Angle targetAngle, Angle angleTolerance) {
       this.targetAngle = targetAngle;
       this.angleTolerance = angleTolerance;
-    }
-
-    ArmMode(Angle targetAngle) {
-      this(targetAngle, Degrees.of(2)); // 2 degree default tolerance
     }
   }
 
@@ -133,18 +122,12 @@ public class Arm extends SubsystemBase {
   private final Command currentCommand =
       new SelectCommand<>(
           Map.of(
-              ArmMode.STOP,
-              Commands.runOnce(this::stop).withName("Stop Arm"),
+              ArmMode.CLIMB,
+              createPositionCommand(ArmMode.CLIMB),
               ArmMode.INTAKE,
               createPositionCommand(ArmMode.INTAKE),
               ArmMode.L1,
-              createPositionCommand(ArmMode.L1),
-              ArmMode.L2,
-              createPositionCommand(ArmMode.L2),
-              ArmMode.L3,
-              createPositionCommand(ArmMode.L3),
-              ArmMode.L4,
-              createPositionCommand(ArmMode.L4)),
+              createPositionCommand(ArmMode.L1)),
           this::getMode);
 
   /**
@@ -166,7 +149,6 @@ public class Arm extends SubsystemBase {
    */
   @AutoLogOutput
   public boolean isAtTarget() {
-    if (currentMode == ArmMode.STOP) return true;
     return getPosition().isNear(currentMode.targetAngle, currentMode.angleTolerance);
   }
 
@@ -178,6 +160,10 @@ public class Arm extends SubsystemBase {
   @AutoLogOutput
   private Angle targetAngle() {
     return currentMode.targetAngle;
+  }
+
+  public void setRoller(double percent) {
+    io.setRoller(percent);
   }
 
   /**
@@ -195,29 +181,15 @@ public class Arm extends SubsystemBase {
   /**
    * @return Command to move the arm to L1 scoring position
    */
+  public final Command CLIMB() {
+    return setPositionCommand(ArmMode.CLIMB);
+  }
+
+  /**
+   * @return Command to move the arm to L1 scoring position
+   */
   public final Command L1() {
     return setPositionCommand(ArmMode.L1);
-  }
-
-  /**
-   * @return Command to move the arm to L2 scoring position
-   */
-  public final Command L2() {
-    return setPositionCommand(ArmMode.L2);
-  }
-
-  /**
-   * @return Command to move the arm to L3 position
-   */
-  public final Command L3() {
-    return setPositionCommand(ArmMode.L3);
-  }
-
-  /**
-   * @return Command to move the arm to L4 position
-   */
-  public final Command L4() {
-    return setPositionCommand(ArmMode.L4);
   }
 
   /**
@@ -225,12 +197,5 @@ public class Arm extends SubsystemBase {
    */
   public final Command intake() {
     return setPositionCommand(ArmMode.INTAKE);
-  }
-
-  /**
-   * @return Command to stop the arm
-   */
-  public final Command stopCommand() {
-    return setPositionCommand(ArmMode.STOP);
   }
 }
