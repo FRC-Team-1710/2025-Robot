@@ -105,14 +105,7 @@ public class RobotContainer {
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
   /** Driver RT */
-  /** Driver Y */
-  private final Trigger placeL4 = new Trigger(driver.y());
-  /** Driver X */
-  private final Trigger placeL3 = new Trigger(driver.x());
-  /** Driver A */
-  private final Trigger placeL2 = new Trigger(driver.a());
-  /** Driver B */
-  private final Trigger grabAlgae = new Trigger(driver.b());
+  
   /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
   /** Driver LT */
@@ -139,28 +132,6 @@ public class RobotContainer {
 
   private final Trigger overrideTargetingController = new Trigger(mech.povDown());
   /** Driver LT */
-  private final Trigger targetSource = new Trigger(driver.leftTrigger());
-  /** Driver Left */
-  private final Trigger previousTarget = new Trigger(driver.povLeft());
-  /** Driver Right */
-  private final Trigger nextTarget = new Trigger(driver.povRight());
-  /** Driver Start */
-  private final Trigger resetGyro = new Trigger(driver.start());
-
-  /** Mech Y */
-  private final Trigger targetL4 = new Trigger(mech.y());
-  /** Mech X */
-  private final Trigger targetL3 = new Trigger(mech.x());
-  /** Mech A */
-  private final Trigger targetL2 = new Trigger(mech.a());
-  /** Mech B */
-  private final Trigger targetAlgae = new Trigger(mech.b());
-  /** Mech LB */
-  private final Trigger outtakeCoral = new Trigger(mech.leftBumper());
-  /** Mech RB */
-  private final Trigger intakeCoral = new Trigger(mech.rightBumper());
-
-  private final Trigger overrideTargetingController = new Trigger(mech.povDown());
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
@@ -436,10 +407,9 @@ public class RobotContainer {
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
 
-    grabAlgae
+    
     /* Driver Bindings */
-    placeL2
-        .onTrue(
+    placeL2.onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
@@ -637,8 +607,8 @@ public class RobotContainer {
                                                 drivetrain.getPose())))
                                     .minus(drivetrain.getPose().getRotation())
                                     .getRadians())
-                                * rotP))));
-                                    * rotP))))
+                                * rotP))))
+                                    
         .and(
             (() ->
                 vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
