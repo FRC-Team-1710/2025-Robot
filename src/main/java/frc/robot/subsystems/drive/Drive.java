@@ -166,7 +166,7 @@ public class Drive extends SubsystemBase {
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
   public Drive(DriveIO io) {
 
