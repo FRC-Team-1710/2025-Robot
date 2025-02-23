@@ -332,10 +332,11 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .5;
+    double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
+
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
-    mech.pov(0).onTrue(elevator.L4());
-    mech.pov(180).onTrue(elevator.intake());
     // driver
     //     .rightBumper()
     //     .whileTrue(new IntakeCoral(manipulator, funnel, driver))
@@ -598,8 +599,6 @@ public class RobotContainer {
                             Logger.recordOutput(
                                 "Overide Target", TargetingComputer.getCurrentTargetBranch()))));
 
-    double alignP = 1;
-    double rotP = .75;
     targetReef
         .onFalse(
             elevator
@@ -686,16 +685,14 @@ public class RobotContainer {
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
                                     * rotP))))
-        .and(
-            (() ->
-                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    < 1.5))
         .onFalse(
             elevator
                 .intake()
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
-        .onTrue(new ElevatorToTargetLevel(elevator))
+        .onTrue(new ElevatorToTargetLevel(elevator).unless(() ->
+        vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
+            < 1.5))
         .and(
             () ->
                 vision.containsRequestedTarget(
@@ -809,6 +806,10 @@ public class RobotContainer {
             () ->
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
+
+                    
+    mech.pov(0).onTrue(elevator.L4());
+    mech.pov(180).onTrue(elevator.intake());
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral

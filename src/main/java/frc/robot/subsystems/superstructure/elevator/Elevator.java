@@ -104,7 +104,7 @@ public class Elevator extends SubsystemBase {
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
     L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
-    L3(Inches.of(30.25), Inches.of(.5)), // Position for scoring in L3
+    L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
     L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
     ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
     ALGAE_HIGH(Inches.of(25), Inches.of(1)); // Position for grabbing high algae
