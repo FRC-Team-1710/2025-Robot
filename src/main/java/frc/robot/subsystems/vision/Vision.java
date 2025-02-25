@@ -105,7 +105,7 @@ public class Vision extends SubsystemBase {
                               .getTagPose(TargetingComputer.getCurrentTargetBranch().getApriltag())
                               .get()
                               .getZ()),
-                      new Rotation3d(-Math.PI, 0, 0))));
+                      new Rotation3d(0, 0, -Math.PI))));
     } catch (Exception e) {
       // TODO: handle exception
     }
@@ -164,6 +164,7 @@ public class Vision extends SubsystemBase {
           : rightCamToTag;
     }
 
+    // Return the non-zero offset, or kZero if both are zero
     var result =
         !leftCamToTag.equals(Transform3d.kZero)
             ? leftCamToTag
@@ -171,14 +172,18 @@ public class Vision extends SubsystemBase {
                 ? rightCamToTag
                 : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-    Logger.recordOutput("X Error", result.getX());
-    Logger.recordOutput("Y Error", result.getY());
-    // Return the non-zero offset, or kZero if both are zero
+    Logger.recordOutput("X to Tag", result.getX());
+    Logger.recordOutput("Y to Tag", result.getY());
+    Logger.recordOutput(
+        "X Error", TargetingComputer.getCurrentTargetBranch().getOffset().getX() - result.getX());
+    Logger.recordOutput(
+        "Y Error", TargetingComputer.getCurrentTargetBranch().getOffset().getY() - result.getY());
+
     return result;
   }
 
   public boolean containsRequestedTarget(int id) {
-    return getCamera(0).hasRecentlyHadTarget(id) || getCamera(1).hasRecentlyHadTarget(id);
+    return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
   public double getDistanceToTag(int tagID) {

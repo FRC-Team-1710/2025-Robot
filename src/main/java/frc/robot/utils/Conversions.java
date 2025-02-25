@@ -19,7 +19,7 @@ public class Conversions {
     /* Then multiply the wheel radius by radians of rotation to get distance */
     return wheelRadius.times(gearedRadians);
   }
-  
+
   public static Distance rotationsToInches(
       Angle rotations, double gearRatio, Distance wheelRadius) {
     /* Apply gear ratio to input rotations */
