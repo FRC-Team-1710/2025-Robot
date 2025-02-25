@@ -23,6 +23,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -35,6 +36,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 24;
   private boolean locked = false;
+  private boolean rollerLocked = false;
 
   private double kP = 0.05;
   private double kI = 0.0;
@@ -49,6 +51,7 @@ public class ClawIOCTRE implements ClawIO {
   public final TalonFX wrist = new TalonFX(51);
   public final TalonFX rollers = new TalonFX(52);
 
+  private final PIDController rollerPID = new PIDController(0, 0, 0);
   private final ProfiledPIDController wristPID =
       new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
   private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
@@ -137,6 +140,10 @@ public class ClawIOCTRE implements ClawIO {
           wristPID.calculate(inputs.angle.magnitude())
               + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
     }
+
+    if (rollerLocked) {
+      rollers.setVoltage(rollerPID.calculate(inputs.rollerPosition));
+    }
   }
 
   @Override
@@ -144,6 +151,17 @@ public class ClawIOCTRE implements ClawIO {
     SetAngle = angle;
     wristPID.setGoal(angle.magnitude());
     locked = true;
+  }
+
+  @Override
+  public void zero() {
+    wrist.setPosition(0);
+  }
+
+  @Override
+  public void lockRoller() {
+    rollerPID.setSetpoint(rollers.getPosition().getValueAsDouble());
+    rollerLocked = true;
   }
 
   @Override
@@ -163,6 +181,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void setRollers(double power) {
     runPercent = power;
+    rollerLocked = false;
     rollers.set(power);
   }
 
