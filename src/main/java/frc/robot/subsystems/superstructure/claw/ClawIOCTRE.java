@@ -48,8 +48,8 @@ public class ClawIOCTRE implements ClawIO {
   private double kacel = 600;
   private double kvel = 300;
 
-  public final TalonFX wrist = new TalonFX(21);
-  public final TalonFX rollers = new TalonFX(22);
+  public final TalonFX wrist = new TalonFX(51);
+  public final TalonFX rollers = new TalonFX(52);
 
   private final PIDController rollerPID = new PIDController(0, 0, 0);
   private final ProfiledPIDController wristPID =
@@ -79,6 +79,8 @@ public class ClawIOCTRE implements ClawIO {
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     wrist.getConfigurator().apply(config);
     rollers.getConfigurator().apply(config);
+
+    wrist.setPosition(0);
 
     SmartDashboard.putNumber("Claw/PID/P", kP);
     SmartDashboard.putNumber("Claw/PID/I", kI);
