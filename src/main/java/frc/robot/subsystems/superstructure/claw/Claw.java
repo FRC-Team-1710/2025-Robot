@@ -39,6 +39,7 @@ public class Claw extends SubsystemBase {
   private ClawPosition currentMode = ClawPosition.IDLE;
 
   private static boolean hasAlgae = false;
+  private double rollerPositionWhenAlgaeGrabbed = 0;
 
   // Alerts for motor connection status
   private final Alert wristAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
@@ -67,11 +68,12 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    // if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
-    //   hasAlgae = false;
-    // }
+    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
+      hasAlgae = false;
+    }
 
     Logger.recordOutput("Claw/hasAlgae", hasAlgae);
+    Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
   }
 
   /**
@@ -122,6 +124,10 @@ public class Claw extends SubsystemBase {
 
   public boolean hasAlgae() {
     return hasAlgae;
+  }
+
+  public void setRollerPositionWhenAlgaeGrabbed(double position) {
+    rollerPositionWhenAlgaeGrabbed = position;
   }
 
   /** Zeros wrist */

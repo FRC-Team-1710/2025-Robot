@@ -15,6 +15,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.Constants;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +64,7 @@ public class FieldConstants {
   }
 
   public static class Reef {
+    public static final Distance faceLength = Inches.of(36.792600);
     public static final Translation2d center =
         new Translation2d(Inches.of(176.746), Inches.of(158.501));
     public static final Distance faceToZoneLine =
@@ -117,7 +120,7 @@ public class FieldConstants {
           fillLeft.put(
               level,
               new Pose3d(
-                  calculateTransform(poseDirection, adjustX, adjustY, level.height),
+                  calculateTransform(poseDirection, adjustX, adjustY.unaryMinus(), level.height),
                   new Rotation3d(
                       Degrees.of(0), level.pitch, poseDirection.getRotation().getMeasure())));
         }
@@ -156,7 +159,12 @@ public class FieldConstants {
 
   static {
     try {
-      aprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
+      // TODO Switch this with every SIM vs REAL
+      if (Constants.currentMode == Constants.Mode.SIM) {
+        aprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
+      } else {
+        aprilTags = AprilTagFieldLayout.loadFromResource("src/main/java/frc/robot/utils/wpicalfields/practicefield.json");
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
