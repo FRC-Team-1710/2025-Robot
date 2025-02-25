@@ -102,6 +102,7 @@ public class Robot extends LoggedRobot {
         "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
     // if (m_gcTimer.advanceIfElapsed(5)) System.gc();
+    Logger.recordOutput("Time since startup", m_gcTimer.get());
   }
 
   /** Gets the current alliance, true is red */

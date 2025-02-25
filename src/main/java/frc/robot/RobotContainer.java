@@ -22,6 +22,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
+import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
@@ -32,6 +33,7 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
+import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -49,6 +51,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
@@ -61,7 +64,7 @@ public class RobotContainer {
       new TunableController(0)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
-          .withDeadband(0.125);
+          .withDeadband(0.1);
 
   private final TunableController mech =
       new TunableController(1)
@@ -91,7 +94,7 @@ public class RobotContainer {
 
   private final SwerveRequest.RobotCentric robotCentric =
       new SwerveRequest.RobotCentric()
-          .withDeadband(MaxSpeed.times(0.025))
+          .withDeadband(MaxSpeed.times(0.05))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
@@ -155,6 +158,10 @@ public class RobotContainer {
   private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 10);
   private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
   private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
+  private final Trigger l4Button = new Trigger(() -> reefTargetingSystem.getY() < -.5);
+  private final Trigger l3Button = new Trigger(() -> reefTargetingSystem.getY() > .5);
+  private final Trigger l2Button = new Trigger(() -> reefTargetingSystem.getX() > .5);
+  private final Trigger l1Button = new Trigger(() -> reefTargetingSystem.getX() < -.5);
 
   public RobotContainer() {
     climber = new Climber();
@@ -166,7 +173,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIO() {});
+        claw = new Claw(new ClawIOCTRE());
 
         /*
          * Vision Class for referencing.
@@ -560,10 +567,12 @@ public class RobotContainer {
     //     .onFalse(claw.IDLE());
 
     // shootAlgae
-    //     .onTrue(new InstantCommand(() -> claw.setRollers(.5)))
+    //     .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
     //     .onFalse(new InstantCommand(() -> claw.setRollers(0)))
     //     .and(() -> Constants.currentMode == Mode.SIM)
     //     .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    grabAlgaeFromFloor.onTrue(claw.GRAB()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
 
     previousTarget.onTrue(
         new InstantCommand(
@@ -688,11 +697,16 @@ public class RobotContainer {
         .onFalse(
             elevator
                 .intake()
+                .unless(targetAlgae)
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
-        .onTrue(new ElevatorToTargetLevel(elevator).unless(() ->
-        vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-            < 1.5))
+        .onTrue(
+            new ElevatorToTargetLevel(elevator)
+                .unless(
+                    () ->
+                        vision.getDistanceToTag(
+                                TargetingComputer.getCurrentTargetBranch().getApriltag())
+                            > 1.5))
         .and(
             () ->
                 vision.containsRequestedTarget(
@@ -807,7 +821,6 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-                    
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 
@@ -873,6 +886,18 @@ public class RobotContainer {
         .and(kiloButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
+    l4Button
+        .and(() -> !TargetingComputer.targetingControllerOverride)
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L4)));
+    l3Button
+        .and(() -> !TargetingComputer.targetingControllerOverride)
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L3)));
+    l2Button
+        .and(() -> !TargetingComputer.targetingControllerOverride)
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L2)));
+    l1Button
+        .and(() -> !TargetingComputer.targetingControllerOverride)
+        .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L1)));
 
     /* SysID Bindings */
     // Run SysId routines when holding back/start and X/Y.

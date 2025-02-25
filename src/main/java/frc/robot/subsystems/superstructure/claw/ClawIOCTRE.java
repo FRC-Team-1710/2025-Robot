@@ -46,8 +46,8 @@ public class ClawIOCTRE implements ClawIO {
   private double kacel = 600;
   private double kvel = 300;
 
-  public final TalonFX wrist = new TalonFX(21);
-  public final TalonFX rollers = new TalonFX(22);
+  public final TalonFX wrist = new TalonFX(51);
+  public final TalonFX rollers = new TalonFX(52);
 
   private final ProfiledPIDController wristPID =
       new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));

@@ -34,7 +34,7 @@ import frc.robot.generated.TunerConstants;
  */
 public final class Constants {
 
-  public static final Mode simMode = Mode.SIM;
+  public static final Mode simMode = Mode.REPLAY;
 
   public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.75);
   public static final AngularVelocity MaxModuleRate = RotationsPerSecond.of(20.0);
@@ -140,7 +140,12 @@ public final class Constants {
     }
   }
 
-  public static class ClawSubsystemConstants {
-    public static final double ClawIntakePower = 0.5;
+  public static class ClawConstants {
+    public static final double CLAW_INTAKE_POWER = 0.5;
+  }
+
+  public static class FunnelConstants {
+    public static final double intakeSpeed = 0.4;
+    public static final double insideSpeed = 0.2;
   }
 }

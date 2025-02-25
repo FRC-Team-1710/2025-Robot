@@ -18,7 +18,10 @@ import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -35,6 +38,10 @@ public class VisionIOPhotonVision implements VisionIO {
   PhotonPipelineResult latestResult;
   List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
+  private static int hasRecentlyHadTargetTimer = 0;
+
+  private final Map<Integer, Integer> recentTargets = new HashMap<>();
+  private final int maxCycles = 5;
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -149,6 +156,37 @@ public class VisionIOPhotonVision implements VisionIO {
     return new PhotonTrackedTarget();
   }
 
+  public void updateTargets() {
+    // Decrement cycle count for all targets and remove those that exceed maxCycles
+    Iterator<Map.Entry<Integer, Integer>> iterator = recentTargets.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<Integer, Integer> entry = iterator.next();
+      if (entry.getValue() >= maxCycles) {
+        iterator.remove();
+      } else {
+        entry.setValue(entry.getValue() + 1);
+      }
+    }
+
+    // Add new targets with a cycle count of 0
+    if (!cameraTargets.isEmpty()) {
+      for (var target : cameraTargets) {
+        recentTargets.put(target.getFiducialId(), 0);
+      }
+    }
+  }
+
+  /**
+   * Checks to see if the specified AprilTag ID has been within the camera's multi-tag results in
+   * the last 5 cycles
+   *
+   * @param id Requested AprilTag
+   * @return True if the AprilTag exists in the results, false otherwise
+   */
+  public synchronized boolean hasRecentlyHadTarget(int id) {
+    return recentTargets.containsKey(id);
+  }
+
   /**
    * Checks to see if the specified AprilTag ID is within the camera's multi-tag results
    *
@@ -219,6 +257,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /** Updates the local vision results variables */
   private void updateResults() {
+    if (hasRecentlyHadTargetTimer > 1) hasRecentlyHadTargetTimer--;
     PhotonPipelineResult nullResult = new PhotonPipelineResult();
     cameraResults = camera.getAllUnreadResults();
     if (!cameraResults.isEmpty()) {
@@ -234,5 +273,6 @@ public class VisionIOPhotonVision implements VisionIO {
       cameraTargets = new ArrayList<>();
     }
     Logger.recordOutput("camera results", cameraResults.toString());
+    Logger.recordOutput(camera.getName() + "Recent Targets", recentTargets.toString());
   }
 }

@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -86,30 +85,27 @@ public class Vision extends SubsystemBase {
     consumer.accept(sortMeasurements(visionData.measurements()));
 
     try {
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Left Calc Offset",
-          getCamera(0)
-              .getTarget(17)
-              .bestCameraToTarget
-              .getTranslation()
-              .plus(getCamera(0).getStdDev().getTranslation())
-              .toVector()
-              .getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Right Calc Offset",
-          getCamera(1)
-              .getTarget(17)
-              .bestCameraToTarget
-              .getTranslation()
-              .plus(getCamera(1).getStdDev().getTranslation())
-              .toVector()
-              .getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Left Cam Measurement",
-          getCamera(0).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Right Cam Measurement",
-          getCamera(1).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+      Logger.recordOutput(
+          "VisionDebugging/Current Target Position",
+          new Transform3d(
+                  FieldConstants.aprilTags
+                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                      .get()
+                      .getTranslation(),
+                  FieldConstants.aprilTags
+                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                      .get()
+                      .getRotation())
+              .plus(
+                  new Transform3d(
+                      new Translation3d(
+                          TargetingComputer.currentTargetBranch.getOffset().getX(),
+                          TargetingComputer.currentTargetBranch.getOffset().getY(),
+                          -FieldConstants.aprilTags
+                              .getTagPose(TargetingComputer.getCurrentTargetBranch().getApriltag())
+                              .get()
+                              .getZ()),
+                      new Rotation3d(-Math.PI, 0, 0))));
     } catch (Exception e) {
       // TODO: handle exception
     }
@@ -131,8 +127,11 @@ public class Vision extends SubsystemBase {
                   FieldConstants.aprilTags.getTagPose(id).get().getRotation())
               .plus(
                   new Transform3d(
-                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-                      new Rotation3d())));
+                      new Translation3d(
+                          desiredOffset.getX(),
+                          desiredOffset.getY(),
+                          -FieldConstants.aprilTags.getTagPose(id).get().getZ()),
+                      new Rotation3d(-Math.PI, 0, 0))));
       Logger.recordOutput(
           "VisionDebugging/left cam based target position",
           leftCamToTag
@@ -173,12 +172,13 @@ public class Vision extends SubsystemBase {
                 : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
     Logger.recordOutput("X Error", result.getX());
+    Logger.recordOutput("Y Error", result.getY());
     // Return the non-zero offset, or kZero if both are zero
     return result;
   }
 
   public boolean containsRequestedTarget(int id) {
-    return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
+    return getCamera(0).hasRecentlyHadTarget(id) || getCamera(1).hasRecentlyHadTarget(id);
   }
 
   public double getDistanceToTag(int tagID) {
