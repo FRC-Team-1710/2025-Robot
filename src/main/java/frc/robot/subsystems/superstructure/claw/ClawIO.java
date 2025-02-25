@@ -67,4 +67,8 @@ public interface ClawIO {
   public default void stopHere() {}
 
   public default void stopAll() {}
+
+  public default void zero() {}
+
+  public default void lockRoller() {}
 }

@@ -68,9 +68,9 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    // if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
-    //   hasAlgae = false;
-    // }
+    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
+      hasAlgae = false;
+    }
 
     Logger.recordOutput("Claw/hasAlgae", hasAlgae);
     Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
@@ -124,6 +124,15 @@ public class Claw extends SubsystemBase {
 
   public void setRollerPositionWhenAlgaeGrabbed(double position) {
     rollerPositionWhenAlgaeGrabbed = position;
+  }
+
+  /** Zeros wrist */
+  public void zero() {
+    io.zero();
+  }
+
+  public void lockRoller() {
+    io.lockRoller();
   }
 
   /**
