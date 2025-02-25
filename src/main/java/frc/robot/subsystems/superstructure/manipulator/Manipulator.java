@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.manipulator;
+package frc.robot.subsystems.superstructure.manipulator;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -12,10 +12,13 @@ public class Manipulator extends SubsystemBase {
   private final ManipulatorIOInputsAutoLogged inputs;
   private final ManipulatorIO io;
 
+  private static boolean hasCoral;
+
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io) {
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
+    hasCoral = beam2Broken() && !beam1Broken();
   }
 
   @Override
@@ -28,6 +31,14 @@ public class Manipulator extends SubsystemBase {
   public void runPercent(double percent) {
     SmartDashboard.putNumber("Manipulator/ClawPercent", percent);
     io.setVoltage(percent * 12);
+  }
+
+  public boolean hasCoral() {
+    return hasCoral;
+  }
+
+  public void toggleCoralStatus() {
+    hasCoral = !hasCoral;
   }
 
   /*Boolean */

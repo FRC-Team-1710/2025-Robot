@@ -26,14 +26,23 @@ public class TunerConstants {
           .withKP(50)
           .withKI(0)
           .withKD(0)
-          .withKS(0.0)
-          .withKV(0.0)
+          .withKS(0)
+          .withKV(0)
           .withKA(0)
           .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+  // kA for rotation is 0.0017201
+  // kA for drive is 0.0029193
   // When using closed-loop control, the drive motor uses the control
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
-      new Slot0Configs().withKP(0).withKI(0).withKD(0).withKS(0).withKV(0).withKA(0);
+      new Slot0Configs()
+          .withKP(0.028221)
+          .withKI(0)
+          .withKD(0)
+          .withKS(0.084521)
+          .withKV(0.018666)
+          .withKA(0);
+  // kP for drive is 0.017655
 
   // The closed-loop output type to use for the steer motors;
   // This affects the PID/FF gains for the steer motors
@@ -71,7 +80,8 @@ public class TunerConstants {
                   .withStatorCurrentLimitEnable(true));
   private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
   // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
-  private static final Pigeon2Configuration pigeonConfigs = null;
+  private static final Pigeon2Configuration pigeonConfigs =
+      new Pigeon2Configuration().withMountPose(new MountPoseConfigs().withMountPoseYaw(90));
 
   // CAN bus that the devices are located on;
   // All swerve devices must share the same CAN bus
@@ -139,7 +149,7 @@ public class TunerConstants {
   private static final int kFrontLeftSteerMotorId = 3;
   private static final int kFrontLeftEncoderId = 2;
   private static final Angle kFrontLeftEncoderOffset =
-      Rotations.of(Rotations.convertFrom(1.178, Radian));
+      Rotations.of(Rotations.convertFrom(13.706, Radian));
   private static final boolean kFrontLeftSteerMotorInverted = true;
   private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -151,7 +161,7 @@ public class TunerConstants {
   private static final int kFrontRightSteerMotorId = 6;
   private static final int kFrontRightEncoderId = 5;
   private static final Angle kFrontRightEncoderOffset =
-      Rotations.of(Rotations.convertFrom(2.763, Radian));
+      Rotations.of(Rotations.convertFrom(21.514, Radian));
   private static final boolean kFrontRightSteerMotorInverted = true;
   private static final boolean kFrontRightEncoderInverted = false;
 
@@ -163,7 +173,7 @@ public class TunerConstants {
   private static final int kBackLeftSteerMotorId = 9;
   private static final int kBackLeftEncoderId = 8;
   private static final Angle kBackLeftEncoderOffset =
-      Rotations.of(Rotations.convertFrom(1.4940972874006144, Radian));
+      Rotations.of(Rotations.convertFrom(20.232, Radian));
   private static final boolean kBackLeftSteerMotorInverted = true;
   private static final boolean kBackLeftEncoderInverted = false;
 
@@ -175,7 +185,7 @@ public class TunerConstants {
   private static final int kBackRightSteerMotorId = 12;
   private static final int kBackRightEncoderId = 11;
   private static final Angle kBackRightEncoderOffset =
-      Rotations.of(Rotations.convertFrom(-.161, Radian));
+      Rotations.of(Rotations.convertFrom(10.089, Radian));
   private static final boolean kBackRightSteerMotorInverted = true;
   private static final boolean kBackRightEncoderInverted = false;
 
@@ -240,12 +250,11 @@ public class TunerConstants {
    * program,.
    */
   public static DriveIOCTRE createDrivetrain() {
-    return new TunerSwerveDrivetrain(
-        DrivetrainConstants, 250, FrontLeft, FrontRight, BackLeft, BackRight);
+    return new DriveIOCTRE(DrivetrainConstants, 250, FrontLeft, FrontRight, BackLeft, BackRight);
   }
 
   /** Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types. */
-  public static class TunerSwerveDrivetrain extends DriveIOCTRE {
+  public static class TunerSwerveDrivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> {
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      *

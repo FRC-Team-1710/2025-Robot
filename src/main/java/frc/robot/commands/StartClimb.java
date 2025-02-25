@@ -4,36 +4,42 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.superstructure.manipulator.Manipulator;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
+import frc.robot.subsystems.superstructure.climber.Climber;
+import frc.robot.utils.TargetingComputer;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class OuttakeCoral extends Command {
-  private Manipulator m_Manipulator;
-
-  /** Creates a new OuttakeCoral. */
-  public OuttakeCoral(Manipulator manipulator) {
+public class StartClimb extends Command {
+  Climber climber;
+  Timer timer = new Timer();
+  Double time = 0.1;
+  /** Creates a new StartClimb. */
+  public StartClimb(Climber climber) {
+    this.climber = climber;
     // Use addRequirements() here to declare subsystem dependencies.
-    m_Manipulator = manipulator;
-    addRequirements(manipulator);
+    addRequirements(climber);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    TargetingComputer.setGoForClimb(true);
+    timer.restart();
+    climber.SetClimberPower(.5);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_Manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
+    if (timer.get() > time) {
+      climber.SetClimberPower(0);
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    m_Manipulator.runPercent(0);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override

@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,8 +21,12 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
   public static boolean readyToGrabAlgae = false;
+  public static boolean aligningWithAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
+  public static double sourceCutoffDistance = 7.5;
+  public static boolean stillOuttakingAlgae = false;
+  public static boolean goForClimb = false;
 
   private static boolean isRedAlliance;
 
@@ -122,32 +128,47 @@ public class TargetingComputer {
 
   public static void setTargetLevel(Levels level) {
     currentTargetLevel = level;
+    targetingAlgae = false;
   }
 
   public static Targets getCurrentTargetBranch() {
     return currentTargetBranch;
   }
 
+  public static boolean getAligningWithAlgae() {
+    return aligningWithAlgae;
+  }
+
   public static Levels getCurrentTargetLevel() {
-    if (!targetingAlgae) {
+    if (!aligningWithAlgae) {
       return currentTargetLevel;
     } else {
-      return getCurrentTargetBranch().getAlgaeLevel();
+      return targetingAlgae ? getCurrentTargetBranch().getAlgaeLevel() : currentTargetLevel;
     }
   }
 
+  public static void updateSourceCutoffDistance(boolean hasAlgae) {
+    sourceCutoffDistance = hasAlgae ? 4.5 : 8.5;
+  }
+
+  public static void setStillOuttakingAlgae(boolean value) {
+    stillOuttakingAlgae = value;
+  }
+
   public static double getSourceTargetingAngle(Pose2d pose) {
-    double sourceCutoffDistance = 4.5;
+    if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
     if (isRedAlliance) {
-      return (pose.getY() > FieldConstants.fieldWidth / 2) // red
-          ? (pose.getX() >= FieldConstants.fieldLength - sourceCutoffDistance) // top half
+      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
+          ? (pose.getX()
+                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
               ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
               : Targets.PROCESSOR.getTargetingAngle() // far
-          : (pose.getX() >= FieldConstants.fieldLength - sourceCutoffDistance) // bottom half
+          : (pose.getX()
+                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
               ? Targets.SOURCE_LEFT.getTargetingAngle() // close
               : Targets.NET.getTargetingAngle(); // far
     } else {
-      return (pose.getY() > FieldConstants.fieldWidth / 2) // blue
+      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
           ? (pose.getX() <= sourceCutoffDistance) // top half
               ? Targets.SOURCE_LEFT.getTargetingAngle() // close
               : Targets.NET.getTargetingAngle() // far
@@ -183,6 +204,14 @@ public class TargetingComputer {
 
   public static void setReadyToGrabAlgae(boolean value) {
     readyToGrabAlgae = value;
+  }
+
+  public static void setAligningWithAlgae(boolean value) {
+    aligningWithAlgae = value;
+  }
+
+  public static void setGoForClimb(boolean value) {
+    goForClimb = value;
   }
 
   public static Targets getCurrentTargetForBranchGame() {
@@ -243,62 +272,62 @@ public class TargetingComputer {
     ALPHA(
         1,
         0,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_HIGH),
     BRAVO(
         0,
         1,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_HIGH),
     CHARLIE(
         1,
         2,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_LOW),
     DELTA(
         0,
         3,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_LOW),
     ECHO(
         1,
         4,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_HIGH),
     FOXTROT(
         0,
         5,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_HIGH),
     GOLF(
         1,
         6,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_LOW),
     HOTEL(
         0,
         7,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_LOW),
     INDIA(
         1,
         8,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_HIGH),
     JULIET(
         0,
         9,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_HIGH),
     KILO(
         1,
         10,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(-6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
         Levels.ALGAE_LOW),
     LIMA(
         0,
         11,
-        new Translation2d(Units.inchesToMeters(17), Units.inchesToMeters(6.5)),
+        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
         Levels.ALGAE_LOW),
     SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
@@ -338,7 +367,7 @@ public class TargetingComputer {
     }
 
     public Translation2d getOffset() {
-      return targetingAlgae
+      return aligningWithAlgae
           ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset
           : offset;
     }

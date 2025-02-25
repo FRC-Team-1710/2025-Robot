@@ -9,13 +9,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.elevator;
+package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
@@ -51,6 +52,7 @@ public class Elevator extends SubsystemBase {
   public Elevator(ElevatorIO io) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
+    SmartDashboard.putData(this);
   }
 
   @Override
@@ -102,7 +104,7 @@ public class Elevator extends SubsystemBase {
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
     L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
-    L3(Inches.of(30.25), Inches.of(.5)), // Position for scoring in L3
+    L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
     L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
     ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
     ALGAE_HIGH(Inches.of(25), Inches.of(1)); // Position for grabbing high algae
@@ -129,15 +131,21 @@ public class Elevator extends SubsystemBase {
     return currentMode;
   }
 
+  public boolean isAtIntake() {
+    return isAtTarget() && getMode() == ElevatorPosition.INTAKE;
+  }
+
   /**
    * Sets a new arm distance and schedules the corresponding command.
    *
-   * @param distance The desired ElevatorPosition
+   * @param mode The desired ElevatorPosition
    */
-  private void setElevatorPosition(ElevatorPosition distance) {
-    currentCommand.cancel();
-    currentMode = distance;
-    currentCommand.schedule();
+  private void setElevatorPosition(ElevatorPosition mode) {
+    if (currentMode != mode) {
+      currentCommand.cancel();
+      currentMode = mode;
+      currentCommand.schedule();
+    }
   }
 
   // Command that runs the appropriate routine based on the current distance

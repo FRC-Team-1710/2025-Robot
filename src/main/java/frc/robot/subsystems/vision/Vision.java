@@ -1,3 +1,9 @@
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -81,7 +87,7 @@ public class Vision extends SubsystemBase {
 
     try {
       SmartDashboard.putNumberArray(
-          "Left Calc Offset",
+          "VisionDebugging/Left Calc Offset",
           getCamera(0)
               .getTarget(17)
               .bestCameraToTarget
@@ -90,7 +96,7 @@ public class Vision extends SubsystemBase {
               .toVector()
               .getData());
       SmartDashboard.putNumberArray(
-          "Right Calc Offset",
+          "VisionDebugging/Right Calc Offset",
           getCamera(1)
               .getTarget(17)
               .bestCameraToTarget
@@ -99,10 +105,10 @@ public class Vision extends SubsystemBase {
               .toVector()
               .getData());
       SmartDashboard.putNumberArray(
-          "Left Cam Measurement",
+          "VisionDebugging/Left Cam Measurement",
           getCamera(0).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
       SmartDashboard.putNumberArray(
-          "Right Cam Measurement",
+          "VisionDebugging/Right Cam Measurement",
           getCamera(1).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
     } catch (Exception e) {
       // TODO: handle exception
@@ -119,7 +125,7 @@ public class Vision extends SubsystemBase {
 
     try {
       Logger.recordOutput(
-          "target position",
+          "VisionDebugging/target position",
           new Transform3d(
                   FieldConstants.aprilTags.getTagPose(id).get().getTranslation(),
                   FieldConstants.aprilTags.getTagPose(id).get().getRotation())
@@ -128,7 +134,7 @@ public class Vision extends SubsystemBase {
                       new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
                       new Rotation3d())));
       Logger.recordOutput(
-          "left cam based target position",
+          "VisionDebugging/left cam based target position",
           leftCamToTag
               .plus(
                   new Transform3d(
@@ -136,7 +142,7 @@ public class Vision extends SubsystemBase {
                       new Rotation3d()))
               .inverse());
       Logger.recordOutput(
-          "right cam based target position",
+          "VisionDebugging/right cam based target position",
           rightCamToTag
               .plus(
                   new Transform3d(
@@ -144,10 +150,10 @@ public class Vision extends SubsystemBase {
                       new Rotation3d()))
               .inverse());
       Logger.recordOutput(
-          "Left Cam Offset",
+          "VisionDebugging/Left Cam Offset",
           getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
       Logger.recordOutput(
-          "Right Cam Offset",
+          "VisionDebugging/Right Cam Offset",
           getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
     } catch (Exception e) {
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.elevator;
+package frc.robot.subsystems.superstructure.elevator;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -56,25 +56,25 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(0);
   // private final TalonFXSimState pwmTalonFX = new TalonFXSimState();
   private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
-  private final LoggedMechanism2d m_mech2d =
+  public final LoggedMechanism2d m_mech2d =
       new LoggedMechanism2d(Units.inchesToMeters(28), Units.inchesToMeters(80));
 
-  private final LoggedMechanismRoot2d m_mech2dRoot =
+  public final LoggedMechanismRoot2d m_mech2dRootSecondStage =
       m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(19), Units.inchesToMeters(5.75));
-  private final LoggedMechanismRoot2d m_mech2dRoot2d =
+  private final LoggedMechanismRoot2d m_mech2dRootFirstStage =
       m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(19), Units.inchesToMeters(4.75));
 
-  private final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
-      m_mech2dRoot.append(
+  public final LoggedMechanismLigament2d m_elevatorMechSecondStage2d =
+      m_mech2dRootSecondStage.append(
           new LoggedMechanismLigament2d("SecondStageSim", m_ElevatorSim.getPositionMeters(), 90));
   private final LoggedMechanismLigament2d m_elevatorMechFirstStage2d =
-      m_mech2dRoot2d.append(
+      m_mech2dRootFirstStage.append(
           new LoggedMechanismLigament2d("FirstStageSim", m_ElevatorSim.getPositionMeters(), 90));
 
-  private final LoggedMechanismLigament2d m_secondStage2d =
+  public final LoggedMechanismLigament2d m_secondStage2d =
       m_elevatorMechSecondStage2d.append(
           new LoggedMechanismLigament2d(
-              "SecondStage", Units.inchesToMeters(25), 0)); // Max height 27in
+              "SecondStage", Units.inchesToMeters(26.32), 0)); // Max height 27in
   private final LoggedMechanismLigament2d m_firstStage2d =
       m_elevatorMechFirstStage2d.append(
           new LoggedMechanismLigament2d(
@@ -142,48 +142,48 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   }
 
   private void tempPIDTuning() {
-    if (kP != SmartDashboard.getNumber("ElevatorSIM/PID/P", kP)) {
-      kP = SmartDashboard.getNumber("ElevatorSIM/PID/P", kP);
+    if (kP != SmartDashboard.getNumber("P", kP)) {
+      kP = SmartDashboard.getNumber("P", kP);
       elevatorPID.setP(kP);
     }
 
-    if (kI != SmartDashboard.getNumber("ElevatorSIM/PID/I", kI)) {
-      kI = SmartDashboard.getNumber("ElevatorSIM/PID/I", kI);
+    if (kI != SmartDashboard.getNumber("I", kI)) {
+      kI = SmartDashboard.getNumber("I", kI);
       elevatorPID.setI(kI);
     }
 
-    if (kD != SmartDashboard.getNumber("ElevatorSIM/PID/D", kD)) {
-      kD = SmartDashboard.getNumber("ElevatorSIM/PID/D", kD);
+    if (kD != SmartDashboard.getNumber("D", kD)) {
+      kD = SmartDashboard.getNumber("D", kD);
       elevatorPID.setD(kD);
     }
 
-    if (kS != SmartDashboard.getNumber("ElevatorSIM/PID/S", kS)) {
-      kS = SmartDashboard.getNumber("ElevatorSIM/PID/S", kS);
+    if (kS != SmartDashboard.getNumber("S", kS)) {
+      kS = SmartDashboard.getNumber("S", kS);
       elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
     }
 
-    if (kG != SmartDashboard.getNumber("ElevatorSIM/PID/G", kG)) {
-      kG = SmartDashboard.getNumber("ElevatorSIM/PID/G", kG);
+    if (kG != SmartDashboard.getNumber("G", kG)) {
+      kG = SmartDashboard.getNumber("G", kG);
       elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
     }
 
-    if (kV != SmartDashboard.getNumber("ElevatorSIM/PID/V", kV)) {
-      kV = SmartDashboard.getNumber("ElevatorSIM/PID/V", kV);
+    if (kV != SmartDashboard.getNumber("V", kV)) {
+      kV = SmartDashboard.getNumber("V", kV);
       elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
     }
 
-    if (kA != SmartDashboard.getNumber("ElevatorSIM/PID/A", kA)) {
-      kA = SmartDashboard.getNumber("ElevatorSIM/PID/A", kA);
+    if (kA != SmartDashboard.getNumber("A", kA)) {
+      kA = SmartDashboard.getNumber("A", kA);
       elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
     }
 
-    if (kAcel != SmartDashboard.getNumber("ElevatorSIM/PID/Acel", kAcel)) {
-      kAcel = SmartDashboard.getNumber("ElevatorSIM/PID/Acel", kAcel);
+    if (kAcel != SmartDashboard.getNumber("Acel", kAcel)) {
+      kAcel = SmartDashboard.getNumber("Acel", kAcel);
       elevatorPID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
     }
 
-    if (kVel != SmartDashboard.getNumber("ElevatorSIM/PID/Vel", kVel)) {
-      kVel = SmartDashboard.getNumber("ElevatorSIM/PID/Vel", kVel);
+    if (kVel != SmartDashboard.getNumber("Vel", kVel)) {
+      kVel = SmartDashboard.getNumber("Vel", kVel);
       elevatorPID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
     }
   }

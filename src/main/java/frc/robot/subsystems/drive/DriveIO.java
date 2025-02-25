@@ -1,6 +1,8 @@
-// Copyright (c) 2024 FRC 5712
-// Open Source Software, you can modify it according to the terms
-// of the MIT License at the root of this project
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package frc.robot.subsystems.drive;
 
@@ -25,6 +27,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
+import frc.robot.utils.ArrayBuilder;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -36,33 +40,15 @@ public interface DriveIO {
   @AutoLog
   public static class DriveIOInputs {
     // Module arrays with default states
-    public SwerveModuleState[] moduleStates =
-        new SwerveModuleState[] {
-          new SwerveModuleState(),
-          new SwerveModuleState(),
-          new SwerveModuleState(),
-          new SwerveModuleState()
-        };
-    public SwerveModuleState[] moduleTargets =
-        new SwerveModuleState[] {
-          new SwerveModuleState(),
-          new SwerveModuleState(),
-          new SwerveModuleState(),
-          new SwerveModuleState()
-        };
-    public SwerveModulePosition[] modulePositions =
-        new SwerveModulePosition[] {
-          new SwerveModulePosition(),
-          new SwerveModulePosition(),
-          new SwerveModulePosition(),
-          new SwerveModulePosition()
-        };
+    public SwerveModuleState[] moduleStates = ArrayBuilder.buildSwerveModuleState();
+    public SwerveModuleState[] moduleTargets = ArrayBuilder.buildSwerveModuleState();
+    public SwerveModulePosition[] modulePositions = ArrayBuilder.buildSwerveModulePosition();
 
     // Position and motion state
     public Pose2d pose = Pose2d.kZero;
     public ChassisSpeeds speeds = new ChassisSpeeds();
-    public Rotation2d operatorForwardDirection = new Rotation2d(Units.degreesToRadians(270));
-
+    public Rotation2d operatorForwardDirection = new Rotation2d(Units.degreesToRadians(90));
+//TODO: check might be 270
     // Diagnostic data
     public double odometryPeriod = 0.0;
     public int successfulDaqs = 0;
@@ -76,8 +62,8 @@ public interface DriveIO {
     public boolean gyroConnected = false;
 
     // Module position arrays
-    public double[][] drivePositions = new double[4][0];
-    public Rotation2d[][] steerPositions = new Rotation2d[4][0];
+    public double[][] drivePositions = new double[Constants.PP_CONFIG.numModules][0];
+    public Rotation2d[][] steerPositions = new Rotation2d[Constants.PP_CONFIG.numModules][0];
   }
 
   @AutoLog

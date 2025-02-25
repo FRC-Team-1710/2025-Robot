@@ -4,19 +4,24 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.superstructure.manipulator.Manipulator;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
+import frc.robot.Constants;
+import frc.robot.subsystems.superstructure.claw.Claw;
+import java.util.function.DoubleSupplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class OuttakeCoral extends Command {
-  private Manipulator m_Manipulator;
+public class WristManual extends Command {
+  private Claw claw;
+  private DoubleSupplier axis;
+  boolean locked;
 
-  /** Creates a new OuttakeCoral. */
-  public OuttakeCoral(Manipulator manipulator) {
+  /** Creates a new WristManual. */
+  public WristManual(Claw claw, DoubleSupplier power) {
     // Use addRequirements() here to declare subsystem dependencies.
-    m_Manipulator = manipulator;
-    addRequirements(manipulator);
+    this.axis = power;
+    this.claw = claw;
+    addRequirements(claw);
   }
 
   // Called when the command is initially scheduled.
@@ -26,14 +31,23 @@ public class OuttakeCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_Manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
+    double Power = axis.getAsDouble();
+    Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
+    if (Math.abs(Power) > 0) {
+      claw.wristManual(Power);
+      locked = false;
+    } else {
+      if (!locked) {
+        claw.wristManual(0);
+        claw.stopHere();
+        locked = true;
+      }
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    m_Manipulator.runPercent(0);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override
