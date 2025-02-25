@@ -32,6 +32,7 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
+import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -166,7 +167,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIO() {});
+        claw = new Claw(new ClawIOCTRE() {});
 
         /*
          * Vision Class for referencing.
@@ -690,9 +691,13 @@ public class RobotContainer {
                 .intake()
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
-        .onTrue(new ElevatorToTargetLevel(elevator).unless(() ->
-        vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-            < 1.5))
+        .onTrue(
+            new ElevatorToTargetLevel(elevator)
+                .unless(
+                    () ->
+                        vision.getDistanceToTag(
+                                TargetingComputer.getCurrentTargetBranch().getApriltag())
+                            < 1.5))
         .and(
             () ->
                 vision.containsRequestedTarget(
@@ -807,7 +812,6 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-                    
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 
