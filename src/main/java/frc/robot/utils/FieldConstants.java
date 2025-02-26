@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,7 +162,9 @@ public class FieldConstants {
       if (Constants.currentMode == Constants.Mode.SIM) {
         aprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
       } else {
-        aprilTags = AprilTagFieldLayout.loadFromResource("src/main/java/frc/robot/utils/wpicalfields/practicefield.json");
+        aprilTags = AprilTagFieldLayout.loadField(kDefaultField);
+        // AprilTagFieldLayout.loadFromResource(
+        //     "src/main/java/frc/robot/utils/wpicalfields/practicefield.json");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

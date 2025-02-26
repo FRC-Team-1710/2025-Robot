@@ -12,7 +12,6 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -42,9 +41,6 @@ import frc.robot.utils.Conversions;
 public class ElevatorIOCTRE implements ElevatorIO {
   /** The gear ratio between the motor and the elevator mechanism */
   public static final double GEAR_RATIO = 6.0;
-
-  /** The offset from absolute position to zero elevator */
-  private final Angle encOffset = Rotations.of(-1.15);
 
   /** The gear ratio between the CANCoder and the elevator mechanism */
   public static final double CANCODER_GEAR_RATIO = 1.0;
@@ -151,7 +147,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     follower.setPosition(0);
     leader.setPosition(0);
-    // encoder.setPosition(encoder.getAbsolutePosition().getValueAsDouble() - encOffset);
+    encoder.setPosition(0);
 
     m_Constraints = new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
     elevatorPID = new ProfiledPIDController(kP, kI, kD, m_Constraints);
@@ -226,7 +222,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderRotorVelocity = leaderRotorVelocity.getValue();
 
     inputs.encoderAbsPosition = encoderAbsPosition.getValue();
-    inputs.encoderPosition = encoderPosition.getValue().minus(encOffset);
+    inputs.encoderPosition = encoderPosition.getValue();
     inputs.encoderVelocity = encoderVelocity.getValue();
 
     // Update voltage and current measurements
