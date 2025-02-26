@@ -24,6 +24,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
@@ -36,9 +37,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.Robot;
 import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
+import frc.robot.utils.FieldConstants;
+import frc.robot.utils.TargetingComputer;
 import java.util.List;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -284,6 +288,11 @@ public class Drive extends SubsystemBase {
               });
     }
     updateWithTime();
+
+    Logger.recordOutput(
+        "distance to target",
+        Units.metersToInches(
+            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()));
   }
 
   public void resetPose(Pose2d pose) {
@@ -320,6 +329,99 @@ public class Drive extends SubsystemBase {
       return poseEstimator.getEstimatedPosition();
     }
     return inputs.pose;
+  }
+
+  public Translation2d getDistanceToPose(Pose2d pose) {
+    Pose2d currentPose = getPose();
+    return pose.minus(currentPose).getTranslation().unaryMinus();
+  }
+
+  @AutoLogOutput
+  public boolean isInAlignmentZone() {
+    Pose2d currentPose = getPose();
+    double zoneRadius = 1.5;
+    double angle =
+        Robot.getAlliance()
+            ? new Translation2d(
+                    FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
+                .minus(FieldConstants.Reef.center)
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees()
+            : FieldConstants.Reef.center
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees();
+    int zone;
+
+    if (angle >= -30 && angle < 30) { // Golf / Alpha
+      zone = 4;
+    } else if (angle >= 30 && angle < 90) { // India / Charlie
+      zone = 5;
+    } else if (angle >= 90 && angle < 150) { // Kilo / Echo
+      zone = 6;
+    } else if (angle >= -150 && angle < -90) { // Charlie / India
+      zone = 2;
+    } else if (angle >= -90 && angle < -30) { // Echo / Kilo
+      zone = 3;
+    } else { // Alpha / Golf
+      zone = 1;
+    }
+
+    switch (TargetingComputer.getCurrentTargetBranch().getApriltag()) {
+      default:
+        return false;
+      case (6):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
+      case (7):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
+      case (8):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
+      case (9):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
+      case (10):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
+      case (11):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
+      case (17):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
+      case (18):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
+      case (19):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
+      case (20):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
+      case (21):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
+      case (22):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
+    }
   }
 
   public Rotation2d getRotation() {

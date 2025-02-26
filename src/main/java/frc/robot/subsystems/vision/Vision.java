@@ -6,7 +6,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -22,7 +21,6 @@ import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
-import java.io.IOException;
 import java.util.*;
 import org.littletonrobotics.junction.Logger;
 
@@ -35,7 +33,6 @@ public class Vision extends SubsystemBase {
 
   private static final VisionMode MODE = VisionMode.MA;
   private static final String VISION_PATH = "Vision/Camera";
-
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
@@ -245,7 +242,8 @@ public class Vision extends SubsystemBase {
               < 0);
 
       Logger.recordOutput("LeftSide?", leftSide);
-      TargetingComputer.setTargetByTag(targetTagID, leftSide);
+      if (TargetingComputer.targetingControllerOverride)
+        TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
 

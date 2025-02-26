@@ -24,7 +24,7 @@ public class GrabAlgae extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.setRollers(.25);
+    claw.setRollers(.5);
     timer.restart();
   }
 
@@ -45,7 +45,7 @@ public class GrabAlgae extends Command {
       claw.setAlgaeStatus(true);
       return true;
     }
-    if (timer.get() > .25 && claw.getRollerCurrent() > 40 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25 && claw.getRollerCurrent() > 60 && Constants.currentMode != Mode.SIM) {
       claw.setAlgaeStatus(true);
       claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
       claw.lockRoller();
