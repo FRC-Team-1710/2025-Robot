@@ -42,7 +42,7 @@ public class VisionUtil {
       Meters.of(0.5); // Meters above/below field to accept measurements
   public static final AngularVelocity MT2_SPIN_MAX =
       DegreesPerSecond.of(40.0); // Maximum rotation speed for MT2 measurements
-  public static final double MIN_TAG_AREA = 0.05; // Minimum tag area to be accepted
+  public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted (Default 0.05)
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
@@ -237,7 +237,8 @@ public class VisionUtil {
       return !invalidPose(poseEst.pose())
           && !invalidMT2Time(poseEst)
           && !invalidRotationVelocity(poseEst)
-          && !invalidAmbiguity(poseEst);
+          && !invalidAmbiguity(poseEst)
+          && !invalidTagArea(poseEst);
     }
   }
 
