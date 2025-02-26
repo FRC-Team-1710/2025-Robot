@@ -43,12 +43,14 @@ public class VisionUtil {
   public static final AngularVelocity MT2_SPIN_MAX =
       DegreesPerSecond.of(40.0); // Maximum rotation speed for MT2 measurements
   public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted (Default 0.05)
-  public static final double MAX_TAG_DISTANCE = 3.0; // Maximum tag distance from robot to be accepted (METERS)
+  public static final double MAX_TAG_DISTANCE =
+      3.0; // Maximum tag distance from robot to be accepted (METERS)
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
   private static final double MA_VISION_STD_DEV_THETA = 5.0; // Base theta standard deviation
-  public static final double MA_AMBIGUITY = 0.4; // Maximum allowed ambiguity for single-tag measurements
+  public static final double MA_AMBIGUITY =
+      0.4; // Maximum allowed ambiguity for single-tag measurements
 
   public static Transform2d getTagOffset(
       Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {

@@ -31,6 +31,7 @@ public class TargetingComputer {
 
   public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
   public static final double alignmentAngleTolerance = 5;
+  public static final double alignmentRange = 2;
 
   private static final double xOffset = 17;
   private static final double yOffset = 7;
@@ -192,7 +193,9 @@ public class TargetingComputer {
   }
 
   public static boolean stillInRangeOfSources(Pose2d pose) {
-    return isRedAlliance ? pose.getX() <= sourceCutoffDistance : pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance;
+    return isRedAlliance
+        ? pose.getX() <= sourceCutoffDistance
+        : pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance;
   }
 
   public static double getSourceTargetingAngle(Pose2d pose) {

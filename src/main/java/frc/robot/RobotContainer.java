@@ -689,7 +689,10 @@ public class RobotContainer {
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
                                     * rotP))))
-        .and(() -> !TargetingComputer.stillOuttakingAlgae || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
+        .and(
+            () ->
+                !TargetingComputer.stillOuttakingAlgae
+                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
         .onFalse(new EndIntake(manipulator, funnel));
 

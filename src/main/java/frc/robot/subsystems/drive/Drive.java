@@ -339,7 +339,7 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput
   public boolean isInAlignmentZone() {
     Pose2d currentPose = getPose();
-    double zoneRadius = 1.5;
+    double zoneRadius = TargetingComputer.alignmentRange;
     double angle =
         Robot.getAlliance()
             ? new Translation2d(
