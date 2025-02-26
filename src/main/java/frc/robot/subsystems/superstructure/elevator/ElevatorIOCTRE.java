@@ -12,6 +12,7 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -42,6 +43,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
   /** The gear ratio between the motor and the elevator mechanism */
   public static final double GEAR_RATIO = 6.0;
 
+  /** The offset from absolute position to zero elevator */
+  private final Angle encOffset = Rotations.of(-1.15);
+
   /** The gear ratio between the CANCoder and the elevator mechanism */
   public static final double CANCODER_GEAR_RATIO = 1.0;
 
@@ -52,15 +56,15 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   public final CANcoder encoder = new CANcoder(13);
 
-  private double kP = 0.5;
+  private double kP = 0.325;
   private double kI = 0.0;
   private double kD = 0.0;
-  private double kS = 0.125;
-  private double kG = 0.275;
-  private double kV = 0.08;
+  private double kS = 0.1125;
+  private double kG = 0.2875;
+  private double kV = 0.085;
   private double kA = 0.0;
-  private double kVel = 175;
-  private double kAcel = 125;
+  private double kVel = 200;
+  private double kAcel = 175;
 
   private boolean locked = false;
 
@@ -70,6 +74,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> encoderPosition = encoder.getPosition();
+  private final StatusSignal<Angle> encoderAbsPosition = encoder.getAbsolutePosition();
   private final StatusSignal<AngularVelocity> encoderVelocity = encoder.getVelocity();
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
   private final StatusSignal<Angle> leaderRotorPosition = leader.getRotorPosition();
@@ -136,7 +141,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leaderSupplyCurrent,
         followerSupplyCurrent,
         encoderPosition,
-        encoderVelocity);
+        encoderVelocity,
+        encoderAbsPosition);
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
@@ -145,7 +151,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     follower.setPosition(0);
     leader.setPosition(0);
-    encoder.setPosition(0);
+    // encoder.setPosition(encoder.getAbsolutePosition().getValueAsDouble() - encOffset);
 
     m_Constraints = new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
     elevatorPID = new ProfiledPIDController(kP, kI, kD, m_Constraints);
@@ -184,11 +190,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
    */
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    if (SmartDashboard.getBoolean("Zero", false)) {
-      encoder.setPosition(0);
-      SmartDashboard.putBoolean("Zero", false);
-    }
-
     // Refresh all sensor data
     StatusCode leaderStatus =
         BaseStatusSignal.refreshAll(
@@ -210,7 +211,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
             followerStatorCurrent,
             followerSupplyCurrent);
 
-    StatusCode encoderStatus = BaseStatusSignal.refreshAll(encoderPosition, encoderVelocity);
+    StatusCode encoderStatus =
+        BaseStatusSignal.refreshAll(encoderPosition, encoderVelocity, encoderAbsPosition);
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
@@ -223,7 +225,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderVelocity = leaderVelocity.getValue();
     inputs.leaderRotorVelocity = leaderRotorVelocity.getValue();
 
-    inputs.encoderPosition = encoderPosition.getValue();
+    inputs.encoderAbsPosition = encoderAbsPosition.getValue();
+    inputs.encoderPosition = encoderPosition.getValue().minus(encOffset);
     inputs.encoderVelocity = encoderVelocity.getValue();
 
     // Update voltage and current measurements

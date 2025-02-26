@@ -101,6 +101,10 @@ public class Claw extends SubsystemBase {
     return inputs.rollerStatorCurrent.baseUnitMagnitude();
   }
 
+  public double getWristCurrent() {
+    return inputs.wristStatorCurrent.baseUnitMagnitude();
+  }
+
   public double getRollerPosition() {
     return inputs.rollerPosition;
   }

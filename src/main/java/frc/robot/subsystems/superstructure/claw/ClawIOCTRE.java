@@ -80,6 +80,8 @@ public class ClawIOCTRE implements ClawIO {
     wrist.getConfigurator().apply(config);
     rollers.getConfigurator().apply(config);
 
+    wrist.setPosition(0);
+
     SmartDashboard.putNumber("Claw/PID/P", kP);
     SmartDashboard.putNumber("Claw/PID/I", kI);
     SmartDashboard.putNumber("Claw/PID/D", kD);
