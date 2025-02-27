@@ -638,17 +638,17 @@ public class RobotContainer {
                 () ->
                     drive
                         .withVelocityX(
-                            MaxSpeed.times(
-                                .75
-                                    * (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                        - drivetrain.getPose().getX())
-                                    * alignP))
+                            MaxSpeed.times((TargetingComputer.getCurrentTargetBranchPose().getX()
+                            - drivetrain.getPose().getX())
+                        * alignP > TargetingComputer.maxAlignSpeed ? TargetingComputer.maxAlignSpeed : (TargetingComputer.getCurrentTargetBranchPose().getX()
+                        - drivetrain.getPose().getX())
+                    * alignP))
                         .withVelocityY(
-                            MaxSpeed.times(
-                                .75
-                                    * (TargetingComputer.getCurrentTargetBranchPose().getY()
+                            MaxSpeed.times((TargetingComputer.getCurrentTargetBranchPose().getY()
                                         - drivetrain.getPose().getY())
-                                    * alignP))
+                                    * alignP > TargetingComputer.maxAlignSpeed ? TargetingComputer.maxAlignSpeed : (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                    - drivetrain.getPose().getY())
+                                * alignP))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
                                 (new Rotation2d(
