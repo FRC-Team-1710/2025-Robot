@@ -35,7 +35,7 @@ public class GrabAlgae extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.setRollers(0);
+    claw.lockRoller();
   }
 
   // Returns true when the command should end.
@@ -45,10 +45,9 @@ public class GrabAlgae extends Command {
       claw.setAlgaeStatus(true);
       return true;
     }
-    if (timer.get() > .25 && claw.getRollerCurrent() > 60 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25 && claw.getRollerCurrent() < -60 && Constants.currentMode != Mode.SIM) {
       claw.setAlgaeStatus(true);
       claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
-      claw.lockRoller();
       return true;
     }
     return false;

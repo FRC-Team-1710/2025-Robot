@@ -19,7 +19,7 @@ public class Climber extends SubsystemBase {
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     climber.getConfigurator().apply(config);
   }
 

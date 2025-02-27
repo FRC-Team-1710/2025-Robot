@@ -32,6 +32,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
 
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 24;
@@ -48,10 +49,14 @@ public class ClawIOCTRE implements ClawIO {
   private double kacel = 600;
   private double kvel = 300;
 
+  private double RollerkP = 3;
+  private double RollerkI = 0.0;
+  private double RollerkD = 0.0;
+
   public final TalonFX wrist = new TalonFX(51);
   public final TalonFX rollers = new TalonFX(52);
 
-  private final PIDController rollerPID = new PIDController(0, 0, 0);
+  private final PIDController rollerPID = new PIDController(RollerkP, RollerkI, RollerkD);
   private final ProfiledPIDController wristPID =
       new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
   private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
@@ -85,6 +90,10 @@ public class ClawIOCTRE implements ClawIO {
     SmartDashboard.putNumber("Claw/PID/P", kP);
     SmartDashboard.putNumber("Claw/PID/I", kI);
     SmartDashboard.putNumber("Claw/PID/D", kD);
+
+    SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
+    SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
+    SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
@@ -133,6 +142,7 @@ public class ClawIOCTRE implements ClawIO {
     inputs.wristManual = wristManual;
     inputs.intakePercent = runPercent;
 
+    inputs.rollerLocked = rollerLocked;
     inputs.angle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
 
     tempPIDTuning();
@@ -146,6 +156,8 @@ public class ClawIOCTRE implements ClawIO {
     if (rollerLocked) {
       rollers.setVoltage(rollerPID.calculate(inputs.rollerPosition));
     }
+
+    Logger.recordOutput("roller locked", rollerLocked);
   }
 
   @Override
@@ -201,6 +213,21 @@ public class ClawIOCTRE implements ClawIO {
     if (kD != SmartDashboard.getNumber("Claw/PID/D", kD)) {
       kD = SmartDashboard.getNumber("Claw/PID/D", kD);
       wristPID.setD(kD);
+    }
+
+    if (RollerkP != SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP)) {
+      RollerkP = SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP);
+      rollerPID.setP(RollerkP);
+    }
+
+    if (RollerkI != SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI)) {
+      RollerkI = SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI);
+      rollerPID.setI(RollerkI);
+    }
+
+    if (RollerkD != SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD)) {
+      RollerkD = SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD);
+      rollerPID.setD(RollerkD);
     }
   }
 }

@@ -28,6 +28,7 @@ import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.WristManual;
+import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -144,8 +145,12 @@ public class RobotContainer {
   private final Trigger outtakeCoral = new Trigger(mech.leftBumper());
   /** Mech RB */
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
-
-  private final Trigger overrideTargetingController = new Trigger(mech.povDown());
+  /** Mech RT */
+  private final Trigger climberUp = new Trigger(mech.rightTrigger());
+  /** Mech LT */
+  private final Trigger climberDown = new Trigger(mech.leftTrigger());
+  /** Mech Left */
+  private final Trigger overrideTargetingController = new Trigger(mech.povLeft());
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
@@ -341,7 +346,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .5;
+    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;
     double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
 
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
@@ -374,6 +379,8 @@ public class RobotContainer {
                 .onlyIf(() -> !elevator.isAtIntake()))
         .and(() -> elevator.isAtIntake())
         .onTrue(new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed)));
+
+    new Trigger(() -> drivetrain.isNearProcessor()).and(targetSource).and(() -> claw.hasAlgae()).onTrue(claw.PROCESSOR()).onFalse(claw.IDLE().unless(targetSource));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -570,7 +577,7 @@ public class RobotContainer {
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
             elevator
-                .intake()
+                .intake().unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
                 .alongWith(
                     new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                         .unless(() -> claw.hasAlgae())))
@@ -632,12 +639,14 @@ public class RobotContainer {
                     drive
                         .withVelocityX(
                             MaxSpeed.times(
-                                (TargetingComputer.getCurrentTargetBranchPose().getX()
+                                .75
+                                    * (TargetingComputer.getCurrentTargetBranchPose().getX()
                                         - drivetrain.getPose().getX())
                                     * alignP))
                         .withVelocityY(
                             MaxSpeed.times(
-                                (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                .75
+                                    * (TargetingComputer.getCurrentTargetBranchPose().getY()
                                         - drivetrain.getPose().getY())
                                     * alignP))
                         .withRotationalRate(
@@ -753,6 +762,8 @@ public class RobotContainer {
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 
+    mech.start().whileTrue(new ZeroRizz(claw));
+
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
@@ -761,10 +772,12 @@ public class RobotContainer {
     overrideTargetingController.onTrue(
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
-    // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
-    // InstantCommand(() -> climber.SetClimberPower(0))));
-    // mech.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
-    // InstantCommand(() -> climber.SetClimberPower(0))));
+    climberUp
+        .onTrue(new InstantCommand(() -> climber.SetClimberPower(0.2)))
+        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+    climberDown
+        .onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.2)))
+        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
 
     /* Targeting Controller Bindings */
     alphaButton

@@ -39,6 +39,7 @@ public class Claw extends SubsystemBase {
   private ClawPosition currentMode = ClawPosition.IDLE;
 
   private static boolean hasAlgae = false;
+  public boolean rollerLocked;
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
   // Alerts for motor connection status
@@ -68,12 +69,14 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1) {
+    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 2) {
       hasAlgae = false;
     }
 
     Logger.recordOutput("Claw/hasAlgae", hasAlgae);
     Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
+
+    rollerLocked = inputs.rollerLocked;
   }
 
   /**
@@ -153,10 +156,10 @@ public class Claw extends SubsystemBase {
   private enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
     IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
-    GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
+    GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(45), Degrees.of(2.5)), // Position for scoring in net
-    PROCESSOR(Degrees.of(120));
+    NET(Degrees.of(35), Degrees.of(2.5)), // Position for scoring in net
+    PROCESSOR(Degrees.of(110));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
