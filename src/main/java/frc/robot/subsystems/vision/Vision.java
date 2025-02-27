@@ -242,7 +242,8 @@ public class Vision extends SubsystemBase {
               < 0);
 
       Logger.recordOutput("LeftSide?", leftSide);
-      TargetingComputer.setTargetByTag(targetTagID, leftSide);
+      if (TargetingComputer.targetingControllerOverride)
+        TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
 

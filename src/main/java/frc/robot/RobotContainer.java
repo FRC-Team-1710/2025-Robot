@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.Mode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
@@ -27,6 +28,7 @@ import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.WristManual;
+import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -143,8 +145,12 @@ public class RobotContainer {
   private final Trigger outtakeCoral = new Trigger(mech.leftBumper());
   /** Mech RB */
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
-
-  private final Trigger overrideTargetingController = new Trigger(mech.povDown());
+  /** Mech RT */
+  private final Trigger climberUp = new Trigger(mech.rightTrigger());
+  /** Mech LT */
+  private final Trigger climberDown = new Trigger(mech.leftTrigger());
+  /** Mech Left */
+  private final Trigger overrideTargetingController = new Trigger(mech.povLeft());
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
@@ -340,7 +346,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .5;
+    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;
     double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
 
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
@@ -373,6 +379,8 @@ public class RobotContainer {
                 .onlyIf(() -> !elevator.isAtIntake()))
         .and(() -> elevator.isAtIntake())
         .onTrue(new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed)));
+
+    new Trigger(() -> drivetrain.isNearProcessor()).and(targetSource).and(() -> claw.hasAlgae()).onTrue(claw.PROCESSOR()).onFalse(claw.IDLE().unless(targetSource));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -410,23 +418,11 @@ public class RobotContainer {
                                             .getTargetingAngle()))
                                 .minus(drivetrain.getPose().getRotation())
                                 .getDegrees())
-                        < 5
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getY())
-                        < Units.inchesToMeters(1)
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getX())
-                        < Units.inchesToMeters(1)
+                        < TargetingComputer.alignmentAngleTolerance
+                    && drivetrain
+                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                            .getNorm()
+                        < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
@@ -445,23 +441,11 @@ public class RobotContainer {
                                             .getTargetingAngle()))
                                 .minus(drivetrain.getPose().getRotation())
                                 .getDegrees())
-                        < 5
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getY())
-                        < Units.inchesToMeters(1)
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getX())
-                        < Units.inchesToMeters(1)
+                        < TargetingComputer.alignmentAngleTolerance
+                    && drivetrain
+                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                            .getNorm()
+                        < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
@@ -480,98 +464,73 @@ public class RobotContainer {
                                             .getTargetingAngle()))
                                 .minus(drivetrain.getPose().getRotation())
                                 .getDegrees())
-                        < 5
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getY())
-                        < Units.inchesToMeters(1)
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getX())
-                        < Units.inchesToMeters(1)
+                        < TargetingComputer.alignmentAngleTolerance
+                    && drivetrain
+                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                            .getNorm()
+                        < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
-    // placeL4
-    //     .and(
-    //         () ->
-    //             elevator.isAtTarget()
-    //                 && claw.hasAlgae()
-    //                 && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
-    //     .onTrue(claw.NET()); // TODO: fix
+    placeL4
+        .and(
+            () ->
+                elevator.isAtTarget()
+                    && claw.hasAlgae()
+                    && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
+        .onTrue(claw.NET()); // TODO: fix
 
-    // grabAlgae
-    //     .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
-    //     .onFalse(
-    //         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
-    //             .unless(() -> targetReef.getAsBoolean() || claw.hasAlgae())
-    //             .alongWith(new InstantCommand(() ->
-    // TargetingComputer.setReadyToGrabAlgae(false)))
-    //             .alongWith(claw.IDLE())
-    //             .alongWith(elevator.intake().unless(targetReef))
-    //             .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
-    //     .onTrue(
-    //         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
-    //             .alongWith(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
-    //             .alongWith(new ElevatorToTargetLevel(elevator)))
-    //     .and(() -> elevator.isAtTarget() && targetReef.getAsBoolean())
-    //     .onTrue(claw.GRAB())
-    //     .and(() -> claw.isAtTarget())
-    //     .onTrue(new GrabAlgae(claw));
+    grabAlgae
+        .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
+        .onFalse(
+            new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
+                .unless(() -> targetReef.getAsBoolean() || claw.hasAlgae())
+                .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
+                .alongWith(claw.IDLE())
+                .alongWith(elevator.intake().unless(targetReef))
+                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
+                .alongWith(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
+        .and(() -> elevator.isAtTarget() && targetReef.getAsBoolean())
+        .onTrue(claw.GRAB())
+        .and(() -> claw.isAtTarget())
+        .onTrue(new GrabAlgae(claw));
 
-    // grabAlgae
-    //     .and(() -> !claw.hasAlgae())
-    //     .and(
-    //         () ->
-    //             vision.containsRequestedTarget(
-    //                     TargetingComputer.getCurrentTargetBranch().getApriltag())
-    //                 && Math.abs(
-    //                         new Rotation2d(
-    //                                 Units.degreesToRadians(
-    //                                     TargetingComputer.getCurrentTargetBranch()
-    //                                         .getTargetingAngle()))
-    //                             .minus(drivetrain.getPose().getRotation())
-    //                             .getDegrees())
-    //                     < 5
-    //                 && Math.abs(
-    //                         TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-    //                             - vision
-    //                                 .calculateOffset(
-    //                                     TargetingComputer.getCurrentTargetBranch().getApriltag(),
-    //                                     TargetingComputer.getCurrentTargetBranch().getOffset())
-    //                                 .getY())
-    //                     < Units.inchesToMeters(1)
-    //                 && Math.abs(
-    //                         TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-    //                             - vision
-    //                                 .calculateOffset(
-    //                                     TargetingComputer.getCurrentTargetBranch().getApriltag(),
-    //                                     TargetingComputer.getCurrentTargetBranch().getOffset())
-    //                                 .getX())
-    //                     < Units.inchesToMeters(1)
-    //                 && elevator.isAtTarget()
-    //                 && claw.isAtTarget())
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
+    grabAlgae
+        .and(() -> !claw.hasAlgae())
+        .and(
+            () ->
+                vision.containsRequestedTarget(
+                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    && Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        < TargetingComputer.alignmentAngleTolerance
+                    && drivetrain
+                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                            .getNorm()
+                        < TargetingComputer.alignmentTranslationTolerance
+                    && elevator.isAtTarget()
+                    && claw.isAtTarget())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
-    // grabAlgae
-    //     .and(() -> claw.hasAlgae() && !targetReef.getAsBoolean())
-    //     .onTrue(claw.PROCESSOR())
-    //     .onFalse(claw.IDLE());
+    grabAlgae
+        .and(() -> claw.hasAlgae() && !targetReef.getAsBoolean())
+        .onTrue(claw.PROCESSOR())
+        .onFalse(claw.IDLE());
 
-    // shootAlgae
-    //     .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
-    //     .onFalse(new InstantCommand(() -> claw.setRollers(0)))
-    //     .and(() -> Constants.currentMode == Mode.SIM)
-    //     .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+    shootAlgae
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
     grabAlgaeFromFloor.onTrue(claw.GRAB()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
 
@@ -601,8 +560,6 @@ public class RobotContainer {
     //                 point.withModuleDirection(
     //                     new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    // Variables for AprilTag Targeting
-
     // AprilTag Alignment
 
     targetReef // Get the closest reef AprilTag and set it to the target tag
@@ -620,43 +577,54 @@ public class RobotContainer {
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
             elevator
-                .intake()
+                .intake().unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
                 .alongWith(
                     new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                         .unless(() -> claw.hasAlgae())))
         .and(
             () ->
-                !previousTarget.getAsBoolean()
-                    && !nextTarget.getAsBoolean()
-                    && !TargetingComputer.targetSet)
+                !drivetrain.isInAlignmentZone()
+                    || Math.abs(
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        > 5)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive.withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            (new Rotation2d(
-                                        Units.degreesToRadians(
-                                            TargetingComputer.getCurrentTargetBranch()
-                                                .getTargetingAngle()))
-                                    .minus(drivetrain.getPose().getRotation())
-                                    .getRadians())
-                                * rotP))));
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getTargetingAngle()))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))));
 
-    targetReef // Allows the robot to start moving and also sets whether the left side is true or
-        // not
-        .and(() -> previousTarget.getAsBoolean() || nextTarget.getAsBoolean())
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetSet(true))
-                .alongWith(
-                    new InstantCommand(
-                        () -> vision.autoBranchTargeting(previousTarget.getAsBoolean()))));
+    // targetReef // Allows the robot to start moving and also sets whether the left side is true or
+    //     // not
+    //     .and(() -> previousTarget.getAsBoolean() || nextTarget.getAsBoolean())
+    //     .onTrue(
+    //         new InstantCommand(() -> TargetingComputer.setTargetSet(true))
+    //             .alongWith(
+    //                 new InstantCommand(
+    //                     () -> vision.autoBranchTargeting(previousTarget.getAsBoolean()))));
 
     targetReef // Robot moves to the current target
         .and(
             () ->
-                TargetingComputer.targetSet
-                    && vision.containsRequestedTarget(
-                        TargetingComputer.getCurrentTargetBranch().getApriltag())
+                drivetrain.isInAlignmentZone()
                     && Math.abs(
                             new Rotation2d(
                                     Units.degreesToRadians(
@@ -664,34 +632,23 @@ public class RobotContainer {
                                             .getTargetingAngle()))
                                 .minus(drivetrain.getPose().getRotation())
                                 .getDegrees())
-                        < 5)
+                        < TargetingComputer.alignmentAngleTolerance)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    robotCentric
+                    drive
                         .withVelocityX(
-                            MaxSpeed.times(
-                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                        - vision
-                                            .calculateOffset(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getApriltag(),
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getOffset())
-                                            .getX())
-                                    * alignP))
+                            MaxSpeed.times((TargetingComputer.getCurrentTargetBranchPose().getX()
+                            - drivetrain.getPose().getX())
+                        * alignP > TargetingComputer.maxAlignSpeed ? TargetingComputer.maxAlignSpeed : (TargetingComputer.getCurrentTargetBranchPose().getX()
+                        - drivetrain.getPose().getX())
+                    * alignP))
                         .withVelocityY(
-                            MaxSpeed.times(
-                                -(TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-                                        - vision
-                                            .calculateOffset(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getApriltag(),
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getOffset())
-                                            .getY())
-                                    * alignP
-                                    * 1.25))
+                            MaxSpeed.times((TargetingComputer.getCurrentTargetBranchPose().getY()
+                                        - drivetrain.getPose().getY())
+                                    * alignP > TargetingComputer.maxAlignSpeed ? TargetingComputer.maxAlignSpeed : (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                    - drivetrain.getPose().getY())
+                                * alignP))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
                                 (new Rotation2d(
@@ -704,46 +661,18 @@ public class RobotContainer {
         .onFalse(
             elevator
                 .intake()
-                .unless(targetAlgae)
+                .unless(targetReef.or(targetAlgae))
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
-        .onTrue(
-            new ElevatorToTargetLevel(elevator)
-                .unless(
-                    () ->
-                        vision.getDistanceToTag(
-                                TargetingComputer.getCurrentTargetBranch().getApriltag())
-                            > 1.5))
+        .onTrue(new ElevatorToTargetLevel(elevator))
         .and(
             () ->
-                vision.containsRequestedTarget(
-                        TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    && Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        < 5
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getY()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getY())
-                        < Units.inchesToMeters(1)
-                    && Math.abs(
-                            TargetingComputer.getCurrentTargetBranch().getOffset().getX()
-                                - vision
-                                    .calculateOffset(
-                                        TargetingComputer.getCurrentTargetBranch().getApriltag(),
-                                        TargetingComputer.getCurrentTargetBranch().getOffset())
-                                    .getX())
-                        < Units.inchesToMeters(1)
+                drivetrain
+                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                            .getNorm()
+                        < TargetingComputer.alignmentTranslationTolerance
                     && elevator.isAtTarget()
-            /*&& manipulator.hasCoral()*/ )
+                    && manipulator.hasCoral())
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
@@ -769,14 +698,16 @@ public class RobotContainer {
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
                                     * rotP))))
-        .and(() -> !TargetingComputer.stillOuttakingAlgae)
+        .and(
+            () ->
+                !TargetingComputer.stillOuttakingAlgae
+                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
         .onFalse(new EndIntake(manipulator, funnel));
 
-    // targetSource
-    //     .and(() -> claw.hasAlgae())
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true))); //
-    // TODO: fix
+    targetSource
+        .and(() -> claw.hasAlgae())
+        .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true)));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED. Instructions
     // can be found here
@@ -831,6 +762,8 @@ public class RobotContainer {
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 
+    mech.start().whileTrue(new ZeroRizz(claw));
+
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
@@ -839,10 +772,12 @@ public class RobotContainer {
     overrideTargetingController.onTrue(
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
-    // mech.a().onTrue(new InstantCommand(() -> climber.SetClimberPower(0.1))).onFalse((new
-    // InstantCommand(() -> climber.SetClimberPower(0))));
-    // mech.b().onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.1))).onFalse((new
-    // InstantCommand(() -> climber.SetClimberPower(0))));
+    climberUp
+        .onTrue(new InstantCommand(() -> climber.SetClimberPower(0.2)))
+        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+    climberDown
+        .onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.2)))
+        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
 
     /* Targeting Controller Bindings */
     alphaButton
