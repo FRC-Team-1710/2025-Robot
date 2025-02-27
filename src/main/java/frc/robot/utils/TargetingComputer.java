@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean gameMode = false;
+  public static final boolean gameMode = true;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
   public static final Translation2d secondaryAlgaeOffset =
@@ -24,6 +24,7 @@ public class TargetingComputer {
   public static boolean aligningWithAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
+  public static int randomHeight;
   public static double sourceCutoffDistance = 7.5;
   public static boolean stillOuttakingAlgae = false;
   public static boolean goForClimb = false;
@@ -194,10 +195,12 @@ public class TargetingComputer {
 
   public static void randomizeTargetBranch() {
     randomBranch = random.nextInt(12);
+    randomHeight = random.nextInt(3) + 1;
   }
 
   public static void checkBranchGame() {
-    if (randomBranch == currentTargetBranch.gameID) {
+    if (randomBranch == currentTargetBranch.gameID
+        && randomHeight == currentTargetLevel.gameHeight) {
       randomizeTargetBranch();
       branchGameScore++;
       while (randomBranch == currentTargetBranch.gameID) {
@@ -208,7 +211,9 @@ public class TargetingComputer {
 
   public static void startBranchGame() {
     setTargetBranch(Targets.ALPHA);
+    setTargetLevel(Levels.L1);
     randomBranch = random.nextInt(11) + 1;
+    randomHeight = random.nextInt(3) + 1;
     branchGameScore = 0;
   }
 
@@ -243,6 +248,17 @@ public class TargetingComputer {
     else if (randomBranch == Targets.JULIET.gameID) gameTarget = Targets.JULIET;
     else if (randomBranch == Targets.KILO.gameID) gameTarget = Targets.KILO;
     else if (randomBranch == Targets.LIMA.gameID) gameTarget = Targets.LIMA;
+
+    return gameTarget;
+  }
+
+  public static Levels getCurrentTargetLevelForBranchGame() {
+    Levels gameTarget = Levels.L1;
+
+    if (randomHeight == Levels.L1.gameHeight) gameTarget = Levels.L1;
+    else if (randomHeight == Levels.L2.gameHeight) gameTarget = Levels.L2;
+    else if (randomHeight == Levels.L3.gameHeight) gameTarget = Levels.L3;
+    else if (randomHeight == Levels.L4.gameHeight) gameTarget = Levels.L4;
 
     return gameTarget;
   }
@@ -388,12 +404,18 @@ public class TargetingComputer {
   }
 
   public static enum Levels {
-    INTAKE,
-    L1,
-    L2,
-    L3,
-    L4,
-    ALGAE_HIGH,
-    ALGAE_LOW;
+    INTAKE(0),
+    L1(1),
+    L2(2),
+    L3(3),
+    L4(4),
+    ALGAE_HIGH(5),
+    ALGAE_LOW(6);
+
+    public final int gameHeight;
+
+    Levels(int gameHeight) {
+      this.gameHeight = gameHeight;
+    }
   }
 }
