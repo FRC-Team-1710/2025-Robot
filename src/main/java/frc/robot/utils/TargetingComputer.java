@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Random;
@@ -133,6 +134,25 @@ public class TargetingComputer {
 
   public static Targets getCurrentTargetBranch() {
     return currentTargetBranch;
+  }
+
+  public static Pose2d getCurrentTargetBranchPose() {
+    return new Pose2d(
+            FieldConstants.aprilTags
+                .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                .get()
+                .getTranslation()
+                .toTranslation2d(),
+            FieldConstants.aprilTags
+                .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                .get()
+                .getRotation()
+                .toRotation2d())
+        .plus(
+            new Transform2d(
+                TargetingComputer.currentTargetBranch.getOffset().getX(),
+                TargetingComputer.currentTargetBranch.getOffset().getY(),
+                new Rotation2d(Math.PI)));
   }
 
   public static boolean getAligningWithAlgae() {

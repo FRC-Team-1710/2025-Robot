@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.AlignmentForAuto;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
@@ -113,7 +112,7 @@ public class RobotContainer {
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
   /** Driver RT */
-  
+
   /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
   /** Driver LT */
@@ -148,8 +147,8 @@ public class RobotContainer {
 
   private final Trigger overrideTargetingController = new Trigger(mech.povDown());
   /** Driver LT */
-
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
   private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
   private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
@@ -298,7 +297,6 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        
 
         break;
 
@@ -320,32 +318,38 @@ public class RobotContainer {
     }
 
     NamedCommands.registerCommand(
-        "Align to Alpha", drivetrain.Alignment(robotCentric, Targets.ALPHA, vision));
+        "Align to Alpha",
+        elevator.intake().andThen(drivetrain.Alignment(robotCentric, Targets.ALPHA, vision)));
     NamedCommands.registerCommand(
-        "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision));
+        "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Charlie", drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision));
+        "Align to Charlie", drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Delta", drivetrain.Alignment(robotCentric, Targets.DELTA, vision));
+        "Align to Delta", drivetrain.Alignment(robotCentric, Targets.DELTA, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Echo", drivetrain.Alignment(robotCentric, Targets.ECHO, vision));
+        "Align to Echo", drivetrain.Alignment(robotCentric, Targets.ECHO, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision));
+        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Golf", drivetrain.Alignment(robotCentric, Targets.GOLF, vision));
+        "Align to Golf", drivetrain.Alignment(robotCentric, Targets.GOLF, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Hotel", drivetrain.Alignment(robotCentric, Targets.HOTEL, vision));
+        "Align to Hotel", drivetrain.Alignment(robotCentric, Targets.HOTEL, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to India", drivetrain.Alignment(robotCentric, Targets.INDIA, vision));
+        "Align to India", drivetrain.Alignment(robotCentric, Targets.INDIA, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Juliet", drivetrain.Alignment(robotCentric, Targets.JULIET, vision));
+        "Align to Juliet", drivetrain.Alignment(robotCentric, Targets.JULIET, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Kilo", drivetrain.Alignment(robotCentric, Targets.KILO, vision));
+        "Align to Kilo", drivetrain.Alignment(robotCentric, Targets.KILO, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Lima", drivetrain.Alignment(robotCentric, Targets.LIMA, vision));
+        "Align to Lima", drivetrain.Alignment(robotCentric, Targets.LIMA, vision).onlyWhile(()-> elevator.isAtTarget()));
+        NamedCommands.registerCommand(
+        "Align to Source", drivetrain.Alignment(robotCentric, Targets.SOURCE_RIGHT, vision).onlyWhile(()-> elevator.isAtTarget()));
     NamedCommands.registerCommand("intake coral", new IntakeCoral(manipulator, funnel, driver));
     NamedCommands.registerCommand("end intake", new EndIntake(manipulator, funnel));
     NamedCommands.registerCommand("outtake coral", new OuttakeForAuto(manipulator));
+    NamedCommands.registerCommand("L4", elevator.L3().onlyWhile(drivetrain.isInAlignmentZone()));
+    // .onlyWhile(drivetrain.isInAlignmentZone()));
+    NamedCommands.registerCommand("intake position", elevator.intake().onlyWhile(drivetrain.isInAlignmentZone()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -489,9 +493,9 @@ public class RobotContainer {
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
 
-    
     /* Driver Bindings */
-    placeL2.onTrue(
+    placeL2
+        .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
@@ -537,9 +541,9 @@ public class RobotContainer {
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
 
-    
     /* Driver Bindings */
-    placeL2.onTrue(
+    placeL2
+        .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         .onFalse(elevator.intake().unless(targetReef));
@@ -811,9 +815,13 @@ public class RobotContainer {
                 .intake()
                 .alongWith(claw.IDLE())
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
-        .onTrue(new ElevatorToTargetLevel(elevator).unless(() ->
-        vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-            < 1.5))
+        .onTrue(
+            new ElevatorToTargetLevel(elevator)
+                .unless(
+                    () ->
+                        vision.getDistanceToTag(
+                                TargetingComputer.getCurrentTargetBranch().getApriltag())
+                            < 1.5))
         .and(
             () ->
                 vision.containsRequestedTarget(
@@ -847,24 +855,26 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
-    targetSource.whileTrue(
-        drivetrain.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(
-                        MaxSpeed.times(
-                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            (new Rotation2d(
-                                        Units.degreesToRadians(
-                                            TargetingComputer.getSourceTargetingAngle(
-                                                drivetrain.getPose())))
-                                    .minus(drivetrain.getPose().getRotation())
-                                    .getRadians())
-                                * rotP))))
-                                    
+    targetSource
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getSourceTargetingAngle(
+                                                    drivetrain.getPose())))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))))
         .and(
             (() ->
                 vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
@@ -988,7 +998,6 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-                    
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 
@@ -1021,7 +1030,6 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-                    
     mech.pov(0).onTrue(elevator.L4());
     mech.pov(180).onTrue(elevator.intake());
 

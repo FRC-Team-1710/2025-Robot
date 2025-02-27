@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to foxtrot start"
@@ -17,9 +23,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         },
         {
@@ -35,9 +59,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         },
         {
@@ -53,9 +95,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         },
         {
@@ -71,9 +131,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back bravo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         },
         {
@@ -86,6 +164,12 @@
           "type": "named",
           "data": {
             "name": "Align to Alpha"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         }
       ]
