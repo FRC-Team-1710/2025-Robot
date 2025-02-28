@@ -17,7 +17,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -44,10 +43,7 @@ import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
-
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.concurrent.Flow.Processor;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -430,9 +426,17 @@ public class Drive extends SubsystemBase {
 
   @AutoLogOutput
   public boolean isNearProcessor() {
-    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude()).minus(FieldConstants.Processor.centerFace.getTranslation());
-    Pose2d processor = Robot.getAlliance() ? new Pose2d(new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude()).minus(FieldConstants.Processor.centerFace.getTranslation()), FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
-    : FieldConstants.Processor.centerFace;
+    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
+        .minus(FieldConstants.Processor.centerFace.getTranslation());
+    Pose2d processor =
+        Robot.getAlliance()
+            ? new Pose2d(
+                new Translation2d(
+                        FieldConstants.fieldLength.magnitude(),
+                        FieldConstants.fieldWidth.magnitude())
+                    .minus(FieldConstants.Processor.centerFace.getTranslation()),
+                FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
+            : FieldConstants.Processor.centerFace;
 
     return getDistanceToPose(processor).getNorm() < 1.25;
   }
