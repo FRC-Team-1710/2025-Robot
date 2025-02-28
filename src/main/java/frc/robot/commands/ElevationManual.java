@@ -37,7 +37,7 @@ public class ElevationManual extends Command {
     } else {
       if (!locked) {
         m_elevatorSubsystem.setManual(0);
-        m_elevatorSubsystem.stopHere();
+        // m_elevatorSubsystem.stopHere();
         locked = true;
       }
     }
