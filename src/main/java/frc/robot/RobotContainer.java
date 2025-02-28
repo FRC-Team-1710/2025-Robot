@@ -744,7 +744,10 @@ public class RobotContainer {
                                                     drivetrain.getPose())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP)))).and(() -> !TargetingComputer.stillOuttakingAlgae).whileTrue(new IntakeCoral(manipulator, funnel, driver)).onFalse(new EndIntake(manipulator, funnel));
+                                    * rotP))))
+        .and(() -> !TargetingComputer.stillOuttakingAlgae)
+        .whileTrue(new IntakeCoral(manipulator, funnel, driver))
+        .onFalse(new EndIntake(manipulator, funnel));
 
     targetSource
         .and(() -> claw.hasAlgae())
