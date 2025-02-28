@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
@@ -14,13 +16,15 @@ import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
 public class EndIntake extends Command {
   private Manipulator manipulator;
   private Funnel funnel;
+  private BooleanSupplier mechLB;
   public final Timer timer = new Timer();
 
   /** Creates a new EndIntake. */
-  public EndIntake(Manipulator manipulator, Funnel funnel) {
+  public EndIntake(Manipulator manipulator, Funnel funnel, BooleanSupplier mechLB) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.funnel = funnel;
     this.manipulator = manipulator;
+    this.mechLB = mechLB;
     addRequirements(manipulator, funnel);
   }
 
@@ -52,14 +56,16 @@ public class EndIntake extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    manipulator.runPercent(0);
-    funnel.setRollerPower(0);
+    if (!mechLB.getAsBoolean()) {
+      manipulator.runPercent(0);
+      funnel.setRollerPower(0);
+    }
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if ((!manipulator.beam1Broken() && manipulator.beam2Broken()) || timer.get() > 3) {
+    if ((!manipulator.beam1Broken() && manipulator.beam2Broken()) || timer.get() > 3 || mechLB.getAsBoolean()) {
       return true;
     } else {
       return false;
