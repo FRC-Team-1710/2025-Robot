@@ -721,7 +721,7 @@ public class RobotContainer {
                 !TargetingComputer.stillOuttakingAlgae
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
-        .onFalse(new EndIntake(manipulator, funnel));
+        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     targetSource
         .and(() -> claw.hasAlgae())
@@ -786,14 +786,14 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(() -> funnel.setRollerPower(-0.075))
                 .alongWith(new InstantCommand(() -> manipulator.runPercent(-0.075))))
-        .onFalse(new EndIntake(manipulator, funnel));
+        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     mech.start().whileTrue(new ZeroRizz(claw));
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))
-        .onFalse(new EndIntake(manipulator, funnel));
+        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     overrideTargetingController.onTrue(
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
