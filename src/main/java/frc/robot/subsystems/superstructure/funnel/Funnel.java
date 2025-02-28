@@ -14,17 +14,24 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Funnel extends SubsystemBase {
   private TalonFX RollerLeader; // Right
   private TalonFX RollerFollower;
+  private TalonFX Pivot;
   private static boolean hasCoral;
 
   public Funnel() {
     RollerLeader = new TalonFX(31);
     RollerFollower = new TalonFX(32);
+    Pivot = new TalonFX(30);
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     RollerLeader.getConfigurator().apply(config);
     RollerFollower.getConfigurator().apply(config);
+
+    var pivotConfig = new TalonFXConfiguration();
+    pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    Pivot.getConfigurator().apply(pivotConfig);
 
     RollerFollower.setControl(new Follower(RollerLeader.getDeviceID(), true));
   }

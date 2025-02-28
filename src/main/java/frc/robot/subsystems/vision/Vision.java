@@ -6,8 +6,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -15,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -24,9 +21,7 @@ import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -38,13 +33,16 @@ public class Vision extends SubsystemBase {
 
   private static final VisionMode MODE = VisionMode.MA;
   private static final String VISION_PATH = "Vision/Camera";
-  public static final AprilTagFieldLayout field =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+
+  private final int[] branchIDs = {
+    6, 7, 8, 9, 10, 11,
+    17, 18, 19, 20, 21, 22
+  };
 
   /**
    * Creates a new Vision subsystem.
@@ -86,32 +84,29 @@ public class Vision extends SubsystemBase {
     consumer.accept(sortMeasurements(visionData.measurements()));
 
     try {
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Left Calc Offset",
-          getCamera(0)
-              .getTarget(17)
-              .bestCameraToTarget
-              .getTranslation()
-              .plus(getCamera(0).getStdDev().getTranslation())
-              .toVector()
-              .getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Right Calc Offset",
-          getCamera(1)
-              .getTarget(17)
-              .bestCameraToTarget
-              .getTranslation()
-              .plus(getCamera(1).getStdDev().getTranslation())
-              .toVector()
-              .getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Left Cam Measurement",
-          getCamera(0).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
-      SmartDashboard.putNumberArray(
-          "VisionDebugging/Right Cam Measurement",
-          getCamera(1).getTarget(17).bestCameraToTarget.getTranslation().toVector().getData());
+      Logger.recordOutput(
+          "VisionDebugging/Current Target Position",
+          new Transform3d(
+                  FieldConstants.aprilTags
+                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                      .get()
+                      .getTranslation(),
+                  FieldConstants.aprilTags
+                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
+                      .get()
+                      .getRotation())
+              .plus(
+                  new Transform3d(
+                      new Translation3d(
+                          TargetingComputer.currentTargetBranch.getOffset().getX(),
+                          TargetingComputer.currentTargetBranch.getOffset().getY(),
+                          -FieldConstants.aprilTags
+                              .getTagPose(TargetingComputer.getCurrentTargetBranch().getApriltag())
+                              .get()
+                              .getZ()),
+                      new Rotation3d(0, 0, -Math.PI))));
     } catch (Exception e) {
-      // TODO: handle exception
+
     }
   }
 
@@ -119,6 +114,13 @@ public class Vision extends SubsystemBase {
     return (VisionIOPhotonVision) io[index];
   }
 
+  /**
+   * Calculates the robot's offset from the specified tag using only the front 2 cameras
+   *
+   * @param id The requested AprilTag's id
+   * @param desiredOffset The desired offset of the robot relative to the tag
+   * @return Transform3d that represents the robots position relative to the offset
+   */
   public Transform3d calculateOffset(int id, Translation2d desiredOffset) {
     Transform3d leftCamToTag = getCamera(0).getRobotToTargetOffset(id);
     Transform3d rightCamToTag = getCamera(1).getRobotToTargetOffset(id);
@@ -131,8 +133,11 @@ public class Vision extends SubsystemBase {
                   FieldConstants.aprilTags.getTagPose(id).get().getRotation())
               .plus(
                   new Transform3d(
-                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-                      new Rotation3d())));
+                      new Translation3d(
+                          desiredOffset.getX(),
+                          desiredOffset.getY(),
+                          -FieldConstants.aprilTags.getTagPose(id).get().getZ()),
+                      new Rotation3d(-Math.PI, 0, 0))));
       Logger.recordOutput(
           "VisionDebugging/left cam based target position",
           leftCamToTag
@@ -165,6 +170,7 @@ public class Vision extends SubsystemBase {
           : rightCamToTag;
     }
 
+    // Return the non-zero offset, or kZero if both are zero
     var result =
         !leftCamToTag.equals(Transform3d.kZero)
             ? leftCamToTag
@@ -172,19 +178,107 @@ public class Vision extends SubsystemBase {
                 ? rightCamToTag
                 : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-    Logger.recordOutput("X Error", result.getX());
-    // Return the non-zero offset, or kZero if both are zero
+    Logger.recordOutput("X to Tag", result.getX());
+    Logger.recordOutput("Y to Tag", result.getY());
+    Logger.recordOutput(
+        "X Error", TargetingComputer.getCurrentTargetBranch().getOffset().getX() - result.getX());
+    Logger.recordOutput(
+        "Y Error", TargetingComputer.getCurrentTargetBranch().getOffset().getY() - result.getY());
+
     return result;
   }
 
+  /**
+   * Checks the front 2 cameras to see if there is a result with the fiducial ID requested
+   *
+   * @param id Requested tag's fiducial ID
+   * @return If one of the front 2 cameras have the requested target, returns true
+   */
   public boolean containsRequestedTarget(int id) {
     return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
 
+  /**
+   * Calculates the distance to the requested tag; Make sure to check if the tag exists before you
+   * call this command
+   *
+   * @param tagID Requested tag's ID
+   * @return Distance from the robot's center to the target found
+   */
   public double getDistanceToTag(int tagID) {
     return Math.sqrt(
         Math.pow(calculateOffset(tagID, new Translation2d()).getX(), 2)
             + Math.pow(calculateOffset(tagID, new Translation2d()).getY(), 2));
+  }
+
+  public boolean containsBranchID(int value) {
+    return Arrays.stream(branchIDs).anyMatch(id -> id == value);
+  }
+
+  /**
+   * The most optimized function with just over O(n^2) time complexity. Uses a hashmap to make up
+   * for time complexity.
+   *
+   * <p>When this is called, it will set the reef target to the closest tag to the robot's center.
+   */
+  public void autoBranchTargeting() {
+    var availableTags = new HashMap<Integer, Double>();
+    for (int i = 0; i < io.length; i++) {
+      for (var target : getCamera(i).getCameraTargets()) {
+        if (containsBranchID(target.fiducialId)) {
+          availableTags.put(
+              target.fiducialId, target.bestCameraToTarget.getTranslation().getNorm());
+        }
+      }
+    }
+    if (!availableTags.isEmpty()) {
+      int targetTagID =
+          Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+      boolean leftSide =
+          (getCamera(getCameraIDWithTarget(targetTagID))
+                  .getRobotToTargetOffset(targetTagID)
+                  .getTranslation()
+                  .getY()
+              < 0);
+
+      Logger.recordOutput("LeftSide?", leftSide);
+      if (TargetingComputer.targetingControllerOverride)
+        TargetingComputer.setTargetByTag(targetTagID, leftSide);
+    }
+  }
+
+  public void autoBranchTargeting(boolean leftSide) {
+    var availableTags = new HashMap<Integer, Double>();
+    for (int i = 0; i < io.length; i++) {
+      for (var target : getCamera(i).getCameraTargets()) {
+        if (containsBranchID(target.fiducialId)) {
+          availableTags.put(
+              target.fiducialId, target.bestCameraToTarget.getTranslation().getNorm());
+        }
+      }
+    }
+    if (!availableTags.isEmpty()) {
+      int targetTagID =
+          Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+      Logger.recordOutput("LeftSide?", leftSide);
+      TargetingComputer.setTargetByTag(targetTagID, leftSide);
+    }
+  }
+
+  /**
+   * Only use this method if you are completely sure there is a camera with the target or else it
+   * will not work as expected.
+   *
+   * @param tagID The tag ID to find the camera for
+   * @return The camera ID that has the target
+   */
+  public int getCameraIDWithTarget(int tagID) {
+    for (int i = 0; i < io.length; i++) {
+      if (getCamera(i).hasTarget(tagID)) {
+        return i;
+      }
+    }
+    return 0;
   }
 
   /**

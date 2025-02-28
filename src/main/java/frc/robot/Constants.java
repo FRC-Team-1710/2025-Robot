@@ -40,9 +40,10 @@ public final class Constants {
   public static final AngularVelocity MaxModuleRate = RotationsPerSecond.of(20.0);
 
   // PathPlanner config constants
-  private static final Mass ROBOT_MASS = Kilogram.of(32.36);
+  private static final Mass ROBOT_MASS = Kilogram.of(52.163);
   private static final MomentOfInertia ROBOT_MOI =
-      KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.52705 / 2) * (0.0010165 / 0.00094588));
+      KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.7112 / 2) * (0.001703 / 0.0029193));
+
   private static final double WHEEL_COF = 1.5;
   public static final SwerveModuleConstants SWERVE_MODULE_CONSTANTS = TunerConstants.FrontLeft;
   public static final Translation2d[] SWERVE_MODULE_OFFSETS =
@@ -139,7 +140,12 @@ public final class Constants {
     }
   }
 
-  public static class ClawSubsystemConstants {
-    public static final double ClawIntakePower = 0.5;
+  public static class ClawConstants {
+    public static final double CLAW_INTAKE_POWER = 0.5;
+  }
+
+  public static class FunnelConstants {
+    public static final double intakeSpeed = 0.4;
+    public static final double insideSpeed = 0.2;
   }
 }

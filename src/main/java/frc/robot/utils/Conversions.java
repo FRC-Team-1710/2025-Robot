@@ -12,6 +12,14 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 
 public class Conversions {
+  public static Distance rotationsToMeters(
+      Angle rotations, double gearRatio, Distance wheelRadius) {
+    /* Apply gear ratio to input rotations */
+    var gearedRadians = rotations.in(Radians) / gearRatio;
+    /* Then multiply the wheel radius by radians of rotation to get distance */
+    return wheelRadius.times(gearedRadians);
+  }
+
   public static Distance rotationsToInches(
       Angle rotations, double gearRatio, Distance wheelRadius) {
     /* Apply gear ratio to input rotations */
@@ -41,5 +49,11 @@ public class Conversions {
     var wheelRadians = meters.in(MetersPerSecond) / wheelRadius.in(Meters);
     /* Then multiply by gear ratio to get rotor rotations */
     return RadiansPerSecond.of(wheelRadians * gearRatio);
+  }
+
+  public static Distance rotationsToDistance(
+      Angle rotations, double gearRatio, Distance wheelRadius) {
+    var gearedRadians = rotations.in(Radians) / gearRatio;
+    return wheelRadius.times(gearedRadians);
   }
 }

@@ -23,6 +23,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -31,10 +32,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
 
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 24;
   private boolean locked = false;
+  private boolean rollerLocked = false;
 
   private double kP = 0.05;
   private double kI = 0.0;
@@ -46,9 +49,14 @@ public class ClawIOCTRE implements ClawIO {
   private double kacel = 600;
   private double kvel = 300;
 
-  public final TalonFX wrist = new TalonFX(21);
-  public final TalonFX rollers = new TalonFX(22);
+  private double RollerkP = 3;
+  private double RollerkI = 0.0;
+  private double RollerkD = 0.0;
 
+  public final TalonFX wrist = new TalonFX(51);
+  public final TalonFX rollers = new TalonFX(52);
+
+  private final PIDController rollerPID = new PIDController(RollerkP, RollerkI, RollerkD);
   private final ProfiledPIDController wristPID =
       new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
   private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
@@ -77,9 +85,15 @@ public class ClawIOCTRE implements ClawIO {
     wrist.getConfigurator().apply(config);
     rollers.getConfigurator().apply(config);
 
+    wrist.setPosition(0);
+
     SmartDashboard.putNumber("Claw/PID/P", kP);
     SmartDashboard.putNumber("Claw/PID/I", kI);
     SmartDashboard.putNumber("Claw/PID/D", kD);
+
+    SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
+    SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
+    SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
@@ -128,6 +142,7 @@ public class ClawIOCTRE implements ClawIO {
     inputs.wristManual = wristManual;
     inputs.intakePercent = runPercent;
 
+    inputs.rollerLocked = rollerLocked;
     inputs.angle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
 
     tempPIDTuning();
@@ -137,6 +152,12 @@ public class ClawIOCTRE implements ClawIO {
           wristPID.calculate(inputs.angle.magnitude())
               + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
     }
+
+    if (rollerLocked) {
+      rollers.setVoltage(rollerPID.calculate(inputs.rollerPosition));
+    }
+
+    Logger.recordOutput("roller locked", rollerLocked);
   }
 
   @Override
@@ -144,6 +165,17 @@ public class ClawIOCTRE implements ClawIO {
     SetAngle = angle;
     wristPID.setGoal(angle.magnitude());
     locked = true;
+  }
+
+  @Override
+  public void zero() {
+    wrist.setPosition(0);
+  }
+
+  @Override
+  public void lockRoller() {
+    rollerPID.setSetpoint(rollers.getPosition().getValueAsDouble());
+    rollerLocked = true;
   }
 
   @Override
@@ -163,6 +195,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void setRollers(double power) {
     runPercent = power;
+    rollerLocked = false;
     rollers.set(power);
   }
 
@@ -180,6 +213,21 @@ public class ClawIOCTRE implements ClawIO {
     if (kD != SmartDashboard.getNumber("Claw/PID/D", kD)) {
       kD = SmartDashboard.getNumber("Claw/PID/D", kD);
       wristPID.setD(kD);
+    }
+
+    if (RollerkP != SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP)) {
+      RollerkP = SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP);
+      rollerPID.setP(RollerkP);
+    }
+
+    if (RollerkI != SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI)) {
+      RollerkI = SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI);
+      rollerPID.setI(RollerkI);
+    }
+
+    if (RollerkD != SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD)) {
+      RollerkD = SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD);
+      rollerPID.setD(RollerkD);
     }
   }
 }

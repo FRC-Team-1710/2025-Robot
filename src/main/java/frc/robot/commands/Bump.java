@@ -4,42 +4,40 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.superstructure.climber.Climber;
-import frc.robot.utils.TargetingComputer;
+import frc.robot.subsystems.superstructure.funnel.Funnel;
+import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class StartClimb extends Command {
-  Climber climber;
-  Timer timer = new Timer();
-  Double time = 0.1;
-  /** Creates a new StartClimb. */
-  public StartClimb(Climber climber) {
-    this.climber = climber;
+public class Bump extends Command {
+  private Funnel funnel;
+  private Manipulator manipulator;
+
+  /** Creates a new Bump. */
+  public Bump(Funnel funnel, Manipulator manipulator) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(climber);
+    this.funnel = funnel;
+    this.manipulator = manipulator;
+    addRequirements(funnel, manipulator);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    TargetingComputer.setGoForClimb(true);
-    timer.restart();
-    climber.SetClimberPower(.5);
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (timer.get() > time) {
-      climber.SetClimberPower(0);
-    }
+    manipulator.runPercent(-0.075);
+    funnel.setRollerPower(-0.075);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    manipulator.runPercent(0.0);
+    funnel.setRollerPower(0.0);
+  }
 
   // Returns true when the command should end.
   @Override
