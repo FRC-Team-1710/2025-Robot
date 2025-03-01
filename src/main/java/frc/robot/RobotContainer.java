@@ -246,10 +246,10 @@ public class RobotContainer {
                     drivetrain::getVisionParameters));
         vision
             .getCamera(0)
-            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Left
+            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
         vision
             .getCamera(1)
-            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Right
+            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
