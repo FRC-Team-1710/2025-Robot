@@ -238,6 +238,19 @@ public class Drive extends SubsystemBase {
     return yes;
   }
 
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
   public Command Alignment(
       RobotCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
     if (elevator.isAtTarget()) {

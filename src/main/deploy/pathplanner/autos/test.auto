@@ -29,9 +29,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source"
           }
         }
       ]

@@ -331,57 +331,38 @@ public class RobotContainer {
     }
 
     NamedCommands.registerCommand(
-        "Align to Alpha",
-        elevator
-            .intake()
-            .andThen(drivetrain.Alignment(robotCentric, Targets.ALPHA, vision, elevator)));
+        "Align to Alpha", drivetrain.Alignment(robotCentric, Targets.ALPHA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Bravo",
-        drivetrain.Alignment(robotCentric, Targets.BRAVO, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Charlie",
-        drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Charlie", drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Delta",
-        drivetrain.Alignment(robotCentric, Targets.DELTA, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Delta", drivetrain.Alignment(robotCentric, Targets.DELTA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Echo",
-        drivetrain.Alignment(robotCentric, Targets.ECHO, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Echo", drivetrain.Alignment(robotCentric, Targets.ECHO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision, elevator));
+        "Align to Foxtrot",
+        drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision, elevator)
+            .until(drivetrain.hasSpeed(Targets.FOXTROT, vision)));
     NamedCommands.registerCommand(
-        "Align to Golf",
-        drivetrain.Alignment(robotCentric, Targets.GOLF, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Golf", drivetrain.Alignment(robotCentric, Targets.GOLF, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Hotel",
-        drivetrain.Alignment(robotCentric, Targets.HOTEL, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Hotel", drivetrain.Alignment(robotCentric, Targets.HOTEL, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to India",
-        drivetrain.Alignment(robotCentric, Targets.INDIA, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to India", drivetrain.Alignment(robotCentric, Targets.INDIA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Juliet",
-        drivetrain.Alignment(robotCentric, Targets.JULIET, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Juliet", drivetrain.Alignment(robotCentric, Targets.JULIET, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Kilo",
-        drivetrain.Alignment(robotCentric, Targets.KILO, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Kilo", drivetrain.Alignment(robotCentric, Targets.KILO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Lima",
-        drivetrain.Alignment(robotCentric, Targets.LIMA, vision, elevator)
-            .onlyWhile(() -> elevator.isAtTarget()));
+        "Align to Lima", drivetrain.Alignment(robotCentric, Targets.LIMA, vision, elevator));
     NamedCommands.registerCommand(
         "Align to Source",
         drivetrain.Alignment(robotCentric, Targets.SOURCE_RIGHT, vision, elevator));
     // .onlyWhile(() -> elevator.isAtTarget()));
-    NamedCommands.registerCommand("intake coral", new IntakeCoral(manipulator, funnel, driver));
+    NamedCommands.registerCommand(
+        "intake coral",
+        new IntakeCoral(manipulator, funnel, driver).alongWith(drivetrain.stop(robotCentric)));
     NamedCommands.registerCommand("end intake", new EndIntake(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
@@ -396,10 +377,7 @@ public class RobotContainer {
             .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
     NamedCommands.registerCommand(
         "intake position",
-        elevator
-            .intake()
-            .alongWith(drivetrain.stop(robotCentric))
-            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken()));
+        elevator.intake().onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

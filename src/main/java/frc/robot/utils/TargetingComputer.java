@@ -33,8 +33,8 @@ public class TargetingComputer {
   public static final double alignmentAngleTolerance = 5;
   public static final double alignmentRange = 1.5;
 
-  private static final double xOffset = 18;
-  private static final double yOffset = 8.5;
+  private static final double xOffset = 17;
+  private static final double yOffset = 7.5;
 
   // AprilTag Targeting
   public static boolean targetSet;

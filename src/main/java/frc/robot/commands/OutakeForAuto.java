@@ -38,7 +38,7 @@ public class OutakeForAuto extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (elevator.isAtTarget() && drivetrain.getChassisSpeeds().vxMetersPerSecond < 0.05) {
+    if (elevator.isAtTarget() && drivetrain.getChassisSpeeds().vxMetersPerSecond < 0.01) {
       manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
     } else {
       elevator.setElevatorPosition(elevator.getMode());
