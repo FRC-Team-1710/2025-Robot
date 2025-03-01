@@ -356,7 +356,7 @@ public class RobotContainer {
   private void configureBindings() {
     // TEST MODE ONLY
     // Run systems check
-    targetL3 // X to initiate systems check
+    placeL3 // X to initiate systems check
         .and(() -> SmartDashboard.getBoolean("isTestMode", false))
         .onTrue(new SystemsCheck(driver, drivetrain, claw, climber, elevator, funnel, manipulator));
 
@@ -425,6 +425,7 @@ public class RobotContainer {
 
     /* Driver Bindings */
     placeL2
+        .and(() -> SmartDashboard.getBoolean("isTestMode", true))
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
@@ -448,6 +449,7 @@ public class RobotContainer {
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     placeL3
+        .and(() -> SmartDashboard.getBoolean("isTestMode", true))
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
