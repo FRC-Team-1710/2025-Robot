@@ -19,6 +19,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -49,6 +50,7 @@ import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import java.util.List;
+import java.util.concurrent.Flow.Processor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -331,6 +333,11 @@ public class Drive extends SubsystemBase {
               });
     }
     updateWithTime();
+
+    Logger.recordOutput(
+        "distance to target",
+        Units.metersToInches(
+            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()));
   }
 
   public void resetPose(Pose2d pose) {
@@ -375,9 +382,9 @@ public class Drive extends SubsystemBase {
   }
 
   @AutoLogOutput
-  public BooleanSupplier isInAlignmentZone() {
+  public boolean isInAlignmentZone() {
     Pose2d currentPose = getPose();
-    double zoneRadius = 2;
+    double zoneRadius = TargetingComputer.alignmentRange;
     double angle =
         Robot.getAlliance()
             ? new Translation2d(
@@ -410,56 +417,65 @@ public class Drive extends SubsystemBase {
 
     switch (TargetingComputer.getCurrentTargetBranch().getApriltag()) {
       default:
-        return () -> false;
+        return false;
       case (6):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 3;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
       case (7):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 4;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
       case (8):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 5;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
       case (9):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 6;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
       case (10):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 1;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
       case (11):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 2;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
       case (17):
-        return (() ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 2);
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
       case (18):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 1;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
       case (19):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 6;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
       case (20):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 5;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
       case (21):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 4;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
       case (22):
-        return () ->
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm() < zoneRadius
-                && zone == 3;
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
     }
+  }
+
+  @AutoLogOutput
+  public boolean isNearProcessor() {
+    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude()).minus(FieldConstants.Processor.centerFace.getTranslation());
+    Pose2d processor = Robot.getAlliance() ? new Pose2d(new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude()).minus(FieldConstants.Processor.centerFace.getTranslation()), FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
+    : FieldConstants.Processor.centerFace;
+
+    return getDistanceToPose(processor).getNorm() < 1.25;
   }
 
   public Rotation2d getRotation() {

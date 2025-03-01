@@ -44,6 +44,7 @@ public interface ElevatorIO {
     public AngularVelocity followerRotorVelocity = RotationsPerSecond.of(0);
 
     public Angle encoderPosition = Rotations.of(0);
+    public Angle encoderAbsPosition = Rotations.of(0);
     public AngularVelocity encoderVelocity = RotationsPerSecond.of(0);
 
     public Voltage appliedVoltage = Volts.of(0.0);

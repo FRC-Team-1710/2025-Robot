@@ -29,6 +29,16 @@ public class TargetingComputer {
   public static boolean stillOuttakingAlgae = false;
   public static boolean goForClimb = false;
 
+  public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
+  public static final double alignmentAngleTolerance = 5;
+  public static final double alignmentRange = 1.5;
+
+  private static final double xOffset = 18;
+  private static final double yOffset = 8.5;
+
+  // AprilTag Targeting
+  public static boolean targetSet;
+
   private static boolean isRedAlliance;
 
   public static int alphaTag,
@@ -58,23 +68,30 @@ public class TargetingComputer {
 
   public static int getTagForTarget(Targets target) {
     return switch (target) {
-      case ALPHA -> isRedAlliance ? 7 : 18;
-      case BRAVO -> isRedAlliance ? 7 : 18;
-      case CHARLIE -> isRedAlliance ? 8 : 17;
-      case DELTA -> isRedAlliance ? 8 : 17;
-      case ECHO -> isRedAlliance ? 9 : 22;
-      case FOXTROT -> isRedAlliance ? 9 : 22;
-      case GOLF -> isRedAlliance ? 10 : 21;
-      case HOTEL -> isRedAlliance ? 10 : 21;
-      case INDIA -> isRedAlliance ? 11 : 20;
-      case JULIET -> isRedAlliance ? 11 : 20;
-      case KILO -> isRedAlliance ? 6 : 19;
-      case LIMA -> isRedAlliance ? 6 : 19;
+      case ALPHA, BRAVO -> isRedAlliance ? 7 : 18;
+      case CHARLIE, DELTA -> isRedAlliance ? 8 : 17;
+      case ECHO, FOXTROT -> isRedAlliance ? 9 : 22;
+      case GOLF, HOTEL -> isRedAlliance ? 10 : 21;
+      case INDIA, JULIET -> isRedAlliance ? 11 : 20;
+      case KILO, LIMA -> isRedAlliance ? 6 : 19;
       case SOURCE_LEFT -> isRedAlliance ? 1 : 13;
       case SOURCE_RIGHT -> isRedAlliance ? 2 : 12;
       case PROCESSOR -> isRedAlliance ? 3 : 16;
       case NET -> isRedAlliance ? 5 : 14;
     };
+  }
+
+  public static void setTargetByTag(int tagID, boolean leftSide) {
+    if (tagID == 7 || tagID == 18) setTargetBranch(leftSide ? Targets.ALPHA : Targets.BRAVO);
+    else if (tagID == 8 || tagID == 17) setTargetBranch(leftSide ? Targets.CHARLIE : Targets.DELTA);
+    else if (tagID == 9 || tagID == 22) setTargetBranch(leftSide ? Targets.ECHO : Targets.FOXTROT);
+    else if (tagID == 10 || tagID == 21) setTargetBranch(leftSide ? Targets.GOLF : Targets.HOTEL);
+    else if (tagID == 11 || tagID == 20) setTargetBranch(leftSide ? Targets.INDIA : Targets.JULIET);
+    else if (tagID == 6 || tagID == 19) setTargetBranch(leftSide ? Targets.KILO : Targets.LIMA);
+    else if (tagID == 1 || tagID == 13) setTargetBranch(Targets.SOURCE_LEFT);
+    else if (tagID == 2 || tagID == 12) setTargetBranch(Targets.SOURCE_RIGHT);
+    else if (tagID == 3 || tagID == 16) setTargetBranch(Targets.PROCESSOR);
+    else if (tagID == 5 || tagID == 14) setTargetBranch(Targets.NET);
   }
 
   public static double getAngleForTarget(Targets target) {
@@ -175,6 +192,12 @@ public class TargetingComputer {
     stillOuttakingAlgae = value;
   }
 
+  public static boolean stillInRangeOfSources(Pose2d pose) {
+    return isRedAlliance
+        ? pose.getX() <= sourceCutoffDistance
+        : pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance;
+  }
+
   public static double getSourceTargetingAngle(Pose2d pose) {
     if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
     if (isRedAlliance) {
@@ -196,6 +219,10 @@ public class TargetingComputer {
               ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
               : Targets.PROCESSOR.getTargetingAngle(); // far
     }
+  }
+
+  public static void setTargetSet(boolean isTargetSet) {
+    targetSet = isTargetSet;
   }
 
   public static void randomizeTargetBranch() {
@@ -292,62 +319,62 @@ public class TargetingComputer {
     ALPHA(
         1,
         0,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     BRAVO(
         0,
         1,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     CHARLIE(
         1,
         2,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     DELTA(
         0,
         3,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     ECHO(
         1,
         4,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     FOXTROT(
         0,
         5,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     GOLF(
         1,
         6,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     HOTEL(
         0,
         7,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     INDIA(
         1,
         8,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     JULIET(
         0,
         9,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     KILO(
         1,
         10,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(-7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     LIMA(
         0,
         11,
-        new Translation2d(Units.inchesToMeters(15), Units.inchesToMeters(7)),
+        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
