@@ -2,27 +2,63 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+// Collin (King) Arthur
+// Gavin (The Goat) Bigham   <--- Vs code autofilled The Goat for me :)
+
 package frc.robot.subsystems.superstructure.LEDs;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.subsystems.superstructure.climber.Climber;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.funnel.Funnel;
+import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Timer;
 
 public class LEDSubsystem extends SubsystemBase {
   /** Creates a new LEDSubsystem. */
   private SerialPort uart;
+  Timer timer = new Timer();
 
-  public LEDSubsystem() {
-      uart = new SerialPort(115200, SerialPort.Port.kMXP); // Set baud rate
-  }
+    private Funnel funnel;
+    private Manipulator manipulator;
+    private Climber climber;
+    private Elevator elevator;
 
-  private Boolean hasNote = false;
-  private Boolean chargingOuttake = false;
-  private Boolean atSpeed = false;
+public LEDSubsystem(Funnel funnel, Manipulator manipulator, Climber climber) {
+    this.funnel = funnel;
+    this.manipulator = manipulator;
+    this.climber = climber;
+    this.elevator = elevator;
+    uart = new SerialPort(115200, SerialPort.Port.kMXP); // Set baud rate
+}
 
   private Integer commandValue = 0;
+
+  public Boolean[] inputBooleans = {
+    false, 
+    false, 
+    false,
+    false,
+    false, 
+    false,
+    false,
+    false, 
+    false, 
+    false, 
+    false, 
+    false, 
+    false 
+};
+
+// Booleans to store the status of the beam breaks (Might not need these)
+private Boolean firstManipulatorBreak; // Beam break to indicate if the coral has started to enter the manipulator
+private Boolean secondManipulatorBreak; // Beam break to indicate if the coral has fully entered the manipulator
+private Boolean firstFunnelBreak; // Ask about these next 2 beam breaks again (the ones in the funnel)
+private Boolean secondFunnelBreak; 
 
   @Override
   public void periodic() {
@@ -30,131 +66,70 @@ public class LEDSubsystem extends SubsystemBase {
       encoder(); // Setting the command value
       sendData(commandValue); // Send Phase 
   }
-  public Boolean[] inputBooleans = {
-      false, 
-      false, 
-      false,
-      false,
-      false, 
-      false,
-      false,
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false 
-  };
 
+  /**
+   * Sets the input booleans based on the current state of the robot
+   */
   private void set() { // Decimal phase
-      // Note Detected
-      /*if (results.hasTargets()) {
-          NoteDetected(true);
-      } else {
-          NoteDetected(false);
-      }*/
+      
+    if (DriverStation.isDSAttached()) {
+        inputBooleans[0] = true;
+        inputBooleans[1] = false;
+        } else {
+        inputBooleans[0] = false;
+        inputBooleans[1] = true;
+    }
+
+    if (Robot.checkRedAlliance()) {
+        inputBooleans[11] = true;
+        inputBooleans[12] = false;
+    } else {
+        inputBooleans[11] = false;
+        inputBooleans[12] = true;
+    }
+
+    if (DriverStation.getMatchTime() <= 25 && DriverStation.getMatchTime() > 20) {
+        inputBooleans[4] = true;
+    } else {
+        inputBooleans[4] = false;
+    }
+
+    if (timer.get() >= 45 && timer.get() <= 50) {
+        inputBooleans[5] = true;
+    } else {
+        inputBooleans[5] = false;
+    }
+
+    // if (firstManipulatorBreak) {
+    //     inputBooleans[6] = true;
+    // } else {
+    //     inputBooleans[6] = false;
+    // }
+
+    inputBooleans[7] = funnel.hasCoral();
+    inputBooleans[8] = manipulator.hasCoral();
+    inputBooleans[9] = climber.goForClimb;
+
+    if (elevator.getMode() == Elevator.ElevatorPosition.L1) {
+        inputBooleans[10] = true;
+    } else {
+        inputBooleans[10] = false;
+    }
+
+    if (elevator.getMode() == Elevator.ElevatorPosition.L1 && funnel.hasCoral()) {
+        inputBooleans[2] = true;
+    } else {
+        inputBooleans[2] = false;
+    }
 
 
-      // Driver Station Connected
-                                                        // Get Collin's help tomorrow to fix this
-      if (DriverStation.isDSAttached()) {
-          inputBooleans[0] = false;
-      } else {
-          inputBooleans[0] = true;
-      }
-
-      if (Robot.checkRedAlliance()) {
-          inputBooleans[11] = true;
-          inputBooleans[12] = false;
-      } else {
-          inputBooleans[11] = false;
-          inputBooleans[12] = true;
-      }
-
-      if (DriverStation.getMatchTime() <= 30 && DriverStation.getMatchTime() > 27) {
-          inputBooleans[4] = true;
-      } else {
-          inputBooleans[4] = false;
-      }
-
-      // HasNote for ChargingOuttake and AtSpeed
-      if (hasNote) { // Converts from simple inputs to boolean
-          if (chargingOuttake) {
-              inputBooleans[5] = true;
-              inputBooleans[6] = false;
-          } else if (atSpeed) {
-              inputBooleans[5] = false;
-              inputBooleans[6] = true;
-          }
-          inputBooleans[7] = false;
-          inputBooleans[8] = false;
-      } else {
-          if (chargingOuttake) {
-              inputBooleans[7] = true;
-              inputBooleans[8] = false;
-          } else if (atSpeed) {
-              inputBooleans[7] = false;
-              inputBooleans[8] = true;
-          }
-          inputBooleans[5] = false;
-          inputBooleans[6] = false;
-      }
-
-      /*
-      // Check if pathfinding
-      if (SwerveSubsystem.followingPath) {
-          inputBooleans[0] = true;
-      } else {
-          inputBooleans[0] = false;
-      }*/
-
-      // Check beam breaks
-      if (intexer.intakeBreak()) {
-          inputBooleans[9] = true; // Intake
-          inputBooleans[10] = false; // Shooter
-          hasNote = true;
-      } else if (intexer.shooterBreak()) {
-          inputBooleans[9] = false; // Intake
-          inputBooleans[10] = true; // Shooter
-          hasNote = true;
-      } else {
-          inputBooleans[9] = false; // Intake
-          inputBooleans[10] = false; // Shooter
-          hasNote = false;
-      }
-
-      // Charging or At Speed with Note or without Note
-      if (hasNote) { // Has Note
-          if (shooter.isShooterAtSpeed()) { // At speed
-              inputBooleans[5] = false;
-              inputBooleans[6] = true;
-          } else if (shooter.getVelocity() > Constants.Shooter.idleSpeedRPM + 500) { // Charging
-              inputBooleans[5] = true;
-              inputBooleans[6] = false;
-          } else {
-              inputBooleans[5] = false;
-              inputBooleans[6] = false;
-          }
-          inputBooleans[7] = false;
-          inputBooleans[8] = false;
-      } else { // No Note
-          if (shooter.isShooterAtSpeed()) { // At speed
-              inputBooleans[7] = false;
-              inputBooleans[8] = true;
-          } else if (shooter.getVelocity() > Constants.Shooter.idleSpeedRPM + 500) { // Charging
-              inputBooleans[7] = true;
-              inputBooleans[8] = false;
-          } else {
-              inputBooleans[7] = false;
-              inputBooleans[8] = false;
-          }
-          inputBooleans[5] = false;
-          inputBooleans[6] = false;
-      }
-
-      SmartDashboard.putBooleanArray("Input Booleans", inputBooleans);
+    SmartDashboard.putBooleanArray("Input Booleans", inputBooleans);
   }
 
+  /**
+   * Sets the input booleans to send based on the priorities of the states 
+   * (Ex. Robot starts flying -> 0011)
+   */
   private void encoder() { // Transition phase
       for (int i = 0;
               i < inputBooleans.length;
@@ -166,12 +141,11 @@ public class LEDSubsystem extends SubsystemBase {
       }
   }
 
-  public void sendData(int value) {
+  public void sendData(int value) { // Sending data (duh)
       byte[] data = new byte[1]; // Create a byte array of length 1
       data[0] = (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
       uart.write(data, data.length); // Write the byte array to the serial port
       //System.out.println("Sending Data: " + value); // Print the data that we sent
   }
 }
-
 

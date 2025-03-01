@@ -99,7 +99,7 @@ public class Elevator extends SubsystemBase {
   }
 
   /** Enumeration of available arm distances with their corresponding target angles. */
-  private enum ElevatorPosition {
+  public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
     L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
