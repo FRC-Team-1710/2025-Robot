@@ -82,6 +82,8 @@ public final class Constants {
 
   // Vision constants
 
+  public static final double kfrontCameraRejectionDistance = 4.5; // METERS
+
   public static final String kFrontLeftCameraName = "Front Left";
   public static final String kFrontRightCameraName = "Front Right";
   public static final String kBackLeftCameraName = "Back Left";

@@ -43,8 +43,6 @@ public class VisionUtil {
   public static final AngularVelocity MT2_SPIN_MAX =
       DegreesPerSecond.of(40.0); // Maximum rotation speed for MT2 measurements
   public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted (Default 0.05)
-  public static final double MAX_TAG_DISTANCE =
-      3.0; // Maximum tag distance from robot to be accepted (METERS)
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
@@ -240,8 +238,7 @@ public class VisionUtil {
           && !invalidMT2Time(poseEst)
           && !invalidRotationVelocity(poseEst)
           && !invalidAmbiguity(poseEst)
-          && !invalidTagArea(poseEst)
-          && !invalidTagDistance(poseEst);
+          && !invalidTagArea(poseEst);
     }
   }
 
@@ -351,10 +348,6 @@ public class VisionUtil {
    */
   private static boolean invalidTagArea(PoseEstimate mt) {
     return mt.avgTagArea() < MIN_TAG_AREA;
-  }
-
-  private static boolean invalidTagDistance(PoseEstimate mt) {
-    return mt.pose().getTranslation().getNorm() < MAX_TAG_DISTANCE;
   }
 
   /**
