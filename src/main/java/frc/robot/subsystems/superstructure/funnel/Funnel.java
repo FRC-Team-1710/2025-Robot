@@ -6,14 +6,6 @@
 
 package frc.robot.subsystems.superstructure.funnel;
 
-import com.ctre.phoenix6.Orchestra;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.Timer;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
@@ -117,6 +109,10 @@ public class Funnel extends SubsystemBase {
     return currentMode;
   }
 
+  public boolean hasCoral() {
+    return inputs.hasCoral;
+  }
+
   /**
    * Sets a new arm mode and schedules the corresponding command.
    *
@@ -141,36 +137,8 @@ public class Funnel extends SubsystemBase {
               ArmMode.L1,
               createPositionCommand(ArmMode.L1)),
           this::getMode);
-/////////////////////////////////////////////////////////
-///     config.Audio.AllowMusicDurDisable = true;
-
-/// 
-/// public Timer timer = new Timer();
-
-  public Orchestra m_orchestra = new Orchestra();
-/// 
-/// var status =
-m_orchestra.loadMusic(
-  Filesystem.getDeployDirectory()
-      .toPath()
-      .resolve("orchestra" + File.separator + "dangerzone.chrp")
-      .toString());
-/// m_orchestra.addInstrument(RollerLeader, 0);
-m_orchestra.addInstrument(RollerFollower, 1);
-m_orchestra.addInstrument(Pivot, 2);
-
-m_orchestra.play();
-timer.reset();
-timer.start();
-/// 
-          if (timer.get() > 300) {
-            if (m_orchestra.isPlaying()) {
-              m_orchestra.stop();
-            }
-            m_orchestra.close();
-            timer.stop();
-            timer.reset();
-          }
+  /////////////////////////////////////////////////////////
+  ///     config.Audio.AllowMusicDurDisable = true;
 
   /**
    * Creates a command for a specific arm position that moves the arm and checks the target

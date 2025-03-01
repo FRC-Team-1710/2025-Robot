@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -58,6 +59,6 @@ public class Conversions {
   }
 
   public static Angle funnelAngleToFFRads(double angleDegrees) {
-    return Radians.of(angleDegrees * -1 + 105);
+    return Radians.of(Units.degreesToRadians((angleDegrees * -1 + 15)) * -1);
   }
 }

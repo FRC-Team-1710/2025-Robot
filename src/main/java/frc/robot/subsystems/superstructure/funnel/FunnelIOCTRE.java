@@ -7,10 +7,10 @@
 package frc.robot.subsystems.superstructure.funnel;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,12 +18,16 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Conversions;
+import java.io.File;
 
 /**
  * CTRE-based implementation of the ArmIO interface for controlling a robot arm mechanism. This
@@ -39,19 +43,19 @@ public class FunnelIOCTRE implements FunnelIO {
   /** The leader TalonFX motor controller (CAN ID: 20) */
   public final TalonFX leader = new TalonFX(31);
   /** The follower TalonFX motor controller (CAN ID: 21) */
-  public final TalonFX follower = new TalonFX(32);
+  // public final TalonFX follower = new TalonFX(32);
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
 
-  private double kP = 0.0;
+  private double kP = 0.09;
   private double kI = 0.0;
   private double kD = 0.0;
-  private double kS = 0.0;
-  private double kG = 0.0;
-  private double kV = 0.0;
+  private double kS = 0.175;
+  private double kG = 0.725;
+  private double kV = 0.006;
   private double kA = 0.0;
-  private double kVel = 200;
-  private double kAcel = 500;
+  private double kVel = 150;
+  private double kAcel = 200;
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
@@ -59,9 +63,9 @@ public class FunnelIOCTRE implements FunnelIO {
   private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
   private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
   private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
-  private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-  private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-  private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+  // private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
+  // private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
+  // private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
   private final StatusSignal<Angle> angleMotorPosition = angleMotor.getPosition();
   private final StatusSignal<AngularVelocity> angleMotorVelocity = angleMotor.getVelocity();
   private final StatusSignal<Voltage> angleMotorAppliedVolts = angleMotor.getMotorVoltage();
@@ -77,6 +81,10 @@ public class FunnelIOCTRE implements FunnelIO {
   private final Debouncer followerDebounce = new Debouncer(0.5);
   private final Debouncer angleMotorDebounce = new Debouncer(0.5);
 
+  public Timer timer = new Timer();
+
+  public Orchestra m_orchestra = new Orchestra();
+
   /**
    * Constructs a new ArmIOCTRE instance and initializes all hardware components. This includes
    * configuring both motors, setting up the follower relationship, and optimizing CAN bus
@@ -84,7 +92,7 @@ public class FunnelIOCTRE implements FunnelIO {
    */
   public FunnelIOCTRE() {
     // Set up follower to mirror leader
-    follower.setControl(new Follower(leader.getDeviceID(), true));
+    // follower.setControl(new Follower(leader.getDeviceID(), true));
 
     // Configure both motors with identical settings
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -101,6 +109,17 @@ public class FunnelIOCTRE implements FunnelIO {
     anglePID = new ProfiledPIDController(kP, kI, kD, constraints);
     angleFF = new ArmFeedforward(kS, kG, kV, kA);
 
+    var status =
+        m_orchestra.loadMusic(
+            Filesystem.getDeployDirectory()
+                .toPath()
+                .resolve("orchestra" + File.separator + "dangerzone.chrp")
+                .toString());
+
+    m_orchestra.addInstrument(leader, 0);
+    // m_orchestra.addInstrument(follower, 1);
+    m_orchestra.addInstrument(angleMotor, 2);
+
     // Configure update frequencies for all status signals
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, // 50Hz update rate
@@ -108,10 +127,10 @@ public class FunnelIOCTRE implements FunnelIO {
         leaderVelocity,
         leaderAppliedVolts,
         leaderStatorCurrent,
-        followerStatorCurrent,
-        followerVelocity,
+        // followerStatorCurrent,
+        // followerVelocity,
         leaderSupplyCurrent,
-        followerSupplyCurrent,
+        // followerSupplyCurrent,
         angleMotorPosition,
         angleMotorVelocity,
         angleMotorAppliedVolts,
@@ -120,7 +139,7 @@ public class FunnelIOCTRE implements FunnelIO {
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
-    follower.optimizeBusUtilization(4, 0.1);
+    // follower.optimizeBusUtilization(4, 0.1);
     angleMotor.optimizeBusUtilization(4, 0.1);
 
     SmartDashboard.putNumber("Funnel/PID/P", kP);
@@ -132,6 +151,10 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("Funnel/PID/A", kA);
     SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
     SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
+
+    m_orchestra.play();
+    timer.reset();
+    timer.start();
   }
 
   /**
@@ -151,6 +174,16 @@ public class FunnelIOCTRE implements FunnelIO {
   @Override
   public void updateInputs(ArmIOInputs inputs) {
     tempPIDTuning();
+
+    if (timer.get() > 15) {
+      if (m_orchestra.isPlaying()) {
+        m_orchestra.stop();
+      }
+      m_orchestra.close();
+      timer.stop();
+      timer.reset();
+    }
+
     // Refresh all sensor data
     StatusCode leaderStatus =
         BaseStatusSignal.refreshAll(
@@ -160,8 +193,8 @@ public class FunnelIOCTRE implements FunnelIO {
             leaderStatorCurrent,
             leaderSupplyCurrent);
 
-    StatusCode followerStatus =
-        BaseStatusSignal.refreshAll(followerStatorCurrent, followerSupplyCurrent);
+    // StatusCode followerStatus =
+    //     BaseStatusSignal.refreshAll(followerStatorCurrent, followerSupplyCurrent);
 
     StatusCode angleMotorStatus =
         BaseStatusSignal.refreshAll(
@@ -173,35 +206,42 @@ public class FunnelIOCTRE implements FunnelIO {
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
-    inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
+    // inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
     inputs.angleMotorConnected = angleMotorDebounce.calculate(angleMotorStatus.isOK());
 
     inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderVelocity = leaderVelocity.getValue();
     inputs.leaderStatorCurrent = leaderStatorCurrent.getValue();
-    inputs.followerStatorCurrent = followerStatorCurrent.getValue();
-    inputs.followerVelocity = followerVelocity.getValue();
+    // inputs.followerStatorCurrent = followerStatorCurrent.getValue();
+    // inputs.followerVelocity = followerVelocity.getValue();
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
-    inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
+    // inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
     inputs.angleMotorPosition = angleMotorPosition.getValue();
     inputs.angleMotorVelocity = angleMotorVelocity.getValue();
     inputs.angleMotorStatorCurrent = angleMotorStatorCurrent.getValue();
     inputs.angleMotorSupplyCurrent = angleMotorSupplyCurrent.getValue();
 
     // Calculate arm angle using encoder position
-    inputs.funnelAngle = (inputs.angleMotorPosition.magnitude() / GEAR_RATIO);
+    inputs.funnelAngle = (inputs.angleMotorPosition.magnitude() * 360 / GEAR_RATIO);
 
     if (locked) {
-      angleMotor.setVoltage(
-          anglePID.calculate(inputs.funnelAngle)
-              + angleFF.calculate(
-                  Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude(),
-                  anglePID.getSetpoint().velocity));
+      if (anglePID.getGoal().position != 0
+          || (anglePID.getGoal().position == 0 && inputs.funnelAngle >= 5)) {
+        angleMotor.setVoltage(
+            (anglePID.calculate(inputs.funnelAngle)
+                + angleFF.calculate(
+                    Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude(),
+                    anglePID.getSetpoint().velocity)));
+      } else {
+        angleMotor.setVoltage(0);
+        anglePID.reset(inputs.funnelAngle, 0);
+      }
     }
 
     SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
     SmartDashboard.putNumber(
-        "CORRECTEDPOSITION", Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude());
+        "CORRECTEDPOSITION",
+        Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude()));
     SmartDashboard.putNumber("POSITION", inputs.funnelAngle);
     SmartDashboard.putNumber("GOAL", anglePID.getGoal().position);
     SmartDashboard.putNumber("SETPOINT", anglePID.getSetpoint().position);

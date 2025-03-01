@@ -87,16 +87,36 @@ public class TargetingComputer {
 
   public static void setTargetByTag(int tagID, boolean leftSide) {
     switch (tagID) {
-      case 7, 18: setTargetBranch(leftSide ? Targets.ALPHA : Targets.BRAVO); break;
-      case 8, 17: setTargetBranch(leftSide ? Targets.CHARLIE : Targets.DELTA); break;
-      case 9, 22: setTargetBranch(leftSide ? Targets.ECHO : Targets.FOXTROT); break;
-      case 10, 21: setTargetBranch(leftSide ? Targets.GOLF : Targets.HOTEL); break;
-      case 11, 20: setTargetBranch(leftSide ? Targets.INDIA : Targets.JULIET); break;
-      case 6, 19: setTargetBranch(leftSide ? Targets.KILO : Targets.LIMA); break;
-      case 1, 13: setTargetBranch(Targets.SOURCE_LEFT); break;
-      case 2, 12: setTargetBranch(Targets.SOURCE_RIGHT); break;
-      case 3, 16: setTargetBranch(Targets.PROCESSOR); break;
-      case 5, 14: setTargetBranch(Targets.NET); break;
+      case 7, 18:
+        setTargetBranch(leftSide ? Targets.ALPHA : Targets.BRAVO);
+        break;
+      case 8, 17:
+        setTargetBranch(leftSide ? Targets.CHARLIE : Targets.DELTA);
+        break;
+      case 9, 22:
+        setTargetBranch(leftSide ? Targets.ECHO : Targets.FOXTROT);
+        break;
+      case 10, 21:
+        setTargetBranch(leftSide ? Targets.GOLF : Targets.HOTEL);
+        break;
+      case 11, 20:
+        setTargetBranch(leftSide ? Targets.INDIA : Targets.JULIET);
+        break;
+      case 6, 19:
+        setTargetBranch(leftSide ? Targets.KILO : Targets.LIMA);
+        break;
+      case 1, 13:
+        setTargetBranch(Targets.SOURCE_LEFT);
+        break;
+      case 2, 12:
+        setTargetBranch(Targets.SOURCE_RIGHT);
+        break;
+      case 3, 16:
+        setTargetBranch(Targets.PROCESSOR);
+        break;
+      case 5, 14:
+        setTargetBranch(Targets.NET);
+        break;
     }
   }
 

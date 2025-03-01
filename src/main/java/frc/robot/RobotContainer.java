@@ -35,6 +35,7 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
+import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -48,8 +49,8 @@ import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
+import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -190,7 +191,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOCTRE());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIO() {});
+        claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
 
         /*
@@ -253,12 +254,8 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        vision
-            .getCamera(0)
-            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
-        vision
-            .getCamera(1)
-            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
+        vision.getCamera(0).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
+        vision.getCamera(1).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
         break;
 
       case SIM:

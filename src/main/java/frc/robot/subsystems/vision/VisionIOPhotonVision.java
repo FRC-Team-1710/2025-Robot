@@ -71,25 +71,27 @@ public class VisionIOPhotonVision implements VisionIO {
       }
     }
 
-    var multitagResult = latestResult.getMultiTagResult();
+    if (latestResult.hasTargets()) {
+      var multitagResult = latestResult.getMultiTagResult();
 
-    if (multitagResult.isPresent()) {
-      Transform3d fieldToRobot =
-          multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
-    }
-    var target = latestResult.targets.get(0);
-    // Calculate robot pose
-    var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
-    if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
-      Transform3d fieldToTarget =
-          new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
-      Transform3d cameraToTarget = target.bestCameraToTarget;
-      Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-      Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
+      if (multitagResult.isPresent()) {
+        Transform3d fieldToRobot =
+            multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
+      var target = latestResult.targets.get(0);
+      // Calculate robot pose
+      var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
+      if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
+        Transform3d fieldToTarget =
+            new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+        Transform3d cameraToTarget = target.bestCameraToTarget;
+        Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
     }
     return new PoseObservation();
   }
