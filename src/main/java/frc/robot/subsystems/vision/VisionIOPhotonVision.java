@@ -35,6 +35,9 @@ public class VisionIOPhotonVision implements VisionIO {
   List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
 
+  boolean rejectTagsFromDistance = false;
+  double tagRejectionDistance = 4.5; // METERS
+
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
     this.camera = new PhotonCamera(cameraName);
@@ -57,6 +60,15 @@ public class VisionIOPhotonVision implements VisionIO {
     PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
+    }
+    if (rejectTagsFromDistance && latestResult.hasTargets()) {
+      List<PhotonTrackedTarget> tags = latestResult.targets;
+      for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+        if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+            > tagRejectionDistance) {
+          latestResult.targets.remove(tagIndex);
+        }
+      }
     }
 
     var multitagResult = latestResult.getMultiTagResult();
@@ -224,6 +236,27 @@ public class VisionIOPhotonVision implements VisionIO {
    */
   public List<PhotonTrackedTarget> getCameraTargets() {
     return cameraTargets;
+  }
+
+  /**
+   * Enables or disables rejecting tags from a distance
+   *
+   * @param useRejectionDistance Boolean to set whether the camera can reject tags from a distance
+   *     or not
+   */
+  public void useRejectionDistance(boolean useRejectionDistance) {
+    this.rejectTagsFromDistance = useRejectionDistance;
+  }
+
+  /**
+   * Sets the camera's rejection distance and allows the camera to reject the tags further than this
+   * distance.4
+   *
+   * @param rejectionDistance Preferred camera range in meters
+   */
+  public void useRejectionDistance(double rejectionDistance) {
+    this.tagRejectionDistance = rejectionDistance;
+    this.rejectTagsFromDistance = true;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
