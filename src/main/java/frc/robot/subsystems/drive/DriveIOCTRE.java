@@ -6,6 +6,7 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -55,6 +56,10 @@ public class DriveIOCTRE extends TunerSwerveDrivetrain implements DriveIO {
   private final List<Queue<Double>> drivePositionQueues = new ArrayList<>();
   private final List<Queue<Rotation2d>> steerPositionQueues = new ArrayList<>();
 
+  public Timer timer = new Timer();
+
+  public Orchestra m_orchestra = new Orchestra();
+
   /**
    * Creates a new DriveIOCTRE with specified update frequency.
    *
@@ -103,6 +108,32 @@ public class DriveIOCTRE extends TunerSwerveDrivetrain implements DriveIO {
     // This pulls data from our Odometry thread or in this case at 250 Hz
     registerTelemetry(this::updateTelemetry);
     setupSimulation();
+
+    // // Attempt to load the chrp
+    // var status =
+    //     m_orchestra.loadMusic(
+    //         Filesystem.getDeployDirectory()
+    //             .toPath()
+    //             .resolve("orchestra" + File.separator + "output5.chrp")
+    //             .toString());
+
+    // if (!status.isOK()) {
+    //   // log error
+    // }
+
+    // m_orchestra.addInstrument(super.getModule(0).getDriveMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(1).getDriveMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(2).getDriveMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(3).getDriveMotor(), 2);
+
+    // m_orchestra.addInstrument(super.getModule(0).getSteerMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(1).getSteerMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(2).getSteerMotor(), 2);
+    // m_orchestra.addInstrument(super.getModule(3).getSteerMotor(), 2);
+
+    // m_orchestra.play();
+    // timer.reset();
+    // timer.start();
   }
 
   /** Initializes the position queues for drive and steer data. */

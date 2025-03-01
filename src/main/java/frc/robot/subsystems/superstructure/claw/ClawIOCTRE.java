@@ -36,7 +36,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 24;
-  private boolean locked = false;
+  private boolean locked = true;
   private boolean rollerLocked = false;
 
   private double kP = 0.05;
@@ -104,6 +104,8 @@ public class ClawIOCTRE implements ClawIO {
         intakeVelocity,
         intakeStatorCurrent,
         intakeSupplyCurrent);
+
+    wristPID.setGoal(0);
   }
 
   @Override
