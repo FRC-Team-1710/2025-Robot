@@ -33,8 +33,8 @@ public class TargetingComputer {
 
   public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
   public static final double alignmentAngleTolerance = 5;
-  public static final double alignmentRange = 1.5;
-  public static final double maxAlignSpeed = .4;
+  public static final double alignmentRange = 1;
+  public static final double maxAlignSpeed = .3;
 
   private static final double xOffset = 17;
   private static final double yOffset = 8.5;
