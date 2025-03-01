@@ -266,8 +266,14 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void stopHere() {
-    elevatorPID.reset(Conversions.rotationsToDistance(encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius).magnitude(), 0);
-    setpoint = Conversions.rotationsToDistance(encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
+    elevatorPID.reset(
+        Conversions.rotationsToDistance(
+                encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
+            .magnitude(),
+        0);
+    setpoint =
+        Conversions.rotationsToDistance(
+            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
     locked = true;
   }
 
