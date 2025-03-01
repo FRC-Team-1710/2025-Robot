@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -27,6 +28,7 @@ import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
+import frc.robot.commands.SystemsCheck;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -57,6 +59,9 @@ import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -184,7 +189,6 @@ public class RobotContainer {
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIOCTRE());
-
         /*
          * Vision Class for referencing.
          * Contains 4 cameras as well as their respective names and standard deviations
@@ -350,6 +354,13 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // TEST MODE ONLY
+    // Run systems check
+    targetL3 // X to initiate systems check
+        .and(() -> SmartDashboard.getBoolean("isTestMode", false))
+        .onTrue(new SystemsCheck(driver, drivetrain, claw, climber, elevator, funnel, manipulator));
+
+    /* Real Robot */
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;
     double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
 
