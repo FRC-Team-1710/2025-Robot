@@ -244,6 +244,8 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
+        vision.getCamera(0).useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Left
+        vision.getCamera(1).useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
