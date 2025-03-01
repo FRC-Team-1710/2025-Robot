@@ -77,12 +77,6 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
-  private final TunableController test =
-      new TunableController(4)
-          .withControllerType(TunableControllerType.QUADRATIC)
-          .withOutputAtDeadband(0.025)
-          .withDeadband(0.125);
-
   private final Joystick reefTargetingSystem = new Joystick(2);
 
   private final TunableController sysID = new TunableController(3);
@@ -900,11 +894,6 @@ public class RobotContainer {
     sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-    test.a().onTrue(funnel.intake());
-    test.b().onTrue(funnel.L1());
-    test.y().onTrue(funnel.CLIMB());
-    test.x().onTrue(new InstantCommand(() -> funnel.zero()));
   }
 
   public Command getAutonomousCommand() {
