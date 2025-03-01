@@ -97,9 +97,13 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putString(
         "Current Target", TargetingComputer.getCurrentTargetBranch().toString());
+    SmartDashboard.putString(
+        "Current Target Level", TargetingComputer.getCurrentTargetLevel().toString());
     Logger.recordOutput("Target Level", TargetingComputer.getCurrentTargetLevel().toString());
     SmartDashboard.putString(
         "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
+    SmartDashboard.putString(
+        "Random Target Level", TargetingComputer.getCurrentTargetLevelForBranchGame().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
     // if (m_gcTimer.advanceIfElapsed(5)) System.gc();
     Logger.recordOutput("Time since startup", m_gcTimer.get());

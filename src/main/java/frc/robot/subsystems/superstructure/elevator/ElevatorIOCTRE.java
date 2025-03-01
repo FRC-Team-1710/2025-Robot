@@ -1,13 +1,5 @@
-// Copyright FRC 5712
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// This is my pride and joy :)
+//   -Carter
 
 package frc.robot.subsystems.superstructure.elevator;
 
@@ -266,15 +258,26 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void stopHere() {
-    // setpoint = Conversions.rotationsToDistance(encoderPosition.getValue(),
-    // CANCODER_GEAR_RATIO, encoderRadius);
-    // locked = true;
+    elevatorPID.reset(
+        Conversions.rotationsToDistance(
+                encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
+            .magnitude(),
+        0);
+    setpoint =
+        Conversions.rotationsToDistance(
+            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
+    locked = true;
   }
 
   @Override
   public void setManual(double power) {
     locked = false;
     leader.set(power);
+  }
+
+  @Override
+  public void zero() {
+    encoder.setPosition(0);
   }
 
   /**

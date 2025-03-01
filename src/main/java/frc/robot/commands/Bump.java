@@ -4,50 +4,44 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
-import frc.robot.subsystems.superstructure.claw.Claw;
+import frc.robot.subsystems.superstructure.funnel.Funnel;
+import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ZeroRizz extends Command {
-  Claw claw;
-  Timer timer = new Timer();
-  /** Creates a new GrabAlgae. */
-  public ZeroRizz(Claw claw) {
-    this.claw = claw;
+public class Bump extends Command {
+  private Funnel funnel;
+  private Manipulator manipulator;
+
+  /** Creates a new Bump. */
+  public Bump(Funnel funnel, Manipulator manipulator) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(claw);
+    this.funnel = funnel;
+    this.manipulator = manipulator;
+    addRequirements(funnel, manipulator);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    claw.wristManual(-0.05);
-    timer.restart();
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    manipulator.runPercent(-0.075);
+    funnel.setRollerPower(-0.075);
+  }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.IDLE().schedule();
+    manipulator.runPercent(0.0);
+    funnel.setRollerPower(0.0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
-      return true;
-    }
-    if (timer.get() > .25 && claw.getWristCurrent() > 20 && Constants.currentMode != Mode.SIM) {
-      claw.zero();
-      return true;
-    }
     return false;
   }
 }

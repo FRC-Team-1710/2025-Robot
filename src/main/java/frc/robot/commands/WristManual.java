@@ -39,7 +39,7 @@ public class WristManual extends Command {
     } else {
       if (!locked) {
         claw.wristManual(0);
-        claw.stopHere();
+        // claw.stopHere();
         locked = true;
       }
     }

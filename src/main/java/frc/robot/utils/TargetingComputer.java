@@ -10,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
+  public static final boolean homeField = true; // TODO: Change before comp
   public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -25,16 +26,19 @@ public class TargetingComputer {
   public static boolean aligningWithAlgae = false;
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
+  public static int randomHeight;
   public static double sourceCutoffDistance = 7.5;
   public static boolean stillOuttakingAlgae = false;
   public static boolean goForClimb = false;
 
   public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
   public static final double alignmentAngleTolerance = 5;
-  public static final double alignmentRange = 1.5;
+  public static final double alignmentRange = 1;
+  public static final double maxAlignSpeed = .3;
 
   private static final double xOffset = 17;
-  private static final double yOffset = 7.5;
+  private static final double yOffset = 8.5;
+  private static final double homeYOffset = 1;
 
   // AprilTag Targeting
   public static boolean targetSet;
@@ -82,26 +86,48 @@ public class TargetingComputer {
   }
 
   public static void setTargetByTag(int tagID, boolean leftSide) {
-    if (tagID == 7 || tagID == 18) setTargetBranch(leftSide ? Targets.ALPHA : Targets.BRAVO);
-    else if (tagID == 8 || tagID == 17) setTargetBranch(leftSide ? Targets.CHARLIE : Targets.DELTA);
-    else if (tagID == 9 || tagID == 22) setTargetBranch(leftSide ? Targets.ECHO : Targets.FOXTROT);
-    else if (tagID == 10 || tagID == 21) setTargetBranch(leftSide ? Targets.GOLF : Targets.HOTEL);
-    else if (tagID == 11 || tagID == 20) setTargetBranch(leftSide ? Targets.INDIA : Targets.JULIET);
-    else if (tagID == 6 || tagID == 19) setTargetBranch(leftSide ? Targets.KILO : Targets.LIMA);
-    else if (tagID == 1 || tagID == 13) setTargetBranch(Targets.SOURCE_LEFT);
-    else if (tagID == 2 || tagID == 12) setTargetBranch(Targets.SOURCE_RIGHT);
-    else if (tagID == 3 || tagID == 16) setTargetBranch(Targets.PROCESSOR);
-    else if (tagID == 5 || tagID == 14) setTargetBranch(Targets.NET);
+    switch (tagID) {
+      case 7, 18:
+        setTargetBranch(leftSide ? Targets.ALPHA : Targets.BRAVO);
+        break;
+      case 8, 17:
+        setTargetBranch(leftSide ? Targets.CHARLIE : Targets.DELTA);
+        break;
+      case 9, 22:
+        setTargetBranch(leftSide ? Targets.ECHO : Targets.FOXTROT);
+        break;
+      case 10, 21:
+        setTargetBranch(leftSide ? Targets.GOLF : Targets.HOTEL);
+        break;
+      case 11, 20:
+        setTargetBranch(leftSide ? Targets.INDIA : Targets.JULIET);
+        break;
+      case 6, 19:
+        setTargetBranch(leftSide ? Targets.KILO : Targets.LIMA);
+        break;
+      case 1, 13:
+        setTargetBranch(Targets.SOURCE_LEFT);
+        break;
+      case 2, 12:
+        setTargetBranch(Targets.SOURCE_RIGHT);
+        break;
+      case 3, 16:
+        setTargetBranch(Targets.PROCESSOR);
+        break;
+      case 5, 14:
+        setTargetBranch(Targets.NET);
+        break;
+    }
   }
 
   public static double getAngleForTarget(Targets target) {
-    return switch (target) {
-      case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
-      case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
-      case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
-      case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
-      case INDIA, JULIET -> isRedAlliance ? 60 : 240;
-      case KILO, LIMA -> isRedAlliance ? 120 : 300;
+    return switch (target) { // XOR RAAAHHHHHH!!
+      case ALPHA, BRAVO -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 180 : 0;
+      case CHARLIE, DELTA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 240 : 60;
+      case ECHO, FOXTROT -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 300 : 120;
+      case GOLF, HOTEL -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 0 : 180;
+      case INDIA, JULIET -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 60 : 240;
+      case KILO, LIMA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 120 : 300;
       case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
@@ -244,10 +270,12 @@ public class TargetingComputer {
 
   public static void randomizeTargetBranch() {
     randomBranch = random.nextInt(12);
+    randomHeight = random.nextInt(3) + 1;
   }
 
   public static void checkBranchGame() {
-    if (randomBranch == currentTargetBranch.gameID) {
+    if (randomBranch == currentTargetBranch.gameID
+        && randomHeight == currentTargetLevel.gameHeight) {
       randomizeTargetBranch();
       branchGameScore++;
       while (randomBranch == currentTargetBranch.gameID) {
@@ -258,7 +286,9 @@ public class TargetingComputer {
 
   public static void startBranchGame() {
     setTargetBranch(Targets.ALPHA);
+    setTargetLevel(Levels.L1);
     randomBranch = random.nextInt(11) + 1;
+    randomHeight = random.nextInt(3) + 1;
     branchGameScore = 0;
   }
 
@@ -293,6 +323,17 @@ public class TargetingComputer {
     else if (randomBranch == Targets.JULIET.gameID) gameTarget = Targets.JULIET;
     else if (randomBranch == Targets.KILO.gameID) gameTarget = Targets.KILO;
     else if (randomBranch == Targets.LIMA.gameID) gameTarget = Targets.LIMA;
+
+    return gameTarget;
+  }
+
+  public static Levels getCurrentTargetLevelForBranchGame() {
+    Levels gameTarget = Levels.L1;
+
+    if (randomHeight == Levels.L1.gameHeight) gameTarget = Levels.L1;
+    else if (randomHeight == Levels.L2.gameHeight) gameTarget = Levels.L2;
+    else if (randomHeight == Levels.L3.gameHeight) gameTarget = Levels.L3;
+    else if (randomHeight == Levels.L4.gameHeight) gameTarget = Levels.L4;
 
     return gameTarget;
   }
@@ -336,62 +377,88 @@ public class TargetingComputer {
     ALPHA(
         1,
         0,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     BRAVO(
         0,
         1,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     CHARLIE(
         1,
         2,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     DELTA(
         0,
         3,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     ECHO(
         1,
         4,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     FOXTROT(
         0,
         5,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.25 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     GOLF(
         1,
         6,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField
+                ? -Units.inchesToMeters(5.875 + homeYOffset)
+                : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     HOTEL(
         0,
         7,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     INDIA(
         1,
         8,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     JULIET(
         0,
         9,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     KILO(
         1,
         10,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     LIMA(
         0,
         11,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
@@ -438,12 +505,18 @@ public class TargetingComputer {
   }
 
   public static enum Levels {
-    INTAKE,
-    L1,
-    L2,
-    L3,
-    L4,
-    ALGAE_HIGH,
-    ALGAE_LOW;
+    INTAKE(0),
+    L1(1),
+    L2(2),
+    L3(3),
+    L4(4),
+    ALGAE_HIGH(5),
+    ALGAE_LOW(6);
+
+    public final int gameHeight;
+
+    Levels(int gameHeight) {
+      this.gameHeight = gameHeight;
+    }
   }
 }
