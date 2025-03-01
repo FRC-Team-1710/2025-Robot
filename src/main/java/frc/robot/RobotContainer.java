@@ -25,6 +25,7 @@ import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.ManualClimb;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.WristManual;
@@ -829,11 +830,10 @@ public class RobotContainer {
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     climberUp
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+        .whileTrue(new ManualClimb(climber, () -> .2));
     climberDown
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+    .whileTrue(new ManualClimb(climber, () -> -.2));
+
 
     /* Targeting Controller Bindings */
     alphaButton
