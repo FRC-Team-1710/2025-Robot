@@ -98,11 +98,13 @@ public class FunnelIOCTRE implements FunnelIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.Audio.AllowMusicDurDisable = true;
     leader.getConfigurator().apply(config);
 
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     angleConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    angleConfig.Audio.AllowMusicDurDisable = true;
     angleMotor.getConfigurator().apply(angleConfig);
 
     constraints = new TrapezoidProfile.Constraints(kVel, kAcel);

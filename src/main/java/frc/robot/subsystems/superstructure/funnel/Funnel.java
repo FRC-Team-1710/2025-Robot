@@ -137,8 +137,6 @@ public class Funnel extends SubsystemBase {
               ArmMode.L1,
               createPositionCommand(ArmMode.L1)),
           this::getMode);
-  /////////////////////////////////////////////////////////
-  ///     config.Audio.AllowMusicDurDisable = true;
 
   /**
    * Creates a command for a specific arm position that moves the arm and checks the target
