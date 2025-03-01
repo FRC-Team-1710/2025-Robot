@@ -46,7 +46,7 @@ import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOTalonFX;
+import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -180,7 +180,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drivetrain = new Drive(currentDriveTrain);
-        manipulator = new Manipulator(new ManipulatorIOTalonFX());
+        manipulator = new Manipulator(new ManipulatorIOCTRE());
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIO() {});
 
@@ -244,8 +244,12 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        vision.getCamera(0).useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Left
-        vision.getCamera(1).useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Right
+        vision
+            .getCamera(0)
+            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Left
+        vision
+            .getCamera(1)
+            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
