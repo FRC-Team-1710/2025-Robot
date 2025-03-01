@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.commands.ElevatorToTargetLevel;
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -72,7 +71,7 @@ public class Elevator extends SubsystemBase {
    *
    * @param distance The target angle distance
    */
-  private void setDistance(Distance distance) {
+  public void setDistance(Distance distance) {
     io.setDistance(distance);
   }
 
@@ -100,7 +99,7 @@ public class Elevator extends SubsystemBase {
   }
 
   /** Enumeration of available arm distances with their corresponding target angles. */
-  private enum ElevatorPosition {
+  public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
     L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
@@ -141,15 +140,13 @@ public class Elevator extends SubsystemBase {
    *
    * @param mode The desired ElevatorPosition
    */
-  private void setElevatorPosition(ElevatorPosition mode) {
+  public void setElevatorPosition(ElevatorPosition mode) {
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;
       currentCommand.schedule();
     }
   }
-
-  
 
   // Command that runs the appropriate routine based on the current distance
   private final Command currentCommand =
@@ -180,7 +177,7 @@ public class Elevator extends SubsystemBase {
    * @param distance The arm distance to create a command for
    * @return A command that implements the arm movement
    */
-  private Command createPositionCommand(ElevatorPosition distance) {
+  public Command createPositionCommand(ElevatorPosition distance) {
     return Commands.runOnce(() -> setDistance(distance.targetDistance))
         .withName("Move to " + distance.toString());
   }
@@ -230,7 +227,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to move the arm to L2 scoring distance
    */
   public final Command L2() {
-    return setPositionCommand(ElevatorPosition.L2);
+    return setPositionCommand(ElevatorPosition.L2)
+        .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }
 
   /**
@@ -265,7 +263,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to intake the arm
    */
   public final Command intake() {
-    return setPositionCommand(ElevatorPosition.INTAKE);
+    return setPositionCommand(ElevatorPosition.INTAKE)
+        .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }
 
   /**

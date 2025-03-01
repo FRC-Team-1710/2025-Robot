@@ -172,6 +172,23 @@ public class TargetingComputer {
                 new Rotation2d(Math.PI)));
   }
 
+  public static Pose2d getSelectTargetBranchPose(Targets target) {
+    return new Pose2d(
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getTranslation()
+                .toTranslation2d(),
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getRotation()
+                .toRotation2d())
+        .plus(
+            new Transform2d(
+                target.getOffset().getX(), target.getOffset().getY(), new Rotation2d(Math.PI)));
+  }
+
   public static boolean getAligningWithAlgae() {
     return aligningWithAlgae;
   }

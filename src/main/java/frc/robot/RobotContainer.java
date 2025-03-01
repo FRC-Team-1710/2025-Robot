@@ -26,8 +26,8 @@ import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
-import frc.robot.commands.OuttakeForAuto;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
@@ -37,7 +37,6 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
-import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -185,7 +184,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIOCTRE());
+        claw = new Claw(new ClawIO() {});
 
         /*
          * Vision Class for referencing.
@@ -333,37 +332,74 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Align to Alpha",
-        elevator.intake().andThen(drivetrain.Alignment(robotCentric, Targets.ALPHA, vision)));
+        elevator
+            .intake()
+            .andThen(drivetrain.Alignment(robotCentric, Targets.ALPHA, vision, elevator)));
     NamedCommands.registerCommand(
-        "Align to Bravo", drivetrain.Alignment(robotCentric, Targets.BRAVO, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Bravo",
+        drivetrain.Alignment(robotCentric, Targets.BRAVO, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Charlie", drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Charlie",
+        drivetrain.Alignment(robotCentric, Targets.CHARLIE, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Delta", drivetrain.Alignment(robotCentric, Targets.DELTA, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Delta",
+        drivetrain.Alignment(robotCentric, Targets.DELTA, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Echo", drivetrain.Alignment(robotCentric, Targets.ECHO, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Echo",
+        drivetrain.Alignment(robotCentric, Targets.ECHO, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Foxtrot", drivetrain.Alignment(robotCentric, Targets.FOXTROT, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Golf", drivetrain.Alignment(robotCentric, Targets.GOLF, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Golf",
+        drivetrain.Alignment(robotCentric, Targets.GOLF, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Hotel", drivetrain.Alignment(robotCentric, Targets.HOTEL, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Hotel",
+        drivetrain.Alignment(robotCentric, Targets.HOTEL, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to India", drivetrain.Alignment(robotCentric, Targets.INDIA, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to India",
+        drivetrain.Alignment(robotCentric, Targets.INDIA, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Juliet", drivetrain.Alignment(robotCentric, Targets.JULIET, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Juliet",
+        drivetrain.Alignment(robotCentric, Targets.JULIET, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Kilo", drivetrain.Alignment(robotCentric, Targets.KILO, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Kilo",
+        drivetrain.Alignment(robotCentric, Targets.KILO, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
-        "Align to Lima", drivetrain.Alignment(robotCentric, Targets.LIMA, vision).onlyWhile(()-> elevator.isAtTarget()));
-        NamedCommands.registerCommand(
-        "Align to Source", drivetrain.Alignment(robotCentric, Targets.SOURCE_RIGHT, vision).onlyWhile(()-> elevator.isAtTarget()));
+        "Align to Lima",
+        drivetrain.Alignment(robotCentric, Targets.LIMA, vision, elevator)
+            .onlyWhile(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "Align to Source",
+        drivetrain.Alignment(robotCentric, Targets.SOURCE_RIGHT, vision, elevator));
+    // .onlyWhile(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand("intake coral", new IntakeCoral(manipulator, funnel, driver));
     NamedCommands.registerCommand("end intake", new EndIntake(manipulator, funnel));
-    NamedCommands.registerCommand("outtake coral", new OuttakeForAuto(manipulator));
-    NamedCommands.registerCommand("L4", elevator.L3().onlyWhile(drivetrain.isInAlignmentZone()));
-    // .onlyWhile(drivetrain.isInAlignmentZone()));
-    NamedCommands.registerCommand("intake position", elevator.intake().onlyWhile(drivetrain.isInAlignmentZone()));
+    NamedCommands.registerCommand(
+        "outtake coral",
+        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
+            .alongWith(drivetrain.stop(robotCentric)));
+    NamedCommands.registerCommand(
+        "L2",
+        elevator
+            .L2()
+            .alongWith(drivetrain.stop(robotCentric))
+            .until(() -> elevator.isAtTarget())
+            .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+    NamedCommands.registerCommand(
+        "intake position",
+        elevator
+            .intake()
+            .alongWith(drivetrain.stop(robotCentric))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -421,7 +457,11 @@ public class RobotContainer {
         .and(() -> elevator.isAtIntake())
         .onTrue(new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed)));
 
-    new Trigger(() -> drivetrain.isNearProcessor()).and(targetSource).and(() -> claw.hasAlgae()).onTrue(claw.PROCESSOR()).onFalse(claw.IDLE().unless(targetSource));
+    new Trigger(() -> drivetrain.isNearProcessor())
+        .and(targetSource)
+        .and(() -> claw.hasAlgae())
+        .onTrue(claw.PROCESSOR())
+        .onFalse(claw.IDLE().unless(targetSource));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -444,78 +484,6 @@ public class RobotContainer {
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
-
-    /* Driver Bindings */
-    placeL2
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef))
-        .and(
-            () ->
-                Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        < TargetingComputer.alignmentAngleTolerance
-                    && drivetrain
-                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                            .getNorm()
-                        < TargetingComputer.alignmentTranslationTolerance
-                    && targetReef.getAsBoolean()
-                    && !TargetingComputer.targetingAlgae)
-        .whileTrue(new PlaceCoral(elevator, manipulator, driver));
-
-    placeL3
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef));
-
-    placeL4
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef));
-
-    /* Driver Bindings */
-    placeL2
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef));
-
-    placeL3
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef))
-        .and(
-            () ->
-                Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        < TargetingComputer.alignmentAngleTolerance
-                    && drivetrain
-                            .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                            .getNorm()
-                        < TargetingComputer.alignmentTranslationTolerance
-                    && targetReef.getAsBoolean()
-                    && !TargetingComputer.targetingAlgae)
-        .whileTrue(new PlaceCoral(elevator, manipulator, driver));
-
-    placeL4
-        .onTrue(
-            new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef));
 
     /* Driver Bindings */
     placeL2
@@ -674,7 +642,8 @@ public class RobotContainer {
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
             elevator
-                .intake().unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
+                .intake()
+                .unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
                 .alongWith(
                     new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                         .unless(() -> claw.hasAlgae())))
@@ -1043,8 +1012,6 @@ public class RobotContainer {
     l1Button
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L1)));
-
-    
 
     /* SysID Bindings */
     // Run SysId routines when holding back/start and X/Y.
