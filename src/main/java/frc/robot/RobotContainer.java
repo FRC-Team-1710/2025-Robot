@@ -35,6 +35,7 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
+import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -72,12 +73,6 @@ public class RobotContainer {
 
   private final TunableController mech =
       new TunableController(1)
-          .withControllerType(TunableControllerType.QUADRATIC)
-          .withOutputAtDeadband(0.025)
-          .withDeadband(0.125);
-
-  private final TunableController test =
-      new TunableController(4)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
@@ -190,7 +185,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOCTRE());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIO() {});
+        claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
 
         /*
@@ -253,12 +248,8 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        vision
-            .getCamera(0)
-            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
-        vision
-            .getCamera(1)
-            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
+        vision.getCamera(0).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
+        vision.getCamera(1).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
@@ -903,11 +894,6 @@ public class RobotContainer {
     sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-    test.a().onTrue(funnel.intake());
-    test.b().onTrue(funnel.L1());
-    test.y().onTrue(funnel.CLIMB());
-    test.x().onTrue(new InstantCommand(() -> funnel.zero()));
   }
 
   public Command getAutonomousCommand() {
