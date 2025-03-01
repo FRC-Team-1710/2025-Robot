@@ -56,4 +56,8 @@ public class Conversions {
     var gearedRadians = rotations.in(Radians) / gearRatio;
     return wheelRadius.times(gearedRadians);
   }
+
+  public static Angle funnelAngleToFFRads(double angleDegrees) {
+    return Radians.of(angleDegrees * -1 + 105);
+  }
 }

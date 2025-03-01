@@ -43,6 +43,9 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
+import frc.robot.subsystems.superstructure.funnel.FunnelIO;
+import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
+import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
@@ -69,6 +72,12 @@ public class RobotContainer {
 
   private final TunableController mech =
       new TunableController(1)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
+
+  private final TunableController test =
+      new TunableController(4)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
@@ -174,7 +183,6 @@ public class RobotContainer {
 
   public RobotContainer() {
     climber = new Climber();
-    funnel = new Funnel();
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
@@ -183,6 +191,7 @@ public class RobotContainer {
         manipulator = new Manipulator(new ManipulatorIOCTRE());
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIO() {});
+        funnel = new Funnel(new FunnelIOCTRE());
 
         /*
          * Vision Class for referencing.
@@ -244,8 +253,12 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        vision.getCamera(0).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
-        vision.getCamera(1).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
+        vision
+            .getCamera(0)
+            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
+        vision
+            .getCamera(1)
+            .useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
@@ -255,6 +268,7 @@ public class RobotContainer {
         ElevatorIOSIM iosim = new ElevatorIOSIM();
         elevator = new Elevator(iosim);
         claw = new Claw(new ClawIOSIM(iosim));
+        funnel = new Funnel(new FunnelIOSIM());
 
         vision =
             new Vision(
@@ -319,6 +333,7 @@ public class RobotContainer {
         manipulator = new Manipulator(new ManipulatorIO() {});
         elevator = new Elevator(new ElevatorIO() {});
         claw = new Claw(new ClawIO() {});
+        funnel = new Funnel(new FunnelIO() {});
 
         vision =
             new Vision(
@@ -888,6 +903,11 @@ public class RobotContainer {
     sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    test.a().onTrue(funnel.intake());
+    test.b().onTrue(funnel.L1());
+    test.y().onTrue(funnel.CLIMB());
+    test.x().onTrue(new InstantCommand(() -> funnel.zero()));
   }
 
   public Command getAutonomousCommand() {
