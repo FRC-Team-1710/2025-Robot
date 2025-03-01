@@ -241,15 +241,17 @@ public class VisionIOPhotonVision implements VisionIO {
   /**
    * Enables or disables rejecting tags from a distance
    *
-   * @param useRejectionDistance Boolean to set whether the camera can reject tags from a distance or not
+   * @param useRejectionDistance Boolean to set whether the camera can reject tags from a distance
+   *     or not
    */
   public void useRejectionDistance(boolean useRejectionDistance) {
     this.rejectTagsFromDistance = useRejectionDistance;
   }
 
   /**
-   * Sets the camera's rejection distance and allows the camera to reject the tags further than this distance.4
-   * 
+   * Sets the camera's rejection distance and allows the camera to reject the tags further than this
+   * distance.4
+   *
    * @param rejectionDistance Preferred camera range in meters
    */
   public void useRejectionDistance(double rejectionDistance) {
