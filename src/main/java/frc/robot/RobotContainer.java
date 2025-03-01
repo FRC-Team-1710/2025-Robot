@@ -45,8 +45,8 @@ import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
+import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -244,12 +244,8 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
-        vision
-            .getCamera(0)
-            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Left
-        vision
-            .getCamera(1)
-            .useRejectionDistance(Constants.kfrontCameraRejectionDistance); // Front Right
+        vision.getCamera(0).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
+        vision.getCamera(1).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
         break;
 
       case SIM:
@@ -412,7 +408,7 @@ public class RobotContainer {
                         Constants.MaxAngularRate.times(
                             -driver
                                 .customRight()
-                                .getX())))); // Drive counterclockwise with negative X (left)
+                                .getX()).times(claw.hasAlgae() ? .5 : 1)))); // Drive counterclockwise with negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
     // mech.getLeftY()));
@@ -627,7 +623,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))));
+                                    * rotP).times(claw.hasAlgae() ? .5 : 1))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
@@ -683,7 +679,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))))
+                                    * rotP).times(claw.hasAlgae() ? .5 : 1))))
         .onFalse(
             elevator
                 .intake()
@@ -730,7 +726,7 @@ public class RobotContainer {
                                                     drivetrain.getPose())))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))))
+                                    * rotP).times(claw.hasAlgae() ? .5 : 1))))
         .and(
             () ->
                 !TargetingComputer.stillOuttakingAlgae

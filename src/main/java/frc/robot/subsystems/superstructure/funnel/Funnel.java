@@ -77,7 +77,7 @@ public class Funnel extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (timer.get() > 300) {
+    if (timer.get() > 15) {
       if (m_orchestra.isPlaying()) {
         m_orchestra.stop();
       }

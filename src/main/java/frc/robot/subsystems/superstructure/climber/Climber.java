@@ -57,5 +57,13 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    if (timer.get() > 15) {
+      if (m_orchestra.isPlaying()) {
+        m_orchestra.stop();
+      }
+      m_orchestra.close();
+      timer.stop();
+      timer.reset();
+    }
   }
 }
