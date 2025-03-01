@@ -10,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
+  public static final boolean homeField = true; // TODO: Change before comp
   public static final boolean gameMode = true;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -33,10 +34,11 @@ public class TargetingComputer {
   public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
   public static final double alignmentAngleTolerance = 5;
   public static final double alignmentRange = 1.5;
-  public static final double maxAlignSpeed = .5;
+  public static final double maxAlignSpeed = .4;
 
-  private static final double xOffset = 18;
+  private static final double xOffset = 17;
   private static final double yOffset = 8.5;
+  private static final double homeYOffset = 1;
 
   // AprilTag Targeting
   public static boolean targetSet;
@@ -336,62 +338,88 @@ public class TargetingComputer {
     ALPHA(
         1,
         0,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     BRAVO(
         0,
         1,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     CHARLIE(
         1,
         2,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     DELTA(
         0,
         3,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     ECHO(
         1,
         4,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     FOXTROT(
         0,
         5,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.25 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     GOLF(
         1,
         6,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField
+                ? -Units.inchesToMeters(5.875 + homeYOffset)
+                : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     HOTEL(
         0,
         7,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     INDIA(
         1,
         8,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.75 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_HIGH),
     JULIET(
         0,
         9,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_HIGH),
     KILO(
         1,
         10,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(-yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? -Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(-yOffset)),
         Levels.ALGAE_LOW),
     LIMA(
         0,
         11,
-        new Translation2d(Units.inchesToMeters(xOffset), Units.inchesToMeters(yOffset)),
+        new Translation2d(
+            Units.inchesToMeters(xOffset),
+            homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
     SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
