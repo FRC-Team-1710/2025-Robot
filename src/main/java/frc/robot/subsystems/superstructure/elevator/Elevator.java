@@ -106,7 +106,7 @@ public class Elevator extends SubsystemBase {
   private enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
-    L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
+    L1(Inches.of(0), Inches.of(.5)), // Position for scoring in L1
     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
     L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
     L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4

@@ -121,13 +121,13 @@ public class TargetingComputer {
   }
 
   public static double getAngleForTarget(Targets target) {
-    return switch (target) {
-      case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
-      case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
-      case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
-      case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
-      case INDIA, JULIET -> isRedAlliance ? 60 : 240;
-      case KILO, LIMA -> isRedAlliance ? 120 : 300;
+    return switch (target) { // XOR RAAAHHHHHH!!
+      case ALPHA, BRAVO -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 180 : 0;
+      case CHARLIE, DELTA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 240 : 60;
+      case ECHO, FOXTROT -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 300 : 120;
+      case GOLF, HOTEL -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 0 : 180;
+      case INDIA, JULIET -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 60 : 240;
+      case KILO, LIMA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 120 : 300;
       case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;

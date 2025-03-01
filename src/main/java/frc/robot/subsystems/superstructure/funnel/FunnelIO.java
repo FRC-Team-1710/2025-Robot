@@ -19,7 +19,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface FunnelIO {
   @AutoLog
-  public static class ArmIOInputs {
+  public static class FunnelIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
     public boolean angleMotorConnected = false;
@@ -46,7 +46,7 @@ public interface FunnelIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ArmIOInputs inputs) {}
+  public default void updateInputs(FunnelIOInputs inputs) {}
 
   /** Run closed loop at the specified velocity. */
   public default void setPosition(Angle angle) {}

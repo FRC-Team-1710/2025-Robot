@@ -27,7 +27,7 @@ import org.littletonrobotics.junction.Logger;
 public class Funnel extends SubsystemBase {
   // Hardware interface and inputs
   private final FunnelIO io;
-  private final ArmIOInputsAutoLogged inputs;
+  private final FunnelIOInputsAutoLogged inputs;
 
   // Current arm position mode
   private ArmMode currentMode = ArmMode.INTAKE;
@@ -47,7 +47,7 @@ public class Funnel extends SubsystemBase {
    */
   public Funnel(FunnelIO io) {
     this.io = io;
-    this.inputs = new ArmIOInputsAutoLogged();
+    this.inputs = new FunnelIOInputsAutoLogged();
   }
 
   @Override

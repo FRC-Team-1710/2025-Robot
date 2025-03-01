@@ -157,6 +157,8 @@ public class FunnelIOCTRE implements FunnelIO {
     m_orchestra.play();
     timer.reset();
     timer.start();
+
+    angleMotor.setPosition(0);
   }
 
   /**
@@ -174,7 +176,7 @@ public class FunnelIOCTRE implements FunnelIO {
    * @param inputs The ArmIOInputs object to update with the latest values
    */
   @Override
-  public void updateInputs(ArmIOInputs inputs) {
+  public void updateInputs(FunnelIOInputs inputs) {
     tempPIDTuning();
 
     if (timer.get() > 15) {
