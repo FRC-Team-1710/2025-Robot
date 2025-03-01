@@ -66,7 +66,7 @@ public class EndIntake extends Command {
   @Override
   public boolean isFinished() {
     if ((!manipulator.beam1Broken() && manipulator.beam2Broken())
-        || timer.get() > 3
+        || timer.get() > 1.5
         || mechLB.getAsBoolean()) {
       return true;
     } else {
