@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -55,5 +56,9 @@ public class Conversions {
       Angle rotations, double gearRatio, Distance wheelRadius) {
     var gearedRadians = rotations.in(Radians) / gearRatio;
     return wheelRadius.times(gearedRadians);
+  }
+
+  public static Angle funnelAngleToFFRads(double angleDegrees) {
+    return Radians.of(Units.degreesToRadians((angleDegrees * -1 + 15)) * -1);
   }
 }

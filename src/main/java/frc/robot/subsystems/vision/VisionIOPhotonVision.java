@@ -35,6 +35,9 @@ public class VisionIOPhotonVision implements VisionIO {
   List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
 
+  boolean rejectTagsFromDistance = false;
+  double tagRejectionDistance = 4.5; // METERS
+
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
     this.camera = new PhotonCamera(cameraName);
@@ -58,26 +61,37 @@ public class VisionIOPhotonVision implements VisionIO {
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
-
-    var multitagResult = latestResult.getMultiTagResult();
-
-    if (multitagResult.isPresent()) {
-      Transform3d fieldToRobot =
-          multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
+    if (rejectTagsFromDistance && latestResult.hasTargets()) {
+      List<PhotonTrackedTarget> tags = latestResult.targets;
+      for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+        if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+            > tagRejectionDistance) {
+          latestResult.targets.remove(tagIndex);
+        }
+      }
     }
-    var target = latestResult.targets.get(0);
-    // Calculate robot pose
-    var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
-    if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
-      Transform3d fieldToTarget =
-          new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
-      Transform3d cameraToTarget = target.bestCameraToTarget;
-      Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-      Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
+
+    if (latestResult.hasTargets()) {
+      var multitagResult = latestResult.getMultiTagResult();
+
+      if (multitagResult.isPresent()) {
+        Transform3d fieldToRobot =
+            multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
+      var target = latestResult.targets.get(0);
+      // Calculate robot pose
+      var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
+      if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
+        Transform3d fieldToTarget =
+            new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+        Transform3d cameraToTarget = target.bestCameraToTarget;
+        Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
     }
     return new PoseObservation();
   }
@@ -224,6 +238,27 @@ public class VisionIOPhotonVision implements VisionIO {
    */
   public List<PhotonTrackedTarget> getCameraTargets() {
     return cameraTargets;
+  }
+
+  /**
+   * Enables or disables rejecting tags from a distance
+   *
+   * @param useRejectionDistance Boolean to set whether the camera can reject tags from a distance
+   *     or not
+   */
+  public void useRejectionDistance(boolean useRejectionDistance) {
+    this.rejectTagsFromDistance = useRejectionDistance;
+  }
+
+  /**
+   * Sets the camera's rejection distance and allows the camera to reject the tags further than this
+   * distance.4
+   *
+   * @param rejectionDistance Preferred camera range in meters
+   */
+  public void useRejectionDistance(double rejectionDistance) {
+    this.tagRejectionDistance = rejectionDistance;
+    this.rejectTagsFromDistance = true;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {

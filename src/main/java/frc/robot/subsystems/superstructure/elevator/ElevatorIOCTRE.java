@@ -275,6 +275,11 @@ public class ElevatorIOCTRE implements ElevatorIO {
     leader.set(power);
   }
 
+  @Override
+  public void zero() {
+    encoder.setPosition(0);
+  }
+
   /**
    * Stops all elevator movement by stopping the leader motor. The follower will also stop due to
    * the follower relationship.

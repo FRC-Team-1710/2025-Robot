@@ -88,6 +88,10 @@ public class Elevator extends SubsystemBase {
     io.stop();
   }
 
+  public void zero() {
+    io.zero();
+  }
+
   /**
    * Returns the current distance of the arm.
    *
