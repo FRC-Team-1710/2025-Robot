@@ -790,6 +790,8 @@ public class RobotContainer {
 
     mech.start().whileTrue(new ZeroRizz(claw));
 
+    mech.back().onTrue(new InstantCommand(() -> elevator.zero()));
+
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
         .whileTrue(new IntakeCoral(manipulator, funnel, driver))

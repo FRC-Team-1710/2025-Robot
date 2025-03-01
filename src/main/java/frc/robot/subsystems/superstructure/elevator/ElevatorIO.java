@@ -69,6 +69,8 @@ public interface ElevatorIO {
 
   public default void stopHere() {}
 
+  public default void zero() {}
+
   /** Stop in open loop. */
   public default void stop() {}
 }
