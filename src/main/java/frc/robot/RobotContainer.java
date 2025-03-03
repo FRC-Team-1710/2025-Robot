@@ -35,6 +35,7 @@ import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
+import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
@@ -184,7 +185,7 @@ public class RobotContainer {
         drivetrain = new Drive(currentDriveTrain);
         manipulator = new Manipulator(new ManipulatorIOCTRE());
         elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIO() {});
+        claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
 
         /*
@@ -553,7 +554,7 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    grabAlgaeFromFloor.onTrue(claw.GRAB()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
+    grabAlgaeFromFloor.onTrue(claw.PROCESSOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
 
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)

@@ -104,7 +104,7 @@ public class ClawIOCTRE implements ClawIO {
         intakeVelocity,
         intakeStatorCurrent,
         intakeSupplyCurrent);
-    
+
     wristPID.setGoal(0);
   }
 
