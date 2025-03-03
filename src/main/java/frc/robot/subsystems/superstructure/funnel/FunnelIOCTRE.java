@@ -154,9 +154,9 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
     SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
 
-    m_orchestra.play();
-    timer.reset();
-    timer.start();
+    // m_orchestra.play();
+    // timer.reset();
+    // timer.start();
 
     angleMotor.setPosition(0);
   }
