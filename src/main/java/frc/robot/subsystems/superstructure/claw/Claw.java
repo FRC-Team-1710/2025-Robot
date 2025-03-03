@@ -159,6 +159,7 @@ public class Claw extends SubsystemBase {
     GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(35), Degrees.of(2.5)), // Position for scoring in net
+    FLOOR(Degrees.of(143), Degrees.of(2.5)),
     PROCESSOR(Degrees.of(100));
 
     private final Angle targetAngle;
@@ -212,7 +213,9 @@ public class Claw extends SubsystemBase {
               ClawPosition.NET,
               createPositionCommand(ClawPosition.NET),
               ClawPosition.PROCESSOR,
-              createPositionCommand(ClawPosition.PROCESSOR)),
+              createPositionCommand(ClawPosition.PROCESSOR),
+              ClawPosition.FLOOR,
+              createPositionCommand(ClawPosition.FLOOR)),
           this::getMode);
 
   /**
@@ -293,6 +296,13 @@ public class Claw extends SubsystemBase {
    */
   public final Command PROCESSOR() {
     return setPositionCommand(ClawPosition.PROCESSOR);
+  }
+
+  /**
+   * @return Command to move the claw to floor angle
+   */
+  public final Command FLOOR() {
+    return setPositionCommand(ClawPosition.FLOOR);
   }
 
   /**

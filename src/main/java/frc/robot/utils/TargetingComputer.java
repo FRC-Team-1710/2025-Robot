@@ -257,8 +257,8 @@ public class TargetingComputer {
   }
 
   public static void checkBranchGame() {
-    if (randomBranch == currentTargetBranch.gameID
-        && randomHeight == currentTargetLevel.gameHeight) {
+    if (randomBranch == currentTargetBranch.gameID) {
+      // && randomHeight == currentTargetLevel.gameHeight) {
       randomizeTargetBranch();
       branchGameScore++;
       while (randomBranch == currentTargetBranch.gameID) {
