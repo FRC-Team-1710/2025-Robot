@@ -9,10 +9,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.io.File;
 
 public class Climber extends SubsystemBase {
   private TalonFX climber; // Right
@@ -21,42 +20,30 @@ public class Climber extends SubsystemBase {
   public Timer timer = new Timer();
 
   public Orchestra m_orchestra = new Orchestra();
+  private double gearRatio = 80;
 
   public Climber() {
-    climber = new TalonFX(41);
+    climber = new TalonFX(1);
 
     var config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.Audio.AllowMusicDurDisable = true;
     climber.getConfigurator().apply(config);
-
-    // Attempt to load the chrp
-    var status =
-        m_orchestra.loadMusic(
-            Filesystem.getDeployDirectory()
-                .toPath()
-                .resolve("orchestra" + File.separator + "dangerzone.chrp")
-                .toString());
-
-    if (!status.isOK()) {
-      // log error
-    }
-
-    m_orchestra.addInstrument(climber, 0);
-
-    m_orchestra.play();
-    timer.reset();
-    timer.start();
   }
 
   public void SetClimberPower(double power) {
     climber.set(power);
   }
 
+  /* Degrees */
+  public double getPosition() {
+    return climber.getPosition().getValueAsDouble() / gearRatio;
+  }
+
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Climber Position", getPosition());
     if (timer.get() > 15) {
       if (m_orchestra.isPlaying()) {
         m_orchestra.stop();

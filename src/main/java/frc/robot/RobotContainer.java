@@ -25,6 +25,7 @@ import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.ManualClimb;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.WristManual;
@@ -600,12 +601,7 @@ public class RobotContainer {
         .onFalse(
             elevator
                 .intake()
-                .unless(
-                    () ->
-                        placeL4.getAsBoolean()
-                            || placeL3.getAsBoolean()
-                            || placeL2.getAsBoolean()
-                            || grabAlgae.getAsBoolean())
+                .unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
                 .alongWith(
                     new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                         .unless(() -> claw.hasAlgae())))
@@ -632,14 +628,13 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                    (new Rotation2d(
-                                                Units.degreesToRadians(
-                                                    TargetingComputer.getCurrentTargetBranch()
-                                                        .getTargetingAngle()))
-                                            .minus(drivetrain.getPose().getRotation())
-                                            .getRadians())
-                                        * rotP)
-                                .times(claw.hasAlgae() ? .5 : 1))));
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getCurrentTargetBranch()
+                                                    .getTargetingAngle()))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
@@ -836,11 +831,10 @@ public class RobotContainer {
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     climberUp
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+        .whileTrue(new ManualClimb(climber, () -> .2));
     climberDown
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+    .whileTrue(new ManualClimb(climber, () -> -.2));
+
 
     /* Targeting Controller Bindings */
     alphaButton
