@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.244249999999999,
-        "y": 6.131
+        "x": 7.480327868852459,
+        "y": 5.6313524590163935
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.999436764762557,
-        "y": 6.31582371038789
+        "x": 6.234929418741417,
+        "y": 5.6298433101021255
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.92925,
-        "y": 5.39
+        "x": 5.5383196721311485,
+        "y": 5.6313524590163935
       },
       "prevControl": {
-        "x": 3.6754477617855206,
-        "y": 5.408196146860645
+        "x": 6.628764090577522,
+        "y": 5.596696653037981
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "kilo"
+      "linkedName": "india"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.931417178137494
+    "rotation": -122.3806777065692
   },
   "reversed": false,
   "folder": null,

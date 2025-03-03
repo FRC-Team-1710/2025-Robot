@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "intake position"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "to foxtrot start"
@@ -41,9 +35,57 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "to delta near"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "Align to Source"
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Charlie"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         }
       ]

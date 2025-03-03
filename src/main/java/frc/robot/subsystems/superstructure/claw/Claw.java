@@ -55,6 +55,8 @@ public class Claw extends SubsystemBase {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
     SmartDashboard.putData(this);
+
+    IDLE();
   }
 
   @Override

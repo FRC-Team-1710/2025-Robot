@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -56,8 +57,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
- * be used in command-based projects.
+ * Class that extends the Phoenix 6 Swerveclass and implements Subsystem so it can easily be used in
+ * command-based projects.
  */
 public class Drive extends SubsystemBase {
 
@@ -222,7 +223,7 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Returns a command that applies the specified control request to this swerve drivetrain.
+   * Returns a command that applies the specified control request to this swerve
    *
    * @param request Function returning the request to apply
    * @return Command to run
@@ -251,63 +252,172 @@ public class Drive extends SubsystemBase {
    * @param elevator
    * @return
    */
+  public Command AlignmentFox(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(Targets.FOXTROT);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.FOXTROT).getX()
+                                            - getPose().getX())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.FOXTROT)
+                                            .getX()
+                                        - getPose().getX())
+                                    * .8))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.FOXTROT).getY()
+                                            - getPose().getY())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.FOXTROT)
+                                            .getY()
+                                        - getPose().getY())
+                                    * .8))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(Targets.FOXTROT.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(Targets.FOXTROT))
+                        .getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  public Command AlignmentDel(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(Targets.DELTA);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.DELTA).getX()
+                                            - getPose().getX())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.DELTA).getX()
+                                        - getPose().getX())
+                                    * .8))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.DELTA).getY()
+                                            - getPose().getY())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.DELTA).getY()
+                                        - getPose().getY())
+                                    * .8))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(Targets.DELTA.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
   public Command Alignment(
-      RobotCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
-    if (elevator.isAtTarget()) {
-      return run(() ->
-              io.setControl(
-                  requestSupplier
-                      .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                      .withVelocityX(
-                          TunerConstants.kSpeedAt12Volts.times(
-                              .75
-                                  * (TargetingComputer.getSelectTargetBranchPose(target).getX()
-                                      - getPose().getX())
-                                  * 0.5))
-                      .withVelocityY(
-                          TunerConstants.kSpeedAt12Volts.times(
-                              .75
-                                  * (TargetingComputer.getSelectTargetBranchPose(target).getY()
-                                      - getPose().getY())
-                                  * 0.5))
-                      .withRotationalRate(
-                          Constants.MaxAngularRate.times(
-                              (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
-                                      .minus(getPose().getRotation())
-                                      .getRadians())
-                                  * 0.4))))
-          // .withVelocityX(
-          //     TunerConstants.kSpeedAt12Volts.times(
-          //         -(target.getOffset().getX()
-          //                 - vision
-          //                     .calculateOffset(target.getApriltag(), target.getOffset())
-          //                     .getX())
-          //             * 0.25))
-          // .withVelocityY(
-          //     TunerConstants.kSpeedAt12Volts.times(
-          //         -(target.getOffset().getY()
-          //                 - vision
-          //                     .calculateOffset(target.getApriltag(), target.getOffset())
-          //                     .getY())
-          //             * 0.25))
-          // .withRotationalRate(
-          //     Constants.MaxAngularRate.times(
-          //         (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
-          //                 .minus(getPose().getRotation())
-          //                 .getRadians())
-          //             * 0.25))))
-          .until(hasSpeed(target, vision))
-          .finallyDo(
-              () ->
-                  io.setControl(
-                      requestSupplier
-                          .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                          .withVelocityX(0)
-                          .withVelocityY(0)
-                          .withRotationalRate(0)));
-    } else {
-      return run(() -> elevator.setElevatorPosition(elevator.getMode()));
-    }
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getCurrentTargetBranchPose().getX()
+                                            - getPose().getX())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getCurrentTargetBranchPose().getX()
+                                        - getPose().getX())
+                                    * .8))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                            - getPose().getY())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                        - getPose().getY())
+                                    * .8))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(
+                                            TargetingComputer.getCurrentTargetBranch()
+                                                .getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  public Command AlignmentChar(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(Targets.CHARLIE);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.CHARLIE).getX()
+                                            - getPose().getX())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.CHARLIE)
+                                            .getX()
+                                        - getPose().getX())
+                                    * .8))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(Targets.CHARLIE).getY()
+                                            - getPose().getY())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(Targets.CHARLIE)
+                                            .getY()
+                                        - getPose().getY())
+                                    * .8))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(
+                                        Units.degreesToRadians(Targets.CHARLIE.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(Targets.CHARLIE))
+                        .getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
   }
 
   public Command stop(RobotCentric requestSupplier) {

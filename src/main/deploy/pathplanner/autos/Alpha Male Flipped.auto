@@ -5,9 +5,51 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "to kilo start"
+            "pathName": "to india start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to India"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back india near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to kilo near"
           }
         },
         {
@@ -17,9 +59,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back Kilo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
           }
         },
         {
@@ -35,9 +95,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back Lima near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
           }
         },
         {
@@ -53,21 +131,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "flipped back alpha near"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "flipped to bravo near"
+            "name": "intake position"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Bravo"
+            "name": "L2"
           }
         }
       ]

@@ -36,7 +36,7 @@ public class TargetingComputer {
   public static final double alignmentRange = 1;
   public static final double maxAlignSpeed = .3;
 
-  private static final double xOffset = 17;
+  private static final double xOffset = 18;
   private static final double yOffset = 8.5;
   private static final double homeYOffset = 1;
 
