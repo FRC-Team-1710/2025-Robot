@@ -28,12 +28,14 @@ public class ManualClimb extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if ((0 < power && m_Climber.getPosition() < upperLimit)
-        || (power < 0 && lowerLimit < m_Climber.getPosition() || power == 0)) {
-      m_Climber.SetClimberPower(power);
-    } else {
-      m_Climber.SetClimberPower(0);
-    }
+    // if ((0 < power && m_Climber.getPosition() < upperLimit)
+    //     || (power < 0 && lowerLimit < m_Climber.getPosition() || power == 0)) {
+    //   m_Climber.SetClimberPower(power);
+    // } else {
+    //   m_Climber.SetClimberPower(0);
+    // }
+
+    m_Climber.SetClimberPower(power);
   }
 
   // Called once the command ends or is interrupted.

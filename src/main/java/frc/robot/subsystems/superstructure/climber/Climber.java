@@ -23,13 +23,15 @@ public class Climber extends SubsystemBase {
   private double gearRatio = 80;
 
   public Climber() {
-    climber = new TalonFX(1);
+    climber = new TalonFX(41);
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.Audio.AllowMusicDurDisable = true;
     climber.getConfigurator().apply(config);
+
+    climber.setPosition(0);
   }
 
   public void SetClimberPower(double power) {

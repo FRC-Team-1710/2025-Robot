@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.Climb;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
@@ -28,6 +29,7 @@ import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ManualClimb;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
+import frc.robot.commands.StartClimb;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -132,6 +134,8 @@ public class RobotContainer {
   private final Trigger driverDown = new Trigger(driver.povDown());
   /** Driver Start */
   private final Trigger resetGyro = new Trigger(driver.start());
+  /** Driver Back */
+  private final Trigger prepClimb = new Trigger(driver.back());
   /** Driver RB */
   private final Trigger shootAlgae = new Trigger(driver.rightBumper());
   /** Driver LB */
@@ -404,7 +408,7 @@ public class RobotContainer {
         .and(targetSource)
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR())
-        .onFalse(claw.IDLE().unless(targetSource));
+        .onFalse(claw.IDLE());
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -508,20 +512,32 @@ public class RobotContainer {
         .onTrue(claw.NET()); // TODO: fix
 
     grabAlgae
-        .onFalse(new InstantCommand(() -> claw.lockRoller()))
+        .onFalse(
+            new InstantCommand(() -> claw.lockRoller())
+                .alongWith(elevator.intake().unless(targetReef))
+                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
         .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                 .unless(() -> targetReef.getAsBoolean() || claw.hasAlgae())
                 .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
-                .alongWith(claw.IDLE())
-                .alongWith(elevator.intake().unless(targetReef))
-                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
+                .alongWith(claw.IDLE()))
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
                 .alongWith(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .and(() -> elevator.isAtTarget() && targetReef.getAsBoolean())
+                .alongWith(
+                    new ElevatorToTargetLevel(elevator)
+                        .alongWith(claw.GRAB().alongWith(new GrabAlgae(claw)))
+                        .onlyIf(
+                            () -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean())));
+
+    grabAlgae
+        .and(targetReef)
+        .and(
+            () ->
+                !claw.hasAlgae()
+                    && !TargetingComputer.stillOuttakingAlgae
+                    && drivetrain.isInAlignmentZone())
         .onTrue(claw.GRAB().alongWith(new GrabAlgae(claw)));
 
     grabAlgae
@@ -541,7 +557,8 @@ public class RobotContainer {
                             .getNorm()
                         < TargetingComputer.alignmentTranslationTolerance
                     && elevator.isAtTarget()
-                    && claw.isAtTarget())
+                    && claw.isAtTarget()
+                    && claw.getMode() == Claw.ClawPosition.GRAB)
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
     grabAlgae
@@ -743,7 +760,8 @@ public class RobotContainer {
         .and(
             () ->
                 !TargetingComputer.stillOuttakingAlgae
-                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
+                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
+                    || !TargetingComputer.goForClimb)
         .whileTrue(
             new IntakeCoral(manipulator, funnel, driver)
                 .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
@@ -794,6 +812,9 @@ public class RobotContainer {
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
 
+    prepClimb.onTrue(
+        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()));
+
     /* Mech Controller Bindings */
     targetL4.onTrue(
         new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4)));
@@ -807,8 +828,8 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-    mech.pov(0).onTrue(elevator.L4());
-    mech.pov(180).onTrue(elevator.intake());
+    mech.pov(0).whileTrue(new StartClimb(climber));
+    mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral
         .onTrue(
@@ -830,11 +851,8 @@ public class RobotContainer {
     overrideTargetingController.onTrue(
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
-    climberUp
-        .whileTrue(new ManualClimb(climber, () -> .2));
-    climberDown
-    .whileTrue(new ManualClimb(climber, () -> -.2));
-
+    climberUp.whileTrue(new ManualClimb(climber, () -> .2));
+    climberDown.whileTrue(new ManualClimb(climber, () -> -.2));
 
     /* Targeting Controller Bindings */
     alphaButton

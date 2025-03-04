@@ -438,7 +438,7 @@ public class Drive extends SubsystemBase {
                 FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
             : FieldConstants.Processor.centerFace;
 
-    return getDistanceToPose(processor).getNorm() < 1.25;
+    return getDistanceToPose(processor).getNorm() < 1.5;
   }
 
   public Rotation2d getRotation() {

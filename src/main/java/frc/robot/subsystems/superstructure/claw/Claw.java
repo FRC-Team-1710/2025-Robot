@@ -74,6 +74,7 @@ public class Claw extends SubsystemBase {
     }
 
     Logger.recordOutput("Claw/hasAlgae", hasAlgae);
+    Logger.recordOutput("Claw/Mode", getMode().toString());
     Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
 
     rollerLocked = inputs.rollerLocked;
@@ -153,7 +154,7 @@ public class Claw extends SubsystemBase {
   }
 
   /** Enumeration of available claw angles with their corresponding target angles. */
-  private enum ClawPosition {
+  public enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
     IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae

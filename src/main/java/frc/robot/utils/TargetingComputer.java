@@ -226,24 +226,44 @@ public class TargetingComputer {
 
   public static double getSourceTargetingAngle(Pose2d pose) {
     if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
+    // if (isRedAlliance) {
+    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
+    //       ? (pose.getX()
+    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
+    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+    //           : Targets.PROCESSOR.getTargetingAngle() // far
+    //       : (pose.getX()
+    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
+    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+    //           : Targets.NET.getTargetingAngle(); // far
+    // } else {
+    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
+    //       ? (pose.getX() <= sourceCutoffDistance) // top half
+    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+    //           : Targets.NET.getTargetingAngle() // far
+    //       : (pose.getX() <= sourceCutoffDistance) // bottom half
+    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+    //           : Targets.PROCESSOR.getTargetingAngle(); // far
+    // }
+
     if (isRedAlliance) {
-      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
-          ? (pose.getX()
-                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
-              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-              : Targets.PROCESSOR.getTargetingAngle() // far
-          : (pose.getX()
-                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
-              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-              : Targets.NET.getTargetingAngle(); // far
+      if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close
+        return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2)
+            ? Targets.SOURCE_RIGHT.getTargetingAngle()
+            : Targets.SOURCE_LEFT.getTargetingAngle();
+      } else
+        return (pose.getY() > FieldConstants.fieldWidth.in(Meters) - 3)
+            ? Targets.NET.getTargetingAngle()
+            : Targets.PROCESSOR.getTargetingAngle();
     } else {
-      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
-          ? (pose.getX() <= sourceCutoffDistance) // top half
-              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-              : Targets.NET.getTargetingAngle() // far
-          : (pose.getX() <= sourceCutoffDistance) // bottom half
-              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-              : Targets.PROCESSOR.getTargetingAngle(); // far
+      if (pose.getX() <= sourceCutoffDistance) { // close
+        return (pose.getY() < FieldConstants.fieldWidth.in(Meters) / 2)
+            ? Targets.SOURCE_RIGHT.getTargetingAngle()
+            : Targets.SOURCE_LEFT.getTargetingAngle();
+      } else
+        return (pose.getY() > 3)
+            ? Targets.NET.getTargetingAngle()
+            : Targets.PROCESSOR.getTargetingAngle();
     }
   }
 
