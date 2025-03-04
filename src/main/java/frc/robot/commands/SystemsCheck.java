@@ -80,6 +80,7 @@ public class SystemsCheck extends Command {
     // Defaults
     checkComplete = false;
     step = 0;
+    addRequirements(driveTrain, clawSubsystem, climberSubsystem, elevatorSubsystem, funnelSubsystem, manipulatorSubsystem);
   }
 
   @Override
@@ -99,6 +100,8 @@ public class SystemsCheck extends Command {
       initiateNextCheck();
       while (incrementStep.getAsBoolean()) {} // lowkey might crash the code...
     }
+
+    
 
     if (step == 19) {
       checkComplete = true;
@@ -133,8 +136,8 @@ public class SystemsCheck extends Command {
       case 12: elevatorSubsystem.L1(); break;
       case 13: elevatorSubsystem.intake(); break;
       case 14: funnelSubsystem.setRollerPower(0.5); break;
-      case 15: funnelSubsystem.setRollerPower(0); break; // Engage Funnel
-      case 16: break; // Tuck Funnel
+      case 15: funnelSubsystem.setRollerPower(0); funnelSubsystem.CLIMB();
+      case 16: funnelSubsystem.L1();
       case 17: manipulatorSubsystem.runPercent(0.5);
       case 18: manipulatorSubsystem.runPercent(0);
       default: break;
