@@ -14,7 +14,7 @@ import java.util.function.DoubleSupplier;
 public class WristManual extends Command {
   private Claw claw;
   private DoubleSupplier axis;
-  boolean locked = false;
+  boolean locked = true;
 
   /** Creates a new WristManual. */
   public WristManual(Claw claw, DoubleSupplier power) {

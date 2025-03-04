@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
@@ -31,7 +33,11 @@ public class IntakeForAuto extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()
+    if(funnel.getFunnelStatorCurrent().lt(Amps.of(0))){
+      m_Manipulator.runPercent(-0.075);
+      funnel.setRollerPower(-0.075);
+    }
+    else if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()
         || !m_Manipulator.beam1Broken() && !m_Manipulator.beam2Broken()) {
       m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
       funnel.setRollerPower(.2);

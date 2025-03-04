@@ -275,6 +275,8 @@ public class FunnelIOCTRE implements FunnelIO {
     leader.set(percent);
   }
 
+
+
   /**
    * Stops all arm movement by stopping the leader motor. The follower will also stop due to the
    * follower relationship.
