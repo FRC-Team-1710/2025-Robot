@@ -46,7 +46,6 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
-import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
@@ -393,16 +392,16 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(false))
                 .unless(() -> claw.hasAlgae()));
 
-    new Trigger(() -> funnel.hasCoral())
-        .onTrue(
-            new InstantCommand(() -> funnel.setRollerPower(0))
-                .onlyIf(() -> !elevator.isAtIntake())
-                .alongWith(elevator.intake())
-                .onlyIf(() -> !elevator.isAtIntake()))
-        .and(() -> elevator.isAtIntake())
-        .onTrue(
-            new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
-                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
+    // new Trigger(() -> funnel.hasCoral())
+    //     .onTrue(
+    //         new InstantCommand(() -> funnel.setRollerPower(0))
+    //             .onlyIf(() -> !elevator.isAtIntake())
+    //             .alongWith(elevator.intake())
+    //             .onlyIf(() -> !elevator.isAtIntake()))
+    //     .and(() -> elevator.isAtIntake())
+    //     .onTrue(
+    //         new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
+    //             .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     new Trigger(() -> drivetrain.isNearProcessor())
         .and(targetSource)
