@@ -48,7 +48,7 @@ public interface DriveIO {
     public Pose2d pose = Pose2d.kZero;
     public ChassisSpeeds speeds = new ChassisSpeeds();
     public Rotation2d operatorForwardDirection = new Rotation2d(Units.degreesToRadians(90));
-
+    // TODO: check might be 270
     // Diagnostic data
     public double odometryPeriod = 0.0;
     public int successfulDaqs = 0;

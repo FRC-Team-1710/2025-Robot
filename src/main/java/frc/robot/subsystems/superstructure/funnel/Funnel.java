@@ -9,12 +9,15 @@ package frc.robot.subsystems.superstructure.funnel;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.superstructure.funnel.FunnelIO.FunnelIOInputs;
+
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -60,6 +63,7 @@ public class Funnel extends SubsystemBase {
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
     angleMotorAlert.set(!inputs.angleMotorConnected);
+    
   }
 
   /**
@@ -69,6 +73,10 @@ public class Funnel extends SubsystemBase {
    */
   private void setPosition(Angle position) {
     io.setPosition(position);
+  }
+
+  public Current getFunnelStatorCurrent(){
+    return inputs.leaderStatorCurrent;
   }
 
   public void setRollerPower(double power) {

@@ -36,7 +36,7 @@ public class TargetingComputer {
   public static final double alignmentRange = 1;
   public static final double maxAlignSpeed = .3;
 
-  private static final double xOffset = 17;
+  private static final double xOffset = 18;
   private static final double yOffset = 8.5;
   private static final double homeYOffset = 1;
 
@@ -196,6 +196,23 @@ public class TargetingComputer {
                 TargetingComputer.currentTargetBranch.getOffset().getX(),
                 TargetingComputer.currentTargetBranch.getOffset().getY(),
                 new Rotation2d(Math.PI)));
+  }
+
+  public static Pose2d getSelectTargetBranchPose(Targets target) {
+    return new Pose2d(
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getTranslation()
+                .toTranslation2d(),
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getRotation()
+                .toRotation2d())
+        .plus(
+            new Transform2d(
+                target.getOffset().getX(), target.getOffset().getY(), new Rotation2d(Math.PI)));
   }
 
   public static boolean getAligningWithAlgae() {

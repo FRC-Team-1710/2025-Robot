@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -27,6 +28,8 @@ import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ManualClimb;
+import frc.robot.commands.IntakeForAuto;
+import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.StartClimb;
@@ -120,6 +123,8 @@ public class RobotContainer {
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
   /** Driver RT */
+
+  /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
   /** Driver LT */
   private final Trigger targetSource = new Trigger(driver.leftTrigger());
@@ -164,6 +169,7 @@ public class RobotContainer {
   // marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
   private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
   private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
@@ -320,6 +326,7 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
+
         break;
 
       default:
@@ -340,6 +347,55 @@ public class RobotContainer {
         break;
     }
 
+    NamedCommands.registerCommand(
+        "Align to Alpha", drivetrain.Alignment(drive, Targets.ALPHA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Bravo", drivetrain.Alignment(drive, Targets.BRAVO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Charlie", drivetrain.Alignment(drive, Targets.CHARLIE, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Delta", drivetrain.Alignment(drive, Targets.DELTA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Echo", drivetrain.Alignment(drive, Targets.ECHO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Foxtrot", drivetrain.Alignment(drive, Targets.FOXTROT, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Golf", drivetrain.Alignment(drive, Targets.GOLF, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Hotel", drivetrain.Alignment(drive, Targets.HOTEL, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to India", drivetrain.Alignment(drive, Targets.INDIA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Juliet", drivetrain.Alignment(drive, Targets.JULIET, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Kilo", drivetrain.Alignment(drive, Targets.KILO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Lima", drivetrain.Alignment(drive, Targets.LIMA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Source", drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+    NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
+    NamedCommands.registerCommand(
+        "outtake coral",
+        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
+            .alongWith(drivetrain.stop(robotCentric)));
+    NamedCommands.registerCommand(
+        "L2",
+        elevator
+            .L2()
+            .alongWith(drivetrain.stop(robotCentric))
+            .until(() -> elevator.isAtTarget())
+            .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+    NamedCommands.registerCommand(
+        "L4",
+        elevator.L4().alongWith(drivetrain.stop(robotCentric)).until(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "intake position",
+        elevator
+            .intake()
+            .alongWith(drivetrain.stop(robotCentric))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
+            .until(() -> elevator.isAtTarget()));
+
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -357,6 +413,7 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive Wheel Radius Characterization",
         DriveCommands.wheelRadiusCharacterization(drivetrain));
+
     configureBindings();
   }
 
@@ -418,10 +475,10 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                            driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            -driver.customLeft().getX())) // Drive left with negative X (left)
+                            driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
                             .times(
@@ -734,6 +791,33 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
     targetSource
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                            Units.degreesToRadians(
+                                                TargetingComputer.getSourceTargetingAngle(
+                                                    drivetrain.getPose())))
+                                        .minus(drivetrain.getPose().getRotation())
+                                        .getRadians())
+                                    * rotP))))
+        .and(
+            (() ->
+                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
+                    < 1.5))
+        .onTrue(new ElevatorToTargetLevel(elevator))
+        .onFalse(elevator.intake());
+
+    targetSource
         .onFalse(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(false)))
         .and(targetReef.negate())
         .whileTrue(
@@ -799,14 +883,25 @@ public class RobotContainer {
     //
     // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
 
-    resetGyro.onTrue(
-        drivetrain.runOnce(
-            () ->
-                drivetrain.resetPose(
-                    new Pose2d(
-                        drivetrain.getPose().getX(),
-                        drivetrain.getPose().getY(),
-                        new Rotation2d()))));
+    // Run SysId routines when holding back/start and X/Y.
+    // Note that each routine should be run exactly once in a single
+
+    mech.rightBumper().and(mech.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    mech.rightBumper().and(mech.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    mech.leftBumper().and(mech.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    mech.leftBumper().and(mech.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    // reset the field-centric heading on left bumper press
+    driver
+        .start()
+        .onTrue(
+            drivetrain.runOnce(
+                () ->
+                    drivetrain.resetPose(
+                        new Pose2d(
+                            drivetrain.getPose().getX(),
+                            drivetrain.getPose().getY(),
+                            new Rotation2d()))));
 
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
@@ -857,49 +952,61 @@ public class RobotContainer {
     alphaButton
         .and(bravoButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ALPHA)));
     bravoButton
         .and(alphaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.BRAVO)));
     charlieButton
         .and(deltaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.CHARLIE)));
     deltaButton
         .and(charlieButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.DELTA)));
     echoButton
         .and(foxtrotButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ECHO)));
     foxtrotButton
         .and(echoButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.FOXTROT)));
     golfButton
         .and(hotelButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.GOLF)));
     hotelButton
         .and(golfButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.HOTEL)));
     indiaButton
         .and(julietButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.INDIA)));
     julietButton
         .and(indiaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.JULIET)));
     kiloButton
         .and(limaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.KILO)));
     limaButton
         .and(kiloButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
     l4Button
