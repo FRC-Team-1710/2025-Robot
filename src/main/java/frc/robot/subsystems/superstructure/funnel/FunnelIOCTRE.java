@@ -23,6 +23,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,6 +47,9 @@ public class FunnelIOCTRE implements FunnelIO {
   // public final TalonFX follower = new TalonFX(32);
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
+
+  private final DigitalInput forwardBeamBreak = new DigitalInput(2);
+  private final DigitalInput reverseBeamBreak = new DigitalInput(3);
 
   private double kP = 0.09;
   private double kI = 0.0;
@@ -154,9 +158,9 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
     SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
 
-    m_orchestra.play();
-    timer.reset();
-    timer.start();
+    // m_orchestra.play();
+    // timer.reset();
+    // timer.start();
 
     angleMotor.setPosition(0);
   }
@@ -241,6 +245,8 @@ public class FunnelIOCTRE implements FunnelIO {
         anglePID.reset(inputs.funnelAngle, 0);
       }
     }
+
+    inputs.hasCoral = !forwardBeamBreak.get() || !reverseBeamBreak.get();
 
     SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
     SmartDashboard.putNumber(
