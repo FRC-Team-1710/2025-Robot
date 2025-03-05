@@ -48,8 +48,8 @@ public class FunnelIOCTRE implements FunnelIO {
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
 
-  private final DigitalInput forwardBeamBreak = new DigitalInput(2);
-  private final DigitalInput reverseBeamBreak = new DigitalInput(3);
+  private final DigitalInput forwardBeamBreak = new DigitalInput(3);
+  private final DigitalInput reverseBeamBreak = new DigitalInput(2);
 
   private double kP = 0.09;
   private double kI = 0.0;
