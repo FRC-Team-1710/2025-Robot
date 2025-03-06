@@ -44,6 +44,7 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
+import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
@@ -86,6 +87,7 @@ public class RobotContainer {
   public final Funnel funnel;
   public final Climber climber;
   public final Claw claw;
+  public final LEDSubsystem ledsubsystem;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -184,6 +186,7 @@ public class RobotContainer {
         manipulator = new Manipulator(new ManipulatorIOTalonFX());
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIOCTRE());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         /*
          * Vision Class for referencing.
@@ -254,6 +257,7 @@ public class RobotContainer {
         ElevatorIOSIM iosim = new ElevatorIOSIM();
         elevator = new Elevator(iosim);
         claw = new Claw(new ClawIOSIM(iosim));
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -318,6 +322,7 @@ public class RobotContainer {
         manipulator = new Manipulator(new ManipulatorIO() {});
         elevator = new Elevator(new ElevatorIO() {});
         claw = new Claw(new ClawIO() {});
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -389,6 +394,8 @@ public class RobotContainer {
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR())
         .onFalse(claw.IDLE().unless(targetSource));
+
+    new Trigger(() -> TargetingComputer.currentTargetLevel == TargetingComputer.Levels.L1).and(targetSource).onTrue(getAutonomousCommand());
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
