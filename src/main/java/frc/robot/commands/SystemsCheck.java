@@ -137,13 +137,17 @@ public class SystemsCheck extends Command {
         break;
       case 2:
         driveTrain.applyRequest(
-            () -> robotCentric.withRotationalRate(Constants.MaxAngularRate.times(0.5)));
+            () -> robotCentric
+            .withRotationalRate(Constants.MaxAngularRate.times(0.5))
+            .withVelocityX(0));
         break;
       case 3:
         driveTrain.applyRequest(
             () -> robotCentric.withRotationalRate(Constants.MaxAngularRate.times(-0.5)));
         break;
       case 4:
+        driveTrain.applyRequest(
+            () -> robotCentric.withRotationalRate(0));
         clawSubsystem.setRollers(0.5);
         break;
       case 5:
