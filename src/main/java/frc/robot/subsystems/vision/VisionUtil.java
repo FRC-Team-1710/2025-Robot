@@ -48,7 +48,7 @@ public class VisionUtil {
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
   private static final double MA_VISION_STD_DEV_THETA = 5.0; // Base theta standard deviation
   public static final double MA_AMBIGUITY =
-      0.4; // Maximum allowed ambiguity for single-tag measurements
+      0.3; // Maximum allowed ambiguity for single-tag measurements
 
   public static Transform2d getTagOffset(
       Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {

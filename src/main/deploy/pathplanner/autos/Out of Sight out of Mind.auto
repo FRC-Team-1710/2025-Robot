@@ -7,13 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "pass by far"
+            "pathName": "to Charlie from start"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back charlie far"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "to bravo far"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
           }
         },
         {
@@ -29,6 +41,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Bravo"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back bravo far"
@@ -41,6 +59,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "back alpha far"
@@ -53,9 +77,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "back alpha far"
+            "name": "Align to Alpha"
           }
         }
       ]

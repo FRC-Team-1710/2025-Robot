@@ -36,7 +36,7 @@ public class TargetingComputer {
   public static final double alignmentRange = 1;
   public static final double maxAlignSpeed = .3;
 
-  private static final double xOffset = 17;
+  private static final double xOffset = 18;
   private static final double yOffset = 8.5;
   private static final double homeYOffset = 1;
 
@@ -121,13 +121,13 @@ public class TargetingComputer {
   }
 
   public static double getAngleForTarget(Targets target) {
-    return switch (target) {
-      case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
-      case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
-      case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
-      case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
-      case INDIA, JULIET -> isRedAlliance ? 60 : 240;
-      case KILO, LIMA -> isRedAlliance ? 120 : 300;
+    return switch (target) { // XOR RAAAHHHHHH!!
+      case ALPHA, BRAVO -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 180 : 0;
+      case CHARLIE, DELTA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 240 : 60;
+      case ECHO, FOXTROT -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 300 : 120;
+      case GOLF, HOTEL -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 0 : 180;
+      case INDIA, JULIET -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 60 : 240;
+      case KILO, LIMA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 120 : 300;
       case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
@@ -198,6 +198,23 @@ public class TargetingComputer {
                 new Rotation2d(Math.PI)));
   }
 
+  public static Pose2d getSelectTargetBranchPose(Targets target) {
+    return new Pose2d(
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getTranslation()
+                .toTranslation2d(),
+            FieldConstants.aprilTags
+                .getTagPose(target.getApriltag())
+                .get()
+                .getRotation()
+                .toRotation2d())
+        .plus(
+            new Transform2d(
+                target.getOffset().getX(), target.getOffset().getY(), new Rotation2d(Math.PI)));
+  }
+
   public static boolean getAligningWithAlgae() {
     return aligningWithAlgae;
   }
@@ -226,24 +243,44 @@ public class TargetingComputer {
 
   public static double getSourceTargetingAngle(Pose2d pose) {
     if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
+    // if (isRedAlliance) {
+    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
+    //       ? (pose.getX()
+    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
+    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+    //           : Targets.PROCESSOR.getTargetingAngle() // far
+    //       : (pose.getX()
+    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
+    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+    //           : Targets.NET.getTargetingAngle(); // far
+    // } else {
+    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
+    //       ? (pose.getX() <= sourceCutoffDistance) // top half
+    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
+    //           : Targets.NET.getTargetingAngle() // far
+    //       : (pose.getX() <= sourceCutoffDistance) // bottom half
+    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
+    //           : Targets.PROCESSOR.getTargetingAngle(); // far
+    // }
+
     if (isRedAlliance) {
-      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
-          ? (pose.getX()
-                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
-              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-              : Targets.PROCESSOR.getTargetingAngle() // far
-          : (pose.getX()
-                  >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
-              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-              : Targets.NET.getTargetingAngle(); // far
+      if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close
+        return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2)
+            ? Targets.SOURCE_RIGHT.getTargetingAngle()
+            : Targets.SOURCE_LEFT.getTargetingAngle();
+      } else
+        return (pose.getY() > FieldConstants.fieldWidth.in(Meters) - 3)
+            ? Targets.NET.getTargetingAngle()
+            : Targets.PROCESSOR.getTargetingAngle();
     } else {
-      return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
-          ? (pose.getX() <= sourceCutoffDistance) // top half
-              ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-              : Targets.NET.getTargetingAngle() // far
-          : (pose.getX() <= sourceCutoffDistance) // bottom half
-              ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-              : Targets.PROCESSOR.getTargetingAngle(); // far
+      if (pose.getX() <= sourceCutoffDistance) { // close
+        return (pose.getY() < FieldConstants.fieldWidth.in(Meters) / 2)
+            ? Targets.SOURCE_RIGHT.getTargetingAngle()
+            : Targets.SOURCE_LEFT.getTargetingAngle();
+      } else
+        return (pose.getY() > 3)
+            ? Targets.NET.getTargetingAngle()
+            : Targets.PROCESSOR.getTargetingAngle();
     }
   }
 
@@ -257,8 +294,8 @@ public class TargetingComputer {
   }
 
   public static void checkBranchGame() {
-    if (randomBranch == currentTargetBranch.gameID
-        && randomHeight == currentTargetLevel.gameHeight) {
+    if (randomBranch == currentTargetBranch.gameID) {
+      // && randomHeight == currentTargetLevel.gameHeight) {
       randomizeTargetBranch();
       branchGameScore++;
       while (randomBranch == currentTargetBranch.gameID) {

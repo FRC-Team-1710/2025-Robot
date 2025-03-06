@@ -11,9 +11,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Charlie"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         },
         {
@@ -23,9 +41,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         },
         {
@@ -35,9 +71,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to echo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Echo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         },
         {
@@ -47,9 +101,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Foxtrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtake Coral"
           }
         }
       ]

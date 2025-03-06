@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,21 +21,27 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.Climb;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevationManual;
 import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.IntakeForAuto;
+import frc.robot.commands.ManualClimb;
+import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.SystemsCheck;
+import frc.robot.commands.StartClimb;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
+import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
 import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
@@ -45,7 +52,6 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
-import frc.robot.subsystems.superstructure.funnel.FunnelConstants;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
@@ -98,6 +104,7 @@ public class RobotContainer {
   public final Funnel funnel;
   public final Climber climber;
   public final Claw claw;
+  public final LEDSubsystem ledsubsystem;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -127,6 +134,8 @@ public class RobotContainer {
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
   /** Driver RT */
+
+  /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
   /** Driver LT */
   private final Trigger targetSource = new Trigger(driver.leftTrigger());
@@ -140,6 +149,8 @@ public class RobotContainer {
   private final Trigger driverDown = new Trigger(driver.povDown());
   /** Driver Start */
   private final Trigger resetGyro = new Trigger(driver.start());
+  /** Driver Back */
+  private final Trigger prepClimb = new Trigger(driver.back());
   /** Driver RB */
   private final Trigger shootAlgae = new Trigger(driver.rightBumper());
   /** Driver LB */
@@ -169,6 +180,7 @@ public class RobotContainer {
   // marry."
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
   private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
   private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
@@ -196,6 +208,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         /*
          * Vision Class for referencing.
@@ -269,6 +282,7 @@ public class RobotContainer {
         elevator = new Elevator(iosim);
         claw = new Claw(new ClawIOSIM(iosim));
         funnel = new Funnel(new FunnelIOSIM());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -325,6 +339,7 @@ public class RobotContainer {
                             Units.degreesToRadians(210)) // IN RADIANS
                         ),
                     drivetrain::getVisionParameters));
+
         break;
 
       default:
@@ -334,6 +349,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIO() {});
         claw = new Claw(new ClawIO() {});
         funnel = new Funnel(new FunnelIO() {});
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -344,6 +360,55 @@ public class RobotContainer {
                 new VisionIO() {});
         break;
     }
+
+    NamedCommands.registerCommand(
+        "Align to Alpha", drivetrain.Alignment(drive, Targets.ALPHA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Bravo", drivetrain.Alignment(drive, Targets.BRAVO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Charlie", drivetrain.Alignment(drive, Targets.CHARLIE, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Delta", drivetrain.Alignment(drive, Targets.DELTA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Echo", drivetrain.Alignment(drive, Targets.ECHO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Foxtrot", drivetrain.Alignment(drive, Targets.FOXTROT, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Golf", drivetrain.Alignment(drive, Targets.GOLF, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Hotel", drivetrain.Alignment(drive, Targets.HOTEL, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to India", drivetrain.Alignment(drive, Targets.INDIA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Juliet", drivetrain.Alignment(drive, Targets.JULIET, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Kilo", drivetrain.Alignment(drive, Targets.KILO, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Lima", drivetrain.Alignment(drive, Targets.LIMA, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Source", drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+    NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
+    NamedCommands.registerCommand(
+        "outtake coral",
+        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
+            .alongWith(drivetrain.stop(robotCentric)));
+    NamedCommands.registerCommand(
+        "L2",
+        elevator
+            .L2()
+            .alongWith(drivetrain.stop(robotCentric))
+            .until(() -> elevator.isAtTarget())
+            .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+    NamedCommands.registerCommand(
+        "L4",
+        elevator.L4().alongWith(drivetrain.stop(robotCentric)).until(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "intake position",
+        elevator
+            .intake()
+            .alongWith(drivetrain.stop(robotCentric))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
+            .until(() -> elevator.isAtTarget()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -362,6 +427,7 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive Wheel Radius Characterization",
         DriveCommands.wheelRadiusCharacterization(drivetrain));
+
     configureBindings();
   }
 
@@ -383,8 +449,14 @@ public class RobotContainer {
     // .whileTrue(new IntakeCoral(manipulator, funnel, driver))
     // .onFalse(new EndIntake(manipulator, funnel));
 
-    driverUp.onTrue(new InstantCommand(() -> claw.toggleAlgaeStatus()));
-    driverDown.onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
+    driverUp
+        .and(() -> Constants.currentMode == Constants.Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.toggleAlgaeStatus()));
+    driverDown
+        .and(() -> Constants.currentMode == Constants.Mode.SIM)
+        .onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
+
+    driverDown.onTrue(funnel.L1()).onFalse(funnel.intake());
 
     new Trigger(() -> claw.hasAlgae())
         .onTrue(new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(true)))
@@ -398,20 +470,22 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(false))
                 .unless(() -> claw.hasAlgae()));
 
-    new Trigger(() -> funnel.hasCoral())
-        .onTrue(
-            new InstantCommand(() -> funnel.setRollerPower(0))
-                .onlyIf(() -> !elevator.isAtIntake())
-                .alongWith(elevator.intake())
-                .onlyIf(() -> !elevator.isAtIntake()))
-        .and(() -> elevator.isAtIntake())
-        .onTrue(new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed)));
+    // new Trigger(() -> funnel.hasCoral())
+    //     .onTrue(
+    //         new InstantCommand(() -> funnel.setRollerPower(0))
+    //             .onlyIf(() -> !elevator.isAtIntake())
+    //             .alongWith(elevator.intake())
+    //             .onlyIf(() -> !elevator.isAtIntake()))
+    //     .and(() -> elevator.isAtIntake())
+    //     .onTrue(
+    //         new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
+    //             .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     new Trigger(() -> drivetrain.isNearProcessor())
         .and(targetSource)
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR())
-        .onFalse(claw.IDLE().unless(targetSource));
+        .onFalse(claw.IDLE());
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -517,20 +591,32 @@ public class RobotContainer {
         .onTrue(claw.NET()); // TODO: fix
 
     grabAlgae
-        .onFalse(new InstantCommand(() -> claw.lockRoller()))
+        .onFalse(
+            new InstantCommand(() -> claw.lockRoller())
+                .alongWith(elevator.intake().unless(targetReef))
+                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
         .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
         .onFalse(
             new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                 .unless(() -> targetReef.getAsBoolean() || claw.hasAlgae())
                 .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
-                .alongWith(claw.IDLE())
-                .alongWith(elevator.intake().unless(targetReef))
-                .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
+                .alongWith(claw.IDLE()))
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
                 .alongWith(new InstantCommand(() -> TargetingComputer.setTargetingAlgae(true)))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
-        .and(() -> elevator.isAtTarget() && targetReef.getAsBoolean())
+                .alongWith(
+                    new ElevatorToTargetLevel(elevator)
+                        .alongWith(claw.GRAB().alongWith(new GrabAlgae(claw)))
+                        .onlyIf(
+                            () -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean())));
+
+    grabAlgae
+        .and(targetReef)
+        .and(
+            () ->
+                !claw.hasAlgae()
+                    && !TargetingComputer.stillOuttakingAlgae
+                    && drivetrain.isInAlignmentZone())
         .onTrue(claw.GRAB().alongWith(new GrabAlgae(claw)));
 
     grabAlgae
@@ -550,7 +636,8 @@ public class RobotContainer {
                             .getNorm()
                         < TargetingComputer.alignmentTranslationTolerance
                     && elevator.isAtTarget()
-                    && claw.isAtTarget())
+                    && claw.isAtTarget()
+                    && claw.getMode() == Claw.ClawPosition.GRAB)
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
     grabAlgae
@@ -559,12 +646,22 @@ public class RobotContainer {
         .onFalse(claw.IDLE());
 
     shootAlgae
+        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    grabAlgaeFromFloor.onTrue(claw.GRAB()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
+    shootAlgae
+        .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
+        .onTrue(
+            new InstantCommand(() -> claw.setRollers(0.0))
+                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
+        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    grabAlgaeFromFloor.onTrue(claw.PROCESSOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
 
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
@@ -610,12 +707,7 @@ public class RobotContainer {
         .onFalse(
             elevator
                 .intake()
-                .unless(
-                    () ->
-                        placeL4.getAsBoolean()
-                            || placeL3.getAsBoolean()
-                            || placeL2.getAsBoolean()
-                            || grabAlgae.getAsBoolean())
+                .unless(placeL4.or(placeL3).or(placeL2).or(grabAlgae))
                 .alongWith(
                     new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
                         .unless(() -> claw.hasAlgae())))
@@ -758,9 +850,14 @@ public class RobotContainer {
         .and(
             () ->
                 !TargetingComputer.stillOuttakingAlgae
-                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose()))
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver))
-        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+                    || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
+                    || !TargetingComputer.goForClimb)
+        .whileTrue(
+            new IntakeCoral(manipulator, funnel, driver)
+                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
+        .onFalse(
+            new EndIntake(manipulator, funnel, mech.leftBumper())
+                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     targetSource
         .and(() -> claw.hasAlgae())
@@ -793,17 +890,31 @@ public class RobotContainer {
     //
     // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
 
-    resetGyro.onTrue(
-        drivetrain.runOnce(
-            () ->
-                drivetrain.resetPose(
-                    new Pose2d(
-                        drivetrain.getPose().getX(),
-                        drivetrain.getPose().getY(),
-                        new Rotation2d()))));
+    // Run SysId routines when holding back/start and X/Y.
+    // Note that each routine should be run exactly once in a single
+
+    mech.rightBumper().and(mech.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    mech.rightBumper().and(mech.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    mech.leftBumper().and(mech.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    mech.leftBumper().and(mech.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    // reset the field-centric heading on left bumper press
+    driver
+        .start()
+        .onTrue(
+            drivetrain.runOnce(
+                () ->
+                    drivetrain.resetPose(
+                        new Pose2d(
+                            drivetrain.getPose().getX(),
+                            drivetrain.getPose().getY(),
+                            new Rotation2d()))));
 
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
+
+    prepClimb.onTrue(
+        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()));
 
     /* Mech Controller Bindings */
     targetL4.onTrue(
@@ -818,14 +929,16 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-    mech.pov(0).onTrue(elevator.L4());
-    mech.pov(180).onTrue(elevator.intake());
+    mech.pov(0).onTrue(new StartClimb(climber));
+    mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral
         .onTrue(
             new InstantCommand(() -> funnel.setRollerPower(-0.075))
                 .alongWith(new InstantCommand(() -> manipulator.runPercent(-0.075))))
-        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+        .onFalse(
+            new EndIntake(manipulator, funnel, mech.leftBumper())
+                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     mech.start().whileTrue(new ZeroRizz(claw));
 
@@ -839,60 +952,68 @@ public class RobotContainer {
     overrideTargetingController.onTrue(
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
-    climberUp
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
-    climberDown
-        .onTrue(new InstantCommand(() -> climber.SetClimberPower(-0.2)))
-        .onFalse((new InstantCommand(() -> climber.SetClimberPower(0))));
+    climberUp.whileTrue(new ManualClimb(climber, () -> .2));
+    climberDown.whileTrue(new ManualClimb(climber, () -> -.2));
 
     /* Targeting Controller Bindings */
     alphaButton
         .and(bravoButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ALPHA)));
     bravoButton
         .and(alphaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.BRAVO)));
     charlieButton
         .and(deltaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.CHARLIE)));
     deltaButton
         .and(charlieButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.DELTA)));
     echoButton
         .and(foxtrotButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ECHO)));
     foxtrotButton
         .and(echoButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.FOXTROT)));
     golfButton
         .and(hotelButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.GOLF)));
     hotelButton
         .and(golfButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.HOTEL)));
     indiaButton
         .and(julietButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.INDIA)));
     julietButton
         .and(indiaButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.JULIET)));
     kiloButton
         .and(limaButton.negate())
         .and(() -> !TargetingComputer.targetingControllerOverride)
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.KILO)));
     limaButton
         .and(kiloButton.negate())
+        .and(() -> !TargetingComputer.targetingControllerOverride)
         .and(() -> !TargetingComputer.targetingControllerOverride)
         .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
     l4Button

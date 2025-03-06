@@ -19,7 +19,13 @@
         {
           "type": "named",
           "data": {
-            "name": "outtake coral"
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         },
         {
@@ -29,15 +35,33 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "intake coral"
+            "pathName": "to delta near"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "end intake"
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back delta near"
           }
         },
         {
@@ -55,73 +79,13 @@
         {
           "type": "named",
           "data": {
-            "name": "outtake coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back charlie near"
+            "name": "L2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "intake coral"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "end intake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to delta near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Align to Echo"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back delta near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake coral"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "end intake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to echo near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake coral"
+            "name": "intake position"
           }
         }
       ]

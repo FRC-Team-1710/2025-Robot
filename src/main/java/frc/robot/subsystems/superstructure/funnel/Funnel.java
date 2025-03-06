@@ -9,6 +9,7 @@ package frc.robot.subsystems.superstructure.funnel;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,7 +28,7 @@ import org.littletonrobotics.junction.Logger;
 public class Funnel extends SubsystemBase {
   // Hardware interface and inputs
   private final FunnelIO io;
-  private final ArmIOInputsAutoLogged inputs;
+  private final FunnelIOInputsAutoLogged inputs;
 
   // Current arm position mode
   private ArmMode currentMode = ArmMode.INTAKE;
@@ -47,7 +48,7 @@ public class Funnel extends SubsystemBase {
    */
   public Funnel(FunnelIO io) {
     this.io = io;
-    this.inputs = new ArmIOInputsAutoLogged();
+    this.inputs = new FunnelIOInputsAutoLogged();
   }
 
   @Override
@@ -69,6 +70,10 @@ public class Funnel extends SubsystemBase {
    */
   private void setPosition(Angle position) {
     io.setPosition(position);
+  }
+
+  public Current getFunnelStatorCurrent() {
+    return inputs.leaderStatorCurrent;
   }
 
   public void setRollerPower(double power) {
