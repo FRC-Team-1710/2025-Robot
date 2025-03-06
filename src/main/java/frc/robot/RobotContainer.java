@@ -712,7 +712,7 @@ public class RobotContainer {
                                                     .getTargetingAngle()))
                                         .minus(drivetrain.getPose().getRotation())
                                         .getRadians())
-                                    * rotP))));
+                                    * rotP).times(claw.hasAlgae() ? .5 : 1))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
@@ -794,33 +794,6 @@ public class RobotContainer {
                     && manipulator.hasCoral())
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
-
-    targetSource
-        .whileTrue(
-            drivetrain.applyRequest(
-                () ->
-                    drive
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -driver
-                                    .customLeft()
-                                    .getY())) // Drive forward with negative Y (forward)
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        .withRotationalRate(
-                            Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getSourceTargetingAngle(
-                                                    drivetrain.getPose())))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP))))
-        .and(
-            (() ->
-                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    < 1.5))
-        .onTrue(new ElevatorToTargetLevel(elevator))
-        .onFalse(elevator.intake());
 
     targetSource
         .onFalse(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(false)))
@@ -927,7 +900,7 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-    mech.pov(0).whileTrue(new StartClimb(climber));
+    mech.pov(0).onTrue(new StartClimb(climber));
     mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral
