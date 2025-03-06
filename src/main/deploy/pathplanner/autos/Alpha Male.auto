@@ -7,7 +7,61 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to Delta start"
+            "pathName": "to foxtrot start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Foxtrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         },
         {
@@ -17,33 +71,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "to charlie near"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "back charlie near"
+            "name": "Align to Charlie"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "to bravo near"
+            "name": "L2"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "back bravo near"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to alpha near"
+            "name": "intake position"
           }
         }
       ]

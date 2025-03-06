@@ -71,7 +71,7 @@ public class Elevator extends SubsystemBase {
    *
    * @param distance The target angle distance
    */
-  private void setDistance(Distance distance) {
+  public void setDistance(Distance distance) {
     io.setDistance(distance);
   }
 
@@ -88,6 +88,10 @@ public class Elevator extends SubsystemBase {
     io.stop();
   }
 
+  public void zero() {
+    io.zero();
+  }
+
   /**
    * Returns the current distance of the arm.
    *
@@ -102,10 +106,10 @@ public class Elevator extends SubsystemBase {
   public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the arm
     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
-    L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
+    L1(Inches.of(0), Inches.of(.5)), // Position for scoring in L1
     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
     L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
-    L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
+    L4(Inches.of(54.5), Inches.of(.5)), // Position for scoring in L4
     ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
     ALGAE_HIGH(Inches.of(26.5), Inches.of(1)); // Position for grabbing high algae
 
@@ -140,7 +144,7 @@ public class Elevator extends SubsystemBase {
    *
    * @param mode The desired ElevatorPosition
    */
-  private void setElevatorPosition(ElevatorPosition mode) {
+  public void setElevatorPosition(ElevatorPosition mode) {
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;
@@ -177,7 +181,7 @@ public class Elevator extends SubsystemBase {
    * @param distance The arm distance to create a command for
    * @return A command that implements the arm movement
    */
-  private Command createPositionCommand(ElevatorPosition distance) {
+  public Command createPositionCommand(ElevatorPosition distance) {
     return Commands.runOnce(() -> setDistance(distance.targetDistance))
         .withName("Move to " + distance.toString());
   }
@@ -227,7 +231,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to move the arm to L2 scoring distance
    */
   public final Command L2() {
-    return setPositionCommand(ElevatorPosition.L2);
+    return setPositionCommand(ElevatorPosition.L2)
+        .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }
 
   /**
@@ -262,7 +267,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to intake the arm
    */
   public final Command intake() {
-    return setPositionCommand(ElevatorPosition.INTAKE);
+    return setPositionCommand(ElevatorPosition.INTAKE)
+        .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }
 
   /**

@@ -6,6 +6,8 @@ package frc.robot.subsystems.superstructure.manipulator;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Manipulator extends SubsystemBase {
@@ -33,8 +35,10 @@ public class Manipulator extends SubsystemBase {
     io.setVoltage(percent * 12);
   }
 
+  @AutoLogOutput
   public boolean hasCoral() {
-    return hasCoral;
+    if (Constants.currentMode == Constants.Mode.SIM) return hasCoral;
+    else return beam2Broken() && !beam1Broken();
   }
 
   public void toggleCoralStatus() {

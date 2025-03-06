@@ -35,7 +35,7 @@ public class ZeroRizz extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.IDLE();
+    claw.IDLE().schedule();
   }
 
   // Returns true when the command should end.
@@ -46,7 +46,6 @@ public class ZeroRizz extends Command {
     }
     if (timer.get() > .25 && claw.getWristCurrent() > 20 && Constants.currentMode != Mode.SIM) {
       claw.zero();
-      // claw.IDLE().schedule();
       return true;
     }
     return false;

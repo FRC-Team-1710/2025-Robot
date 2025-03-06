@@ -1,6 +1,7 @@
 package frc.robot.subsystems.superstructure.manipulator;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -14,13 +15,16 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Timer;
+import java.io.File;
 import java.util.function.Supplier;
 
 /**
  * This CoralIntake implementation is for a Talon FX driving a motor like the Falon 500 or Kraken
  * X60.
  */
-public class ManipulatorIOTalonFX implements ManipulatorIO {
+public class ManipulatorIOCTRE implements ManipulatorIO {
   private final TalonFX Manipulator = new TalonFX(21);
   private final DigitalInput BreakingBeam1 = new DigitalInput(0);
   private final DigitalInput BreakingBeam2 = new DigitalInput(1);
@@ -30,9 +34,13 @@ public class ManipulatorIOTalonFX implements ManipulatorIO {
   final StatusSignal<Current> currentAmps = Manipulator.getSupplyCurrent();
 
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
+  public Timer timer = new Timer();
 
-  public ManipulatorIOTalonFX() {
+  public Orchestra m_orchestra = new Orchestra();
+
+  public ManipulatorIOCTRE() {
     var config = new TalonFXConfiguration();
+    config.Audio.AllowMusicDurDisable = true;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -41,6 +49,24 @@ public class ManipulatorIOTalonFX implements ManipulatorIO {
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, positionRot, velocityRotPerSec, appliedVolts, currentAmps);
     Manipulator.optimizeBusUtilization();
+
+    // Attempt to load the chrp
+    var status =
+        m_orchestra.loadMusic(
+            Filesystem.getDeployDirectory()
+                .toPath()
+                .resolve("orchestra" + File.separator + "output5.chrp")
+                .toString());
+
+    if (!status.isOK()) {
+      // log error
+    }
+
+    m_orchestra.addInstrument(Manipulator, 2);
+
+    // m_orchestra.play();
+    // timer.reset();
+    // timer.start();
   }
 
   public void updateInputs(ManipulatorIOInputs ManipulatorIOInputs) {

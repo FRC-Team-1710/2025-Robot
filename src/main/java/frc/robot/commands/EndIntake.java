@@ -30,25 +30,26 @@ public class EndIntake extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    timer.reset();
-    timer.start();
+    timer.restart();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if ((manipulator.beam1Broken() && !manipulator.beam2Broken())
-        || (manipulator.beam1Broken() && manipulator.beam2Broken())) {
-      timer.reset();
-      timer.stop();
-      manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      funnel.setRollerPower(.2);
-    } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
-      if (!timer.isRunning()) {
-        timer.start();
+    if (!mechLB.getAsBoolean()) {
+      if ((manipulator.beam1Broken() && !manipulator.beam2Broken())
+          || (manipulator.beam1Broken() && manipulator.beam2Broken())) {
+        timer.reset();
+        timer.stop();
+        manipulator.runPercent(ManipulatorConstants.insideSpeed);
+        funnel.setRollerPower(.2);
+      } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
+        if (!timer.isRunning()) {
+          timer.start();
+        }
+        manipulator.runPercent(ManipulatorConstants.insideSpeed);
+        funnel.setRollerPower(.2);
       }
-      manipulator.runPercent(ManipulatorConstants.insideSpeed);
-      funnel.setRollerPower(.2);
     }
   }
 
@@ -65,7 +66,7 @@ public class EndIntake extends Command {
   @Override
   public boolean isFinished() {
     if ((!manipulator.beam1Broken() && manipulator.beam2Broken())
-        || timer.get() > 3
+        || timer.get() > 1.5
         || mechLB.getAsBoolean()) {
       return true;
     } else {
