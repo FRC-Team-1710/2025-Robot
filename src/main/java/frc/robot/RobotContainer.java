@@ -480,10 +480,10 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            driver.customLeft().getX())) // Drive left with negative X (left)
+                            -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
                             .times(

@@ -36,7 +36,7 @@ public class VisionIOPhotonVision implements VisionIO {
   PhotonTrackedTarget target;
 
   boolean rejectTagsFromDistance = false;
-  double tagRejectionDistance = 4.5; // METERS
+  double tagRejectionDistance = 3.5; // METERS
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
