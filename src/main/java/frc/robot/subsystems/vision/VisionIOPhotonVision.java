@@ -37,6 +37,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   boolean rejectTagsFromDistance = false;
   double tagRejectionDistance = 3.5; // METERS
+  List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
