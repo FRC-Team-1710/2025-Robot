@@ -260,25 +260,29 @@ public class Drive extends SubsystemBase {
                 requestSupplier
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(
-                        TunerConstants.kSpeedAt12Volts.times(
-                            (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                                - getPose().getX())
+                                            * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                             - getPose().getX())
-                                        * .8
-                                    > TargetingComputer.maxAlignSpeed
-                                ? TargetingComputer.maxAlignSpeed
-                                : (TargetingComputer.getSelectTargetBranchPose(target).getX()
-                                        - getPose().getX())
-                                    * .8))
+                                        * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
                     .withVelocityY(
-                        TunerConstants.kSpeedAt12Volts.times(
-                            (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                                - getPose().getY())
+                                            * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                             - getPose().getY())
-                                        * .8
-                                    > TargetingComputer.maxAlignSpeed
-                                ? TargetingComputer.maxAlignSpeed
-                                : (TargetingComputer.getSelectTargetBranchPose(target).getY()
-                                        - getPose().getY())
-                                    * .8))
+                                        * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
@@ -421,8 +425,7 @@ public class Drive extends SubsystemBase {
     double angle =
         Robot.getAlliance()
             ? new Translation2d(
-                    FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
-                .minus(FieldConstants.Reef.center)
+                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
                 .minus(currentPose.getTranslation())
                 .unaryMinus()
                 .getAngle()
@@ -433,6 +436,8 @@ public class Drive extends SubsystemBase {
                 .getAngle()
                 .getDegrees();
     int zone;
+
+    Logger.recordOutput("angle", angle);
 
     if (angle >= -30 && angle < 30) { // Golf / Alpha
       zone = 4;
