@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "intake position"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "to india start"
@@ -25,7 +19,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {
@@ -61,7 +55,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {
@@ -97,7 +91,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {
@@ -139,7 +133,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         }
       ]
