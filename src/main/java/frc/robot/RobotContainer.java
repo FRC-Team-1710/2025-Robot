@@ -33,8 +33,8 @@ import frc.robot.commands.ManualClimb;
 import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
-import frc.robot.commands.SystemsCheck;
 import frc.robot.commands.StartClimb;
+import frc.robot.commands.SystemsCheck;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -436,7 +436,9 @@ public class RobotContainer {
     // Run systems check
     systemsCheck // X to initiate systems check
         .and(Constants::getTestMode)
-        .onTrue(new SystemsCheck(testController, drivetrain, claw, climber, elevator, funnel, manipulator));
+        .onTrue(
+            new SystemsCheck(
+                testController, drivetrain, claw, climber, elevator, funnel, manipulator));
 
     /* Real Robot */
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;

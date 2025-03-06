@@ -35,7 +35,7 @@ import frc.robot.generated.TunerConstants;
 public final class Constants {
 
   public static final Mode simMode = Mode.SIM;
-  
+
   public static boolean isTestMode = false;
 
   public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.75);
@@ -143,11 +143,11 @@ public final class Constants {
       System.err.println(error);
     }
   }
-  
+
   public static void setTestMode(boolean testMode) {
     isTestMode = testMode;
   }
-  
+
   public static boolean getTestMode() {
     return isTestMode;
   }

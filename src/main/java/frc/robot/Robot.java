@@ -214,7 +214,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {}
-  
+
   public boolean isTest() {
     return this.isTestEnabled();
   }

@@ -7,9 +7,7 @@ package frc.robot.commands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
@@ -21,7 +19,6 @@ import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-
 import org.littletonrobotics.junction.Logger;
 
 /** Command to run through each mechanism on the robot. */
@@ -85,7 +82,13 @@ public class SystemsCheck extends Command {
     // Defaults
     checkComplete = false;
     step = 0;
-    addRequirements(driveTrain, clawSubsystem, climberSubsystem, elevatorSubsystem, funnelSubsystem, manipulatorSubsystem);
+    addRequirements(
+        driveTrain,
+        clawSubsystem,
+        climberSubsystem,
+        elevatorSubsystem,
+        funnelSubsystem,
+        manipulatorSubsystem);
   }
 
   @Override
@@ -109,8 +112,6 @@ public class SystemsCheck extends Command {
     } else {
       hasPressed = false;
     }
-
-    
 
     if (step == 19) {
       checkComplete = true;
@@ -150,27 +151,34 @@ public class SystemsCheck extends Command {
         break;
       case 6:
         clawSubsystem.setRollers(0);
-        clawSubsystem.PROCESSOR().schedule();;
+        clawSubsystem.PROCESSOR().schedule();
+        ;
         break;
       case 7:
-        clawSubsystem.IDLE().schedule();;
+        clawSubsystem.IDLE().schedule();
+        ;
         break;
       case 8:
         break; // Engage the climb
       case 9:
-        elevatorSubsystem.L4().schedule();;
+        elevatorSubsystem.L4().schedule();
+        ;
         break;
       case 10:
-        elevatorSubsystem.L2().schedule();;
+        elevatorSubsystem.L2().schedule();
+        ;
         break;
       case 11:
-        elevatorSubsystem.L3().schedule();;
+        elevatorSubsystem.L3().schedule();
+        ;
         break;
       case 12:
-        elevatorSubsystem.L1().schedule();;
+        elevatorSubsystem.L1().schedule();
+        ;
         break;
       case 13:
-        elevatorSubsystem.intake().schedule();;
+        elevatorSubsystem.intake().schedule();
+        ;
         break;
       case 14:
         funnelSubsystem.setRollerPower(0.5);
