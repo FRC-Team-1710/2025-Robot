@@ -279,7 +279,7 @@ public class VisionIOPhotonVision implements VisionIO {
     }
 
     // Filtering //
-    if (latestResult.hasTargets()) {
+    if (latestResult.hasTargets() && cameraTargets != null) {
       for (int tagIndex = 0; tagIndex < cameraTargets.size(); tagIndex++) {
         if (bargeTagIDs.contains(cameraTargets.get(tagIndex).fiducialId)) {
           removeTag(tagIndex);
@@ -299,7 +299,6 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   private void removeTag(int index) {
-    cameraResults.remove(index);
     cameraTargets.remove(index);
   }
 }
