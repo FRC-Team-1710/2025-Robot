@@ -52,6 +52,7 @@ import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
+import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
@@ -94,6 +95,7 @@ public class RobotContainer {
   public final Funnel funnel;
   public final Climber climber;
   public final Claw claw;
+  public final LEDSubsystem ledsubsystem;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -197,6 +199,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         /*
          * Vision Class for referencing.
@@ -270,6 +273,7 @@ public class RobotContainer {
         elevator = new Elevator(iosim);
         claw = new Claw(new ClawIOSIM(iosim));
         funnel = new Funnel(new FunnelIOSIM());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -336,6 +340,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIO() {});
         claw = new Claw(new ClawIO() {});
         funnel = new Funnel(new FunnelIO() {});
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
