@@ -299,7 +299,6 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   private void removeTag(int index) {
-    cameraResults.remove(index);
     cameraTargets.remove(index);
   }
 }
