@@ -83,6 +83,12 @@ public class RobotContainer {
 
   private final TunableController sysID = new TunableController(3);
 
+  private final TunableController testController =
+      new TunableController(4)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.1);
+
   private final LoggedDashboardChooser<Command> autoChooser;
 
   public final Drive drivetrain;
@@ -363,7 +369,7 @@ public class RobotContainer {
     // Run systems check
     placeL3 // X to initiate systems check
         .and(() -> SmartDashboard.getBoolean("isTestMode", false))
-        .onTrue(new SystemsCheck(driver, drivetrain, claw, climber, elevator, funnel, manipulator));
+        .onTrue(new SystemsCheck(testController, drivetrain, claw, climber, elevator, funnel, manipulator));
 
     /* Real Robot */
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;

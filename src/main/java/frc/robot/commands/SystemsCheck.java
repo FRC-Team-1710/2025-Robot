@@ -9,6 +9,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
@@ -34,12 +35,12 @@ public class SystemsCheck extends Command {
   boolean isTestMode;
 
   // Temporary controller
-  private final TunableController testController = // PORT 5
-      new TunableController(5)
+  private final TunableController testController =
+      new TunableController(0)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.1);
-  Trigger incrementStep = new Trigger(testController.a());
+  private final Trigger incrementStep = new Trigger(testController.a());
 
   // Subsystems
   Drive driveTrain;
