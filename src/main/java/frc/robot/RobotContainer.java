@@ -27,8 +27,8 @@ import frc.robot.commands.ElevatorToTargetLevel;
 import frc.robot.commands.EndIntake;
 import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
-import frc.robot.commands.ManualClimb;
 import frc.robot.commands.IntakeForAuto;
+import frc.robot.commands.ManualClimb;
 import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
@@ -39,6 +39,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
+import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
 import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
@@ -94,6 +95,7 @@ public class RobotContainer {
   public final Funnel funnel;
   public final Climber climber;
   public final Claw claw;
+  public final LEDSubsystem ledsubsystem;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -197,6 +199,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOCTRE());
         claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         /*
          * Vision Class for referencing.
@@ -270,6 +273,7 @@ public class RobotContainer {
         elevator = new Elevator(iosim);
         claw = new Claw(new ClawIOSIM(iosim));
         funnel = new Funnel(new FunnelIOSIM());
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -336,6 +340,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIO() {});
         claw = new Claw(new ClawIO() {});
         funnel = new Funnel(new FunnelIO() {});
+        ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
 
         vision =
             new Vision(
@@ -475,10 +480,10 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            driver.customLeft().getX())) // Drive left with negative X (left)
+                            -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
                             .times(
@@ -623,8 +628,18 @@ public class RobotContainer {
         .onFalse(claw.IDLE());
 
     shootAlgae
+        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    shootAlgae
+        .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
+        .onTrue(
+            new InstantCommand(() -> claw.setRollers(0.0))
+                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
+        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
@@ -701,13 +716,14 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getTargetingAngle()))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP))));
+                                    (new Rotation2d(
+                                                Units.degreesToRadians(
+                                                    TargetingComputer.getCurrentTargetBranch()
+                                                        .getTargetingAngle()))
+                                            .minus(drivetrain.getPose().getRotation())
+                                            .getRadians())
+                                        * rotP)
+                                .times(claw.hasAlgae() ? .5 : 1))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
@@ -789,33 +805,6 @@ public class RobotContainer {
                     && manipulator.hasCoral())
         .onTrue(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, .2)))
         .onFalse(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
-
-    targetSource
-        .whileTrue(
-            drivetrain.applyRequest(
-                () ->
-                    drive
-                        .withVelocityX(
-                            MaxSpeed.times(
-                                -driver
-                                    .customLeft()
-                                    .getY())) // Drive forward with negative Y (forward)
-                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
-                        .withRotationalRate(
-                            Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getSourceTargetingAngle(
-                                                    drivetrain.getPose())))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP))))
-        .and(
-            (() ->
-                vision.getDistanceToTag(TargetingComputer.getCurrentTargetBranch().getApriltag())
-                    < 1.5))
-        .onTrue(new ElevatorToTargetLevel(elevator))
-        .onFalse(elevator.intake());
 
     targetSource
         .onFalse(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(false)))
@@ -922,7 +911,7 @@ public class RobotContainer {
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
 
-    mech.pov(0).whileTrue(new StartClimb(climber));
+    mech.pov(0).onTrue(new StartClimb(climber));
     mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral

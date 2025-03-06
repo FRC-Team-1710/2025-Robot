@@ -78,8 +78,9 @@ public class ClawIOCTRE implements ClawIO {
   private double wristManual = 0.0;
   private double runPercent = 0.0;
 
+  TalonFXConfiguration config = new TalonFXConfiguration();
+
   public ClawIOCTRE() {
-    TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     wrist.getConfigurator().apply(config);
@@ -172,6 +173,12 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void zero() {
     wrist.setPosition(0);
+  }
+
+  @Override
+  public void setBrake(boolean lock) {
+    config.MotorOutput.NeutralMode = lock ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    rollers.getConfigurator().apply(config);
   }
 
   @Override
