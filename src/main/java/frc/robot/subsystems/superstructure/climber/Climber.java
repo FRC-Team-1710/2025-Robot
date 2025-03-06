@@ -9,18 +9,25 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
   private TalonFX climber; // Right
+  private Servo servo = new Servo(0);
   public boolean goForClimb;
 
   public Timer timer = new Timer();
 
   public Orchestra m_orchestra = new Orchestra();
+
   private double gearRatio = 80;
+  private double unlockedPosition = 0; //idk
+  private double lockedPosition = 30; //idk
 
   public Climber() {
     climber = new TalonFX(41);
@@ -41,6 +48,10 @@ public class Climber extends SubsystemBase {
   /* Degrees */
   public double getPosition() {
     return climber.getPosition().getValueAsDouble() / gearRatio;
+  }
+  
+  public void setServoLocked(boolean locked) {
+    if (locked) {servo.setAngle(lockedPosition);} else {servo.setAngle(unlockedPosition);}
   }
 
   @Override

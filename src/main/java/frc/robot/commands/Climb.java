@@ -20,6 +20,7 @@ public class Climb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    climber.setServoLocked(false);
     climber.SetClimberPower(-.5);
   }
 
@@ -31,6 +32,7 @@ public class Climb extends Command {
   @Override
   public void end(boolean interrupted) {
     climber.SetClimberPower(0);
+    climber.setServoLocked(true);
   }
 
   // Returns true when the command should end.
