@@ -71,5 +71,7 @@ public interface ClawIO {
 
   public default void zero() {}
 
+  public default void setBrake(boolean lock) {}
+
   public default void lockRoller() {}
 }

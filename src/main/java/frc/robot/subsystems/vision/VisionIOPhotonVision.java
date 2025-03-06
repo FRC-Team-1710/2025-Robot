@@ -36,7 +36,8 @@ public class VisionIOPhotonVision implements VisionIO {
   PhotonTrackedTarget target;
 
   boolean rejectTagsFromDistance = false;
-  double tagRejectionDistance = 4.5; // METERS
+  double tagRejectionDistance = 3.5; // METERS
+  List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -60,15 +61,6 @@ public class VisionIOPhotonVision implements VisionIO {
     PhotonPipelineResult latestResult = cameraResults.get(cameraResults.size() - 1);
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
-    }
-    if (rejectTagsFromDistance && latestResult.hasTargets()) {
-      List<PhotonTrackedTarget> tags = latestResult.targets;
-      for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
-        if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
-            > tagRejectionDistance) {
-          latestResult.targets.remove(tagIndex);
-        }
-      }
     }
 
     if (latestResult.hasTargets()) {
@@ -285,5 +277,29 @@ public class VisionIOPhotonVision implements VisionIO {
     } else {
       cameraTargets = new ArrayList<>();
     }
+
+    // Filtering //
+    if (latestResult.hasTargets()) {
+      for (int tagIndex = 0; tagIndex < cameraTargets.size(); tagIndex++) {
+        if (bargeTagIDs.contains(cameraTargets.get(tagIndex).fiducialId)) {
+          removeTag(tagIndex);
+        }
+      }
+
+      if (rejectTagsFromDistance) {
+        List<PhotonTrackedTarget> tags = latestResult.targets;
+        for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+          if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+              > tagRejectionDistance) {
+            removeTag(tagIndex);
+          }
+        }
+      }
+    }
+  }
+
+  private void removeTag(int index) {
+    cameraResults.remove(index);
+    cameraTargets.remove(index);
   }
 }

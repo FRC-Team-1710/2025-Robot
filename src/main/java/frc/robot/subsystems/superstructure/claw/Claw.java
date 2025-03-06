@@ -91,6 +91,10 @@ public class Claw extends SubsystemBase {
     io.setAngle(angle);
   }
 
+  public void setBrake(boolean lock) {
+    io.setBrake(lock);
+  }
+
   public void setRollers(double power) {
     io.setRollers(power);
   }

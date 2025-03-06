@@ -480,10 +480,10 @@ public class RobotContainer {
                 drive
                     .withVelocityX(
                         MaxSpeed.times(
-                            driver.customLeft().getY())) // Drive forward with negative Y (forward)
+                            -driver.customLeft().getY())) // Drive forward with negative Y (forward)
                     .withVelocityY(
                         MaxSpeed.times(
-                            driver.customLeft().getX())) // Drive left with negative X (left)
+                            -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
                             .times(
@@ -628,8 +628,18 @@ public class RobotContainer {
         .onFalse(claw.IDLE());
 
     shootAlgae
+        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    shootAlgae
+        .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
+        .onTrue(
+            new InstantCommand(() -> claw.setRollers(0.0))
+                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
+        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
