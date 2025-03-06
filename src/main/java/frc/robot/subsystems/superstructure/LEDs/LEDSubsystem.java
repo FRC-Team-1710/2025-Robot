@@ -164,6 +164,6 @@ public class LEDSubsystem extends SubsystemBase {
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
     uart.write(data, data.length); // Write the byte array to the serial port
-    // System.out.println("Sending Data: " + value); // Print the data that we sent
+    // System.out.println("Sending Data: " + value); // Print the data
   }
 }
