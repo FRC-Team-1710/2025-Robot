@@ -46,7 +46,7 @@ public class Robot extends LoggedRobot {
         // Running on a real robot, log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
-        SmartDashboard.putBoolean("isTestMode", this.isTest());
+        Constants.setTestMode(isTest());
         break;
 
       case SIM:
@@ -188,4 +188,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {}
+  
+  public boolean isTest() {
+    return this.isTestEnabled();
+  }
 }

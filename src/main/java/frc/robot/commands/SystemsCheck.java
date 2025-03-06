@@ -72,7 +72,7 @@ public class SystemsCheck extends Command {
       Manipulator manipulatorSubsystem) {
 
     // Test mode verification
-    this.isTestMode = SmartDashboard.getBoolean("isTestMode", false);
+    this.isTestMode = Constants.getTestMode();
 
     // Subsystems
     this.driveTrain = driveTrain;

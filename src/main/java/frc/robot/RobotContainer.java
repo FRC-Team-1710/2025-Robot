@@ -88,6 +88,7 @@ public class RobotContainer {
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.1);
+  private final Trigger systemsCheck = new Trigger(testController.x());
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -367,8 +368,8 @@ public class RobotContainer {
   private void configureBindings() {
     // TEST MODE ONLY
     // Run systems check
-    placeL3 // X to initiate systems check
-        .and(() -> SmartDashboard.getBoolean("isTestMode", false))
+    systemsCheck // X to initiate systems check
+        .and(Constants::getTestMode)
         .onTrue(new SystemsCheck(testController, drivetrain, claw, climber, elevator, funnel, manipulator));
 
     /* Real Robot */
