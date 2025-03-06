@@ -440,7 +440,7 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
 
-    driverDown.onTrue(funnel.L1()).onFalse(funnel.intake());
+    driverUp.onTrue(funnel.L1()).onFalse(funnel.intake());
 
     new Trigger(() -> claw.hasAlgae())
         .onTrue(new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(true)))
@@ -544,7 +544,14 @@ public class RobotContainer {
     placeL4
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
+                .alongWith(new ElevatorToTargetLevel(elevator))
+                .alongWith(
+                    claw.NET()
+                        .onlyIf(
+                            () ->
+                                TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                                        == TargetingComputer.Targets.NET.getTargetingAngle()
+                                    && targetSource.getAsBoolean())))
         .onFalse(elevator.intake().unless(targetReef).alongWith(claw.IDLE()))
         .and(
             () ->
