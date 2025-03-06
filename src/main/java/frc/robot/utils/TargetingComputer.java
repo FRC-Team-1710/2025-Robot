@@ -269,7 +269,7 @@ public class TargetingComputer {
             ? Targets.SOURCE_RIGHT.getTargetingAngle()
             : Targets.SOURCE_LEFT.getTargetingAngle();
       } else
-        return (pose.getY() > FieldConstants.fieldWidth.in(Meters) - 3)
+        return (pose.getY() < FieldConstants.fieldWidth.in(Meters) - 3)
             ? Targets.NET.getTargetingAngle()
             : Targets.PROCESSOR.getTargetingAngle();
     } else {

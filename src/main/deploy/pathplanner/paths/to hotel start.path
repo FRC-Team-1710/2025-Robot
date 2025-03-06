@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.32225,
-        "y": 5.6313524590163935
+        "x": 7.3125,
+        "y": 4.372643442622951
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.076851549888958,
-        "y": 5.6298433101021255
+        "x": 7.062535624801539,
+        "y": 4.376863766264915
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.5383196721311485,
-        "y": 5.6313524590163935
+        "x": 6.077766393442623,
+        "y": 4.372643442622951
       },
       "prevControl": {
-        "x": 6.628764090577522,
-        "y": 5.596696653037981
+        "x": 6.327718676781523,
+        "y": 4.367759176693463
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "india"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -36,19 +36,19 @@
     "maxVelocity": 5.0,
     "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -122.3806777065692
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.70404243378847
+    "rotation": -177.48863673283688
   },
   "useDefaultConstraints": true
 }
