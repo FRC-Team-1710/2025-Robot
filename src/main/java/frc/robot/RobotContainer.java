@@ -706,13 +706,14 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                (new Rotation2d(
-                                            Units.degreesToRadians(
-                                                TargetingComputer.getCurrentTargetBranch()
-                                                    .getTargetingAngle()))
-                                        .minus(drivetrain.getPose().getRotation())
-                                        .getRadians())
-                                    * rotP).times(claw.hasAlgae() ? .5 : 1))));
+                                    (new Rotation2d(
+                                                Units.degreesToRadians(
+                                                    TargetingComputer.getCurrentTargetBranch()
+                                                        .getTargetingAngle()))
+                                            .minus(drivetrain.getPose().getRotation())
+                                            .getRadians())
+                                        * rotP)
+                                .times(claw.hasAlgae() ? .5 : 1))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
