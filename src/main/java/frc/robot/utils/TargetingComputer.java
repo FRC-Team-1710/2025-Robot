@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean homeField = true; // TODO: Change before comp
+  public static final boolean homeField = false; // TODO: Change before comp
   public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -36,8 +36,8 @@ public class TargetingComputer {
   public static final double alignmentRange = 1;
   public static final double maxAlignSpeed = .3;
 
-  private static final double xOffset = 18;
-  private static final double yOffset = 8.5;
+  private static final double xOffset = 17.5;
+  private static final double yOffset = 7.5;
   private static final double homeYOffset = 1;
 
   // AprilTag Targeting
