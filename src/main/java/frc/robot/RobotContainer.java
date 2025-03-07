@@ -1038,10 +1038,12 @@ public class RobotContainer {
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    testing.a().onTrue(elevator.intake());
-    testing.b().onTrue(elevator.L2());
-    testing.x().onTrue(elevator.L3());
-    testing.y().onTrue(elevator.L4());
+    // Temp elevator tuning :)
+
+    // testing.a().onTrue(elevator.intake());
+    // testing.b().onTrue(elevator.L2());
+    // testing.x().onTrue(elevator.L3());
+    // testing.y().onTrue(elevator.L4());
   }
 
   public Command getAutonomousCommand() {
