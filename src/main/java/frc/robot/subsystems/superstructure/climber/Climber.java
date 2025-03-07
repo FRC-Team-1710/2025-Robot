@@ -27,7 +27,7 @@ public class Climber extends SubsystemBase {
 
     var config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.Audio.AllowMusicDurDisable = true;
     climber.getConfigurator().apply(config);
 
