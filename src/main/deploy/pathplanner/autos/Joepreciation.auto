@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to india start"
+            "pathName": "to Juliet start"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to India"
+            "name": "Align to Juliet"
           }
         },
         {
@@ -31,7 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "back india near"
+            "pathName": "back Juliet"
           }
         },
         {

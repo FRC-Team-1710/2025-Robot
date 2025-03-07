@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climber extends SubsystemBase {
   private TalonFX climber; // Right
   public boolean goForClimb;
+  public boolean safeToRetract = false;
 
   public Timer timer = new Timer();
 
@@ -32,6 +33,8 @@ public class Climber extends SubsystemBase {
     climber.getConfigurator().apply(config);
 
     climber.setPosition(0);
+    
+    SmartDashboard.putBoolean("safe to retract", safeToRetract);
   }
 
   public void SetClimberPower(double power) {
@@ -46,13 +49,9 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Climber Position", getPosition());
-    if (timer.get() > 15) {
-      if (m_orchestra.isPlaying()) {
-        m_orchestra.stop();
-      }
-      m_orchestra.close();
-      timer.stop();
-      timer.reset();
+    if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
+      safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
     }
+    SmartDashboard.putBoolean("safe to retract", safeToRetract);
   }
 }
