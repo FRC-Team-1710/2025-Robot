@@ -647,10 +647,8 @@ public class RobotContainer {
 
     shootAlgae
         .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
-        .onTrue(
-            new InstantCommand(() -> claw.setRollers(0.0))
-                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
-        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
