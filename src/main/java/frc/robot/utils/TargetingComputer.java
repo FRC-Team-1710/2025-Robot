@@ -199,20 +199,38 @@ public class TargetingComputer {
   }
 
   public static Pose2d getSelectTargetBranchPose(Targets target) {
-    return new Pose2d(
-            FieldConstants.aprilTags
-                .getTagPose(target.getApriltag())
-                .get()
-                .getTranslation()
-                .toTranslation2d(),
-            FieldConstants.aprilTags
-                .getTagPose(target.getApriltag())
-                .get()
-                .getRotation()
-                .toRotation2d())
-        .plus(
-            new Transform2d(
-                target.getOffset().getX(), target.getOffset().getY(), new Rotation2d(Math.PI)));
+    switch (target.gameID()) {
+      case 12, 13:
+        return new Pose2d(
+                FieldConstants.aprilTags
+                    .getTagPose(target.getApriltag())
+                    .get()
+                    .getTranslation()
+                    .toTranslation2d(),
+                FieldConstants.aprilTags
+                    .getTagPose(target.getApriltag())
+                    .get()
+                    .getRotation()
+                    .toRotation2d())
+            .plus(
+                new Transform2d(
+                    target.getOffset().getX(), target.getOffset().getY(), new Rotation2d()));
+      default:
+        return new Pose2d(
+                FieldConstants.aprilTags
+                    .getTagPose(target.getApriltag())
+                    .get()
+                    .getTranslation()
+                    .toTranslation2d(),
+                FieldConstants.aprilTags
+                    .getTagPose(target.getApriltag())
+                    .get()
+                    .getRotation()
+                    .toRotation2d())
+            .plus(
+                new Transform2d(
+                    target.getOffset().getX(), target.getOffset().getY(), new Rotation2d(Math.PI)));
+    }
   }
 
   public static boolean getAligningWithAlgae() {
@@ -480,8 +498,8 @@ public class TargetingComputer {
             Units.inchesToMeters(xOffset),
             homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
-    SOURCE_LEFT(0, 12, new Translation2d(), Levels.INTAKE),
-    SOURCE_RIGHT(0, 13, new Translation2d(), Levels.INTAKE),
+    SOURCE_LEFT(0, 12, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
+    SOURCE_RIGHT(0, 13, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
     PROCESSOR(0, 14, new Translation2d(), Levels.INTAKE),
     NET(0, 15, new Translation2d(), Levels.L4);
 
