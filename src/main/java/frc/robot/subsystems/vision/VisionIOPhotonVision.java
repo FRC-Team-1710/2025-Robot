@@ -37,6 +37,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   boolean rejectTagsFromDistance = false;
   double tagRejectionDistance = 3.5; // METERS
+  List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -285,5 +286,28 @@ public class VisionIOPhotonVision implements VisionIO {
     } else {
       cameraTargets = new ArrayList<>();
     }
+
+    // Filtering //
+    if (latestResult.hasTargets()) {
+      for (int tagIndex = 0; tagIndex < cameraTargets.size(); tagIndex++) {
+        if (bargeTagIDs.contains(cameraTargets.get(tagIndex).fiducialId)) {
+          removeTag(tagIndex);
+        }
+      }
+
+      if (rejectTagsFromDistance) {
+        List<PhotonTrackedTarget> tags = latestResult.targets;
+        for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+          if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+              > tagRejectionDistance) {
+            removeTag(tagIndex);
+          }
+        }
+      }
+    }
+  }
+
+  private void removeTag(int index) {
+    cameraTargets.remove(index);
   }
 }
