@@ -20,6 +20,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -297,6 +298,65 @@ public class Drive extends SubsystemBase {
         .until(
             () ->
                 getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
+  public Command SourceAlignment(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+
+    Pose2d selectedPos =
+        Robot.getAlliance()
+            ? new Pose2d(
+                    Units.inchesToMeters(690.876 - 33.526),
+                    Units.inchesToMeters(317 - 25.824),
+                    FieldConstants.CoralStation.rightCenterFace
+                        .getRotation()
+                        .plus(new Rotation2d(Math.PI)))
+                .plus(new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()))
+            : FieldConstants.CoralStation.rightCenterFace.plus(
+                new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()));
+
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getX() - getPose().getX()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getX() - getPose().getX()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getY() - getPose().getY()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getY() - getPose().getY()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            selectedPos.getRotation().minus(getPose().getRotation()).getRadians()
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(selectedPos).getNorm()
                     < TargetingComputer.alignmentTranslationTolerance);
   }
 

@@ -37,6 +37,12 @@
         {
           "type": "named",
           "data": {
+            "name": "Align to Source Right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "intake coral"
           }
         },
@@ -68,6 +74,12 @@
           "type": "path",
           "data": {
             "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
           }
         },
         {
