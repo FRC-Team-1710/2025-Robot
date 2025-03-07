@@ -68,6 +68,7 @@ import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -95,6 +96,11 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.1);
   private final Trigger systemsCheck = new Trigger(testController.x());
+  BooleanSupplier incrementStepSupplier =
+      () -> {
+        Logger.recordOutput("A Held?", testController.a().getAsBoolean());
+        return testController.a().getAsBoolean();
+      };
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -438,7 +444,7 @@ public class RobotContainer {
         .and(Constants::getTestMode)
         .onTrue(
             new SystemsCheck(
-                testController, drivetrain, claw, climber, elevator, funnel, manipulator));
+                incrementStepSupplier, drivetrain, claw, climber, elevator, funnel, manipulator));
 
     /* Real Robot */
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;

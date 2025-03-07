@@ -8,7 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -17,8 +16,7 @@ import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
-import frc.robot.utils.TunableController;
-import frc.robot.utils.TunableController.TunableControllerType;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Command to run through each mechanism on the robot. */
@@ -32,12 +30,7 @@ public class SystemsCheck extends Command {
   boolean isTestMode;
 
   // Temporary controller
-  private final TunableController testController =
-      new TunableController(0)
-          .withControllerType(TunableControllerType.QUADRATIC)
-          .withOutputAtDeadband(0.025)
-          .withDeadband(0.1);
-  private final Trigger incrementStep = new Trigger(testController.a());
+  BooleanSupplier incrementStepSupplier;
 
   // Subsystems
   Drive driveTrain;
@@ -60,7 +53,7 @@ public class SystemsCheck extends Command {
 
   /** Creates a new SystemsCheck. */
   public SystemsCheck(
-      TunableController testController,
+      BooleanSupplier incrementStepSupplier,
       Drive driveTrain,
       Claw clawSubsystem,
       Climber climberSubsystem,
@@ -71,6 +64,7 @@ public class SystemsCheck extends Command {
     // Test mode verification
     this.isTestMode = Constants.getTestMode();
 
+    this.incrementStepSupplier = incrementStepSupplier;
     // Subsystems
     this.driveTrain = driveTrain;
     this.clawSubsystem = clawSubsystem;
@@ -92,26 +86,23 @@ public class SystemsCheck extends Command {
   }
 
   @Override
-  public void initialize() {
-    if (!isTestMode) { // If the robot is not in test mode, immediately exits the program
-      // if this passes, WARNING LEAVE THE AREA IMMEDIATELY
-      checkComplete = true;
-    }
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
     // Record the current step of the systems check process
     Logger.recordOutput("Systems Check Step", step);
 
-    if (incrementStep.getAsBoolean()) { // Once A is pressed, commence the next step
+    initiateNextCheck();
+    if (incrementStepSupplier.getAsBoolean()) { // Once A is pressed, commence the next step
       if (!hasPressed) {
-        initiateNextCheck();
+        step++;
       }
       hasPressed = true;
     } else {
       hasPressed = false;
     }
+    Logger.recordOutput("Increment Step True?", incrementStepSupplier.getAsBoolean());
 
     if (step == 19) {
       checkComplete = true;
@@ -189,8 +180,10 @@ public class SystemsCheck extends Command {
         break;
       case 15:
         funnelSubsystem.setRollerPower(0);
+        funnelSubsystem.L1().schedule();
         break; // Engage Funnel
       case 16:
+        funnelSubsystem.intake().schedule();
         break; // Tuck Funnel
       case 17:
         manipulatorSubsystem.runPercent(0.5);
@@ -199,7 +192,5 @@ public class SystemsCheck extends Command {
       default:
         break;
     }
-
-    step++;
   }
 }

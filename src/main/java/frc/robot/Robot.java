@@ -50,7 +50,6 @@ public class Robot extends LoggedRobot {
         // Running on a real robot, log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
-        Constants.setTestMode(isTest());
         break;
 
       case SIM:
@@ -134,6 +133,7 @@ public class Robot extends LoggedRobot {
                             .get()
                             .getZ()),
                     new Rotation3d(0, 0, -Math.PI))));
+    Constants.setTestMode(isTestEnabled());
   }
 
   /** Gets the current alliance, true is red */
@@ -214,8 +214,4 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {}
-
-  public boolean isTest() {
-    return this.isTestEnabled();
-  }
 }

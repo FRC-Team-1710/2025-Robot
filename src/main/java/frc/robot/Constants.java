@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generated.TunerConstants;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -149,6 +150,7 @@ public final class Constants {
   }
 
   public static boolean getTestMode() {
+    Logger.recordOutput("Test Mode?", isTestMode);
     return isTestMode;
   }
 
