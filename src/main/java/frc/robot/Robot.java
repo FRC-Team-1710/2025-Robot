@@ -22,6 +22,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Targets;
+
+import java.lang.annotation.Target;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -188,6 +191,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override
