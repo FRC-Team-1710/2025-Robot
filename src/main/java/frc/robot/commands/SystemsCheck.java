@@ -104,7 +104,7 @@ public class SystemsCheck extends Command {
     }
     Logger.recordOutput("Increment Step True?", incrementStepSupplier.getAsBoolean());
 
-    if (step == 19) {
+    if (step == 20) {
       checkComplete = true;
     }
   }
@@ -121,74 +121,79 @@ public class SystemsCheck extends Command {
   private void initiateNextCheck() {
     switch (step) {
       case 0:
-        driveTrain.applyRequest(() -> robotCentric.withVelocityX(MaxSpeed.times(0.5)));
+        // driveTrain.applyRequest(() -> robotCentric.withVelocityX(MaxSpeed.times(0.5)));
         break;
       case 1:
-        driveTrain.applyRequest(() -> robotCentric.withVelocityX(MaxSpeed.times(-0.5)));
+        // driveTrain.applyRequest(() -> robotCentric.withVelocityX(MaxSpeed.times(-0.5)));
         break;
       case 2:
-        driveTrain.applyRequest(
-            () ->
-                robotCentric
-                    .withRotationalRate(Constants.MaxAngularRate.times(0.5))
-                    .withVelocityX(0));
+        // driveTrain.applyRequest(
+        //     () ->
+        //         robotCentric
+        //             .withRotationalRate(Constants.MaxAngularRate.times(0.5))
+        //             .withVelocityX(0));
         break;
       case 3:
-        driveTrain.applyRequest(
-            () -> robotCentric.withRotationalRate(Constants.MaxAngularRate.times(-0.5)));
+        // driveTrain.applyRequest(
+        //     () -> robotCentric.withRotationalRate(Constants.MaxAngularRate.times(-0.5)));
         break;
       case 4:
-        driveTrain.applyRequest(() -> robotCentric.withRotationalRate(0));
-        clawSubsystem.setRollers(0.5);
+        // driveTrain.applyRequest(() -> robotCentric.withRotationalRate(0));
+        clawSubsystem.setRollers(0.4);
         break;
       case 5:
-        clawSubsystem.setRollers(-0.5);
+        clawSubsystem.setRollers(0);
         break;
       case 6:
+        clawSubsystem.setRollers(-0.4);
+        break;
+      case 7:
         clawSubsystem.setRollers(0);
         clawSubsystem.PROCESSOR().schedule();
         ;
         break;
-      case 7:
+      case 8:
         clawSubsystem.IDLE().schedule();
         ;
         break;
-      case 8:
-        break; // Engage the climb
       case 9:
+        break; // Engage the climb
+      case 10:
         elevatorSubsystem.L4().schedule();
         ;
         break;
-      case 10:
+      case 11:
         elevatorSubsystem.L2().schedule();
         ;
         break;
-      case 11:
+      case 12:
         elevatorSubsystem.L3().schedule();
         ;
         break;
-      case 12:
+      case 13:
         elevatorSubsystem.L1().schedule();
         ;
         break;
-      case 13:
+      case 14:
         elevatorSubsystem.intake().schedule();
         ;
         break;
-      case 14:
+      case 15:
         funnelSubsystem.setRollerPower(0.5);
         break;
-      case 15:
+      case 16:
         funnelSubsystem.setRollerPower(0);
         funnelSubsystem.L1().schedule();
         break; // Engage Funnel
-      case 16:
+      case 17:
         funnelSubsystem.intake().schedule();
         break; // Tuck Funnel
-      case 17:
-        manipulatorSubsystem.runPercent(0.5);
       case 18:
+        manipulatorSubsystem.runPercent(0.2);
+        break;
+      case 19:
         manipulatorSubsystem.runPercent(0);
+        break;
       default:
         break;
     }
