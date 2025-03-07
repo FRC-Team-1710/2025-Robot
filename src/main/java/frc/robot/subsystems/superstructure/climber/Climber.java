@@ -33,7 +33,7 @@ public class Climber extends SubsystemBase {
     climber.getConfigurator().apply(config);
 
     climber.setPosition(0);
-    
+
     SmartDashboard.putBoolean("safe to retract", safeToRetract);
   }
 
