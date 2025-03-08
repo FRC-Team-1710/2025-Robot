@@ -101,6 +101,16 @@ public class RobotContainer {
         Logger.recordOutput("A Held?", testController.a().getAsBoolean());
         return testController.a().getAsBoolean();
       };
+  BooleanSupplier endSystemsCheck = 
+      () -> {
+        Logger.recordOutput("B Held?", testController.b().getAsBoolean());
+        return testController.b().getAsBoolean();
+      };
+  BooleanSupplier setStep =
+      () -> {
+        Logger.recordOutput("Y Held?", testController.y().getAsBoolean());
+        return testController.y().getAsBoolean();
+      };
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -444,7 +454,7 @@ public class RobotContainer {
         .and(Constants::getTestMode)
         .onTrue(
             new SystemsCheck(
-                incrementStepSupplier, drivetrain, claw, climber, elevator, funnel, manipulator));
+                incrementStepSupplier, endSystemsCheck, setStep, drivetrain, claw, climber, elevator, funnel, manipulator));
 
     /* Real Robot */
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .6;

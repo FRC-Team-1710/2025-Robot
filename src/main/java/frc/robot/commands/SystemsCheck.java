@@ -7,6 +7,7 @@ package frc.robot.commands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
@@ -31,6 +32,8 @@ public class SystemsCheck extends Command {
 
   // Temporary controller
   BooleanSupplier incrementStepSupplier;
+  BooleanSupplier endSystemsCheck;
+  BooleanSupplier setStep;
 
   // Subsystems
   Drive driveTrain;
@@ -54,6 +57,8 @@ public class SystemsCheck extends Command {
   /** Creates a new SystemsCheck. */
   public SystemsCheck(
       BooleanSupplier incrementStepSupplier,
+      BooleanSupplier endSystemsCheck,
+      BooleanSupplier setStep,
       Drive driveTrain,
       Claw clawSubsystem,
       Climber climberSubsystem,
@@ -86,14 +91,19 @@ public class SystemsCheck extends Command {
   }
 
   @Override
-  public void initialize() {}
+  public void initialize() {
+    SmartDashboard.putNumber("Set Step", step);
+  }
 
   @Override
   public void execute() {
+    if (endSystemsCheck.getAsBoolean()) {
+      checkComplete  = true;
+    }
+
     // Record the current step of the systems check process
     Logger.recordOutput("Systems Check Step", step);
 
-    initiateNextCheck();
     if (incrementStepSupplier.getAsBoolean()) { // Once A is pressed, commence the next step
       if (!hasPressed) {
         step++;
@@ -103,6 +113,12 @@ public class SystemsCheck extends Command {
       hasPressed = false;
     }
     Logger.recordOutput("Increment Step True?", incrementStepSupplier.getAsBoolean());
+
+    if (setStep.getAsBoolean()) {
+      step = (int) SmartDashboard.getNumber("Set Step", step);
+    }
+
+    initiateNextCheck();
 
     if (step == 20) {
       checkComplete = true;
