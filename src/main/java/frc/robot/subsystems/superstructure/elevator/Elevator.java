@@ -98,12 +98,12 @@ public class Elevator extends SubsystemBase {
   public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the elevator
     INTAKE(Inches.of(0), Inches.of(1.25)), // Elevator tucked in
-    L1(Inches.of(0), Inches.of(.5)), // Position for scoring in L1
-    L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
-    L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
-    L4(Inches.of(54.5), Inches.of(.5)), // Position for scoring in L4
-    ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
-    ALGAE_HIGH(Inches.of(26.5), Inches.of(1)); // Position for grabbing high algae
+    L1(Inches.of(0), Inches.of(1.5)), // Position for scoring in L1
+    L2(Inches.of(15.75), Inches.of(1.5)), // Position for scoring in L2
+    L3(Inches.of(32.25), Inches.of(1.5)), // Position for scoring in L3
+    L4(Inches.of(54.5), Inches.of(1.5)), // Position for scoring in L4
+    ALGAE_LOW(Inches.of(10), Inches.of(1.5)), // Position for grabbing low algae
+    ALGAE_HIGH(Inches.of(26.5), Inches.of(1.5)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
