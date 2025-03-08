@@ -44,15 +44,15 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   public final CANcoder encoder = new CANcoder(13);
 
-  private double kP = 1.0;
+  private double kP = 0.5;
   private double kI = 0.0;
   private double kD = 0.0;
-  private double kS = 0.35;
-  private double kG = 0.3;
+  private double kS = 0.175;
+  private double kG = 0.2;
   private double kV = 0.0;
   private double kA = 0.0;
   private double kVel = 200;
-  private double kAcel = 175;
+  private double kAcel = 75;
 
   private boolean locked = false;
 
@@ -225,7 +225,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
     inputs.elevatorDistance =
-        Conversions.rotationsToDistance(inputs.encoderPosition, CANCODER_GEAR_RATIO, encoderRadius);
+        Conversions.rotationsToDistance(inputs.leaderPosition, GEAR_RATIO, elevatorRadius);
     inputs.elevatorSetpoint = setpoint;
 
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.magnitude());
@@ -259,13 +259,11 @@ public class ElevatorIOCTRE implements ElevatorIO {
   @Override
   public void stopHere() {
     elevatorPID.reset(
-        Conversions.rotationsToDistance(
-                encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
+        Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius)
             .magnitude(),
         0);
     setpoint =
-        Conversions.rotationsToDistance(
-            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
+        Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
     locked = true;
   }
 
@@ -278,6 +276,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   @Override
   public void zero() {
     encoder.setPosition(0);
+    leader.setPosition(0);
   }
 
   /**
