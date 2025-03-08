@@ -83,6 +83,7 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
+    /** Port 5  */
   private final TunableController testing =
       new TunableController(5)
           .withControllerType(TunableControllerType.QUADRATIC)
@@ -1043,10 +1044,10 @@ public class RobotContainer {
 
     // Temp elevator tuning :)
 
-    // testing.a().onTrue(elevator.intake());
-    // testing.b().onTrue(elevator.L2());
-    // testing.x().onTrue(elevator.L3());
-    // testing.y().onTrue(elevator.L4());
+    testing.a().onTrue(elevator.intake());
+    testing.b().onTrue(elevator.L2());
+    testing.x().onTrue(elevator.L3());
+    testing.y().onTrue(elevator.L4());
   }
 
   public Command getAutonomousCommand() {
