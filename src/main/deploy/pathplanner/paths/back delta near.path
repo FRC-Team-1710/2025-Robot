@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.536372950819672,
-        "y": 2.1069672131147548
+        "x": 3.419087837837838,
+        "y": 2.1375844594594584
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4148773402605572,
-        "y": 1.5318346134891219
+        "x": 2.2975922272787233,
+        "y": 1.5624518598338255
       },
       "isLocked": false,
       "linkedName": "delta"
@@ -62,7 +62,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }
