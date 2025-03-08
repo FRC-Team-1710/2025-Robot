@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -45,8 +44,6 @@ public class Vision extends SubsystemBase {
     17, 18, 19, 20, 21, 22
   };
 
-  private boolean[] rejectCamera = {false, false, false, false};
-
   /**
    * Creates a new Vision subsystem.
    *
@@ -70,11 +67,6 @@ public class Vision extends SubsystemBase {
       disconnectedAlerts[i] =
           new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
     }
-
-    SmartDashboard.putBoolean("Disable Front Left Cam", false);
-    SmartDashboard.putBoolean("Disable Front Right Cam", false);
-    SmartDashboard.putBoolean("Disable Back Left Cam", false);
-    SmartDashboard.putBoolean("Disable Back Right Cam", false);
   }
 
   @Override
@@ -308,13 +300,6 @@ public class Vision extends SubsystemBase {
    * @return Processed VisionData for this camera
    */
   private VisionData processCamera(int cameraIndex, VisionIOInputs input) {
-    rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
-    rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
-    rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
-    rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
-
-    if (rejectCamera[cameraIndex]) return VisionData.empty();
-
     PoseObservation[] poseObservations = {
       new PoseObservation(input.poseEstimateMT1, input.rawFiducialsMT1),
       new PoseObservation(input.poseEstimateMT2, input.rawFiducialsMT2)
