@@ -20,6 +20,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -34,6 +35,8 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -180,6 +183,9 @@ public class Drive extends SubsystemBase {
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
+  // logging
+  private Field2d m_field = new Field2d();
+
   public Drive(DriveIO io) {
 
     this.io = io;
@@ -295,6 +301,65 @@ public class Drive extends SubsystemBase {
                     < TargetingComputer.alignmentTranslationTolerance);
   }
 
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
+  public Command SourceAlignment(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+
+    Pose2d selectedPos =
+        Robot.getAlliance()
+            ? new Pose2d(
+                    Units.inchesToMeters(690.876 - 33.526),
+                    Units.inchesToMeters(317 - 25.824),
+                    FieldConstants.CoralStation.rightCenterFace
+                        .getRotation()
+                        .plus(new Rotation2d(Math.PI)))
+                .plus(new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()))
+            : FieldConstants.CoralStation.rightCenterFace.plus(
+                new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()));
+
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getX() - getPose().getX()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getX() - getPose().getX()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getY() - getPose().getY()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getY() - getPose().getY()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            selectedPos.getRotation().minus(getPose().getRotation()).getRadians()
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(selectedPos).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
   public Command stop(RobotCentric requestSupplier) {
     return run(
         () ->
@@ -375,6 +440,9 @@ public class Drive extends SubsystemBase {
         "distance to target",
         Units.metersToInches(
             getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()));
+
+    m_field.setRobotPose(getPose());
+    SmartDashboard.putData("field", m_field);
   }
 
   public void resetPose(Pose2d pose) {

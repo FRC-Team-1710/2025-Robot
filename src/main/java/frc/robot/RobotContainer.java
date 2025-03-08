@@ -83,6 +83,12 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
+  private final TunableController testing =
+      new TunableController(5)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
+
   private final Joystick reefTargetingSystem = new Joystick(2);
 
   private final TunableController sysID = new TunableController(3);
@@ -377,7 +383,11 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Align to Lima", drivetrain.Alignment(drive, Targets.LIMA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Source", drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+        "Align to Source Right",
+        drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Source Left",
+        drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
     NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
@@ -647,10 +657,8 @@ public class RobotContainer {
 
     shootAlgae
         .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
-        .onTrue(
-            new InstantCommand(() -> claw.setRollers(0.0))
-                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
-        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
@@ -888,10 +896,10 @@ public class RobotContainer {
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single
 
-    mech.rightBumper().and(mech.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    mech.rightBumper().and(mech.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    mech.leftBumper().and(mech.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    mech.leftBumper().and(mech.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    sysID.rightBumper().and(sysID.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
     driver
@@ -948,7 +956,7 @@ public class RobotContainer {
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     climberUp.whileTrue(new ManualClimb(climber, () -> .2));
-    climberDown.whileTrue(new ManualClimb(climber, () -> -.2));
+    climberDown.whileTrue(new ManualClimb(climber, () -> -.2).onlyIf(() -> climber.safeToRetract));
 
     /* Targeting Controller Bindings */
     alphaButton
@@ -1032,6 +1040,13 @@ public class RobotContainer {
     sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    // Temp elevator tuning :)
+
+    // testing.a().onTrue(elevator.intake());
+    // testing.b().onTrue(elevator.L2());
+    // testing.x().onTrue(elevator.L3());
+    // testing.y().onTrue(elevator.L4());
   }
 
   public Command getAutonomousCommand() {

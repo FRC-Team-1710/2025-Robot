@@ -44,12 +44,12 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   public final CANcoder encoder = new CANcoder(13);
 
-  private double kP = 1;
+  private double kP = 1.5;
   private double kI = 0.0;
   private double kD = 0.0;
-  private double kS = 0.2;
-  private double kG = 0.35;
-  private double kV = 0.05;
+  private double kS = 0.35;
+  private double kG = 0.3;
+  private double kV = 0.0;
   private double kA = 0.0;
   private double kVel = 200;
   private double kAcel = 175;
