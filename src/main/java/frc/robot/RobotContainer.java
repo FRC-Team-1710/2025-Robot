@@ -385,6 +385,9 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Align to Source Right",
         drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Source Left",
+        drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
     NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
