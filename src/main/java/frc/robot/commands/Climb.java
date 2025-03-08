@@ -10,7 +10,7 @@ import frc.robot.subsystems.superstructure.climber.Climber;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Climb extends Command {
   Climber climber;
-  double targetRotations = 0.1;
+  double targetRotations = 8.2;
   /** Creates a new Climb. */
   public Climb(Climber climber) {
     this.climber = new Climber();
@@ -20,7 +20,7 @@ public class Climb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    climber.SetClimberPower(-.5);
+    climber.SetClimberPower(.5);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -36,6 +36,6 @@ public class Climb extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return climber.getPosition() < targetRotations;
+    return climber.getPosition() > targetRotations;
   }
 }

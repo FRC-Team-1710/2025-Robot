@@ -62,6 +62,15 @@ public class VisionIOPhotonVision implements VisionIO {
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
+    if (rejectTagsFromDistance && latestResult.hasTargets()) {
+      List<PhotonTrackedTarget> tags = latestResult.targets;
+      for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+        if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+            > tagRejectionDistance) {
+          latestResult.targets.remove(tagIndex);
+        }
+      }
+    }
 
     if (latestResult.hasTargets()) {
       var multitagResult = latestResult.getMultiTagResult();

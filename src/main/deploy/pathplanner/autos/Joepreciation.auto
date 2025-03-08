@@ -7,25 +7,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to foxtrot start"
+            "pathName": "to Juliet start"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Foxtrot"
+            "name": "Align to Juliet"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "outtake coral"
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "back foxtrot near"
+            "pathName": "back Juliet"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
           }
         },
         {
@@ -35,33 +47,39 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "to kilo near"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "end intake"
+            "name": "Align to Kilo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "to charlie near"
+            "pathName": "back Kilo near"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Charlie"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back charlie near"
+            "name": "Align to Source Right"
           }
         },
         {
@@ -71,33 +89,39 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "to Lima near"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "end intake"
+            "name": "Align to Lima"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "to delta near"
+            "pathName": "back Lima near"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Echo"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtake coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back delta near"
+            "name": "Align to Source Right"
           }
         },
         {
@@ -107,21 +131,27 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "end intake"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "to echo near"
+            "pathName": "flipped to alpha near"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "outtake coral"
+            "name": "Align to Alpha"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
           }
         }
       ]

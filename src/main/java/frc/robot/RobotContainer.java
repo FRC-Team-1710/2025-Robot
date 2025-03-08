@@ -86,6 +86,13 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
+  /** Port 5 */
+  private final TunableController testing =
+      new TunableController(5)
+          .withControllerType(TunableControllerType.QUADRATIC)
+          .withOutputAtDeadband(0.025)
+          .withDeadband(0.125);
+
   private final Joystick reefTargetingSystem = new Joystick(2);
 
   private final TunableController sysID = new TunableController(3);
@@ -402,7 +409,10 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Align to Lima", drivetrain.Alignment(drive, Targets.LIMA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Source", drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+        "Align to Source Right",
+        drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+    NamedCommands.registerCommand(
+        "Align to Source Left", drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
     NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
@@ -417,7 +427,11 @@ public class RobotContainer {
             .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
     NamedCommands.registerCommand(
         "L4",
-        elevator.L4().alongWith(drivetrain.stop(robotCentric)).until(() -> elevator.isAtTarget()));
+        elevator
+            .L4()
+            .alongWith(drivetrain.stop(robotCentric))
+            .until(() -> elevator.isAtTarget())
+            .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
     NamedCommands.registerCommand(
         "intake position",
         elevator
@@ -474,7 +488,7 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
 
-    driverDown.onTrue(funnel.L1()).onFalse(funnel.intake());
+    driverUp.onTrue(funnel.L1()).onFalse(funnel.intake());
 
     new Trigger(() -> claw.hasAlgae())
         .onTrue(new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(true)))
@@ -580,7 +594,14 @@ public class RobotContainer {
     placeL4
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(new ElevatorToTargetLevel(elevator)))
+                .alongWith(new ElevatorToTargetLevel(elevator))
+                .alongWith(
+                    claw.NET()
+                        .onlyIf(
+                            () ->
+                                TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                                        == TargetingComputer.Targets.NET.getTargetingAngle()
+                                    && targetSource.getAsBoolean())))
         .onFalse(elevator.intake().unless(targetReef).alongWith(claw.IDLE()))
         .and(
             () ->
@@ -672,10 +693,8 @@ public class RobotContainer {
 
     shootAlgae
         .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
-        .onTrue(
-            new InstantCommand(() -> claw.setRollers(0.0))
-                .alongWith(new InstantCommand(() -> claw.setBrake(false))))
-        .onFalse(new InstantCommand(() -> claw.setBrake(false)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
@@ -789,24 +808,26 @@ public class RobotContainer {
                     drive
                         .withVelocityX(
                             MaxSpeed.times(
-                                (TargetingComputer.getCurrentTargetBranchPose().getX()
+                                    ((TargetingComputer.getCurrentTargetBranchPose().getX()
+                                                    - drivetrain.getPose().getX()))
+                                                * alignP
+                                            > TargetingComputer.maxAlignSpeed
+                                        ? TargetingComputer.maxAlignSpeed
+                                        : (TargetingComputer.getCurrentTargetBranchPose().getX()
                                                 - drivetrain.getPose().getX())
-                                            * alignP
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
-                                    : (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                            - drivetrain.getPose().getX())
-                                        * alignP))
+                                            * alignP)
+                                .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
-                                (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                    (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                                    - drivetrain.getPose().getY())
+                                                * alignP
+                                            > TargetingComputer.maxAlignSpeed
+                                        ? TargetingComputer.maxAlignSpeed
+                                        : (TargetingComputer.getCurrentTargetBranchPose().getY()
                                                 - drivetrain.getPose().getY())
-                                            * alignP
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
-                                    : (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                            - drivetrain.getPose().getY())
-                                        * alignP))
+                                            * alignP)
+                                .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
                                     (new Rotation2d(
@@ -911,10 +932,10 @@ public class RobotContainer {
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single
 
-    mech.rightBumper().and(mech.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    mech.rightBumper().and(mech.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    mech.leftBumper().and(mech.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    mech.leftBumper().and(mech.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    sysID.rightBumper().and(sysID.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
     driver
@@ -926,7 +947,7 @@ public class RobotContainer {
                         new Pose2d(
                             drivetrain.getPose().getX(),
                             drivetrain.getPose().getY(),
-                            new Rotation2d()))));
+                            new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
 
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
@@ -971,7 +992,7 @@ public class RobotContainer {
         new InstantCommand(TargetingComputer::toggleTargetingControllerOverride));
 
     climberUp.whileTrue(new ManualClimb(climber, () -> .2));
-    climberDown.whileTrue(new ManualClimb(climber, () -> -.2));
+    climberDown.whileTrue(new ManualClimb(climber, () -> -.2).onlyIf(() -> climber.safeToRetract));
 
     /* Targeting Controller Bindings */
     alphaButton
@@ -1055,6 +1076,13 @@ public class RobotContainer {
     sysID.rightBumper().and(sysID.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     sysID.leftBumper().and(sysID.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    // Temp elevator tuning :)
+
+    testing.a().onTrue(elevator.intake());
+    testing.b().onTrue(elevator.L2());
+    testing.x().onTrue(elevator.L3());
+    testing.y().onTrue(elevator.L4());
   }
 
   public Command getAutonomousCommand() {

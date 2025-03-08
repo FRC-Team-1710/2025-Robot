@@ -19,7 +19,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {
@@ -32,6 +32,12 @@
           "type": "path",
           "data": {
             "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
           }
         },
         {
@@ -55,7 +61,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {
@@ -68,6 +74,12 @@
           "type": "path",
           "data": {
             "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
           }
         },
         {
@@ -91,7 +103,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L2"
+            "name": "L4"
           }
         },
         {

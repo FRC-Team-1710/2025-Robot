@@ -1,14 +1,3 @@
-// Copyright FRC 5712
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.*;
@@ -26,16 +15,15 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Elevator subsystem controls a dual-motor arm mechanism for game piece manipulation. It
- * supports multiple distances for different game actions and provides both open-loop and
- * closed-loop control options.
+ * The Elevator subsystem controls a dual-motor mechanism for game piece manipulation. It supports
+ * multiple distances for different game actions
  */
 public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;
 
-  // Current arm distance mode
+  // Current elevator distance mode
   private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
 
   // Alerts for motor connection status
@@ -47,7 +35,7 @@ public class Elevator extends SubsystemBase {
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
-   * @param io The hardware interface implementation for the arm
+   * @param io The hardware interface implementation for the elevator
    */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -67,7 +55,7 @@ public class Elevator extends SubsystemBase {
   }
 
   /**
-   * Runs the arm in closed-loop distance mode to the specified angle.
+   * Runs the elevator in distance mode to the specified distance.
    *
    * @param distance The target angle distance
    */
@@ -75,6 +63,9 @@ public class Elevator extends SubsystemBase {
     io.setDistance(distance);
   }
 
+  /**
+   * @param power power between -1 & 1
+   */
   public void setManual(double power) {
     io.setManual(power);
   }
@@ -83,29 +74,30 @@ public class Elevator extends SubsystemBase {
     io.stopHere();
   }
 
-  /** Stops the arm motors. */
+  /** Stops the elevator motors. */
   private void stop() {
     io.stop();
   }
 
+  /** Sets the current potentiometer position to zero */
   public void zero() {
     io.zero();
   }
 
   /**
-   * Returns the current distance of the arm.
+   * Returns the current distance of the elevator.
    *
-   * @return The current angular distance
+   * @return The current distance (Inches)
    */
   @AutoLogOutput
   public Distance getPosition() {
     return inputs.elevatorDistance;
   }
 
-  /** Enumeration of available arm distances with their corresponding target angles. */
+  /** Enumeration of available elevator distances with their corresponding target angles. */
   public enum ElevatorPosition {
-    STOP(Inches.of(0)), // Stop the arm
-    INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
+    STOP(Inches.of(0)), // Stop the elevator
+    INTAKE(Inches.of(0), Inches.of(1.25)), // Elevator tucked in
     L1(Inches.of(0), Inches.of(.5)), // Position for scoring in L1
     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
     L3(Inches.of(32.25), Inches.of(.5)), // Position for scoring in L3
@@ -122,12 +114,12 @@ public class Elevator extends SubsystemBase {
     }
 
     ElevatorPosition(Distance targetDistance) {
-      this(targetDistance, Inches.of(2)); // 2 degree default tolerance
+      this(targetDistance, Inches.of(2)); // 2 inch default tolerance
     }
   }
 
   /**
-   * Gets the current arm distance mode.
+   * Gets the current elevator distance mode.
    *
    * @return The current ElevatorPosition
    */
@@ -135,12 +127,15 @@ public class Elevator extends SubsystemBase {
     return currentMode;
   }
 
+  /**
+   * @return if elevator is ready to intake
+   */
   public boolean isAtIntake() {
     return isAtTarget() && getMode() == ElevatorPosition.INTAKE;
   }
 
   /**
-   * Sets a new arm distance and schedules the corresponding command.
+   * Sets a new elevator distance and schedules the corresponding command.
    *
    * @param mode The desired ElevatorPosition
    */
