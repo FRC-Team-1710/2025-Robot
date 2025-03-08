@@ -83,7 +83,7 @@ public class RobotContainer {
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
-    /** Port 5  */
+  /** Port 5 */
   private final TunableController testing =
       new TunableController(5)
           .withControllerType(TunableControllerType.QUADRATIC)
@@ -387,8 +387,7 @@ public class RobotContainer {
         "Align to Source Right",
         drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Source Left",
-        drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
+        "Align to Source Left", drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
     NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
