@@ -478,7 +478,7 @@ public class RobotContainer {
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
     // .rightBumper()
-    // .whileTrue(new IntakeCoral(manipulator, funnel, driver))
+    // .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
     // .onFalse(new EndIntake(manipulator, funnel));
 
     driverUp
@@ -892,7 +892,7 @@ public class RobotContainer {
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
         .whileTrue(
-            new IntakeCoral(manipulator, funnel, driver)
+            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
                 .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
             new EndIntake(manipulator, funnel, mech.leftBumper())
@@ -985,7 +985,7 @@ public class RobotContainer {
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver))
+        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     overrideTargetingController.onTrue(
