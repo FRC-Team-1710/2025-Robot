@@ -61,6 +61,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
+import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
@@ -610,8 +611,11 @@ public class RobotContainer {
                 .alongWith(
                     new ElevatorToTargetLevel(elevator)
                         .alongWith(claw.GRAB().alongWith(new GrabAlgae(claw)))
-                        .onlyIf(
-                            () -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean())));
+                        .onlyIf(() -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean()))
+                .unless(
+                    () ->
+                        TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                            == TargetingComputer.Targets.NET.getTargetingAngle()));
 
     grabAlgae
         .and(targetReef)
@@ -644,7 +648,12 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
     grabAlgae
-        .and(() -> claw.hasAlgae() && !targetReef.getAsBoolean())
+        .and(
+            () ->
+                claw.hasAlgae()
+                    && !targetReef.getAsBoolean()
+                    && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                        != TargetingComputer.Targets.NET.getTargetingAngle())
         .onTrue(claw.PROCESSOR())
         .onFalse(claw.IDLE());
 
@@ -735,14 +744,24 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                    (new Rotation2d(
+                                (new Rotation2d(
+                                                        Units.degreesToRadians(
+                                                            TargetingComputer
+                                                                .getCurrentTargetBranch()
+                                                                .getTargetingAngle()))
+                                                    .minus(drivetrain.getPose().getRotation())
+                                                    .getRadians())
+                                                * rotP
+                                            > .5
+                                        && claw.hasAlgae()
+                                    ? .5
+                                    : (new Rotation2d(
                                                 Units.degreesToRadians(
                                                     TargetingComputer.getCurrentTargetBranch()
-                                                        .getTargetingAngle()))
+                                                        .getTargetingAngle())))
                                             .minus(drivetrain.getPose().getRotation())
-                                            .getRadians())
-                                        * rotP)
-                                .times(claw.hasAlgae() ? .5 : 1))));
+                                            .getRadians()
+                                        * rotP))));
 
     // targetReef // Allows the robot to start moving and also sets whether the left
     // side is true or
@@ -794,14 +813,24 @@ public class RobotContainer {
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                    (new Rotation2d(
+                                (new Rotation2d(
+                                                        Units.degreesToRadians(
+                                                            TargetingComputer
+                                                                .getCurrentTargetBranch()
+                                                                .getTargetingAngle()))
+                                                    .minus(drivetrain.getPose().getRotation())
+                                                    .getRadians())
+                                                * rotP
+                                            > .5
+                                        && claw.hasAlgae()
+                                    ? .5
+                                    : (new Rotation2d(
                                                 Units.degreesToRadians(
                                                     TargetingComputer.getCurrentTargetBranch()
-                                                        .getTargetingAngle()))
+                                                        .getTargetingAngle())))
                                             .minus(drivetrain.getPose().getRotation())
-                                            .getRadians())
-                                        * rotP)
-                                .times(claw.hasAlgae() ? .5 : 1))))
+                                            .getRadians()
+                                        * rotP))))
         .onFalse(
             elevator
                 .intake()
@@ -842,14 +871,24 @@ public class RobotContainer {
                         .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
                         .withRotationalRate(
                             Constants.MaxAngularRate.times(
-                                    (new Rotation2d(
+                                (new Rotation2d(
+                                                        Units.degreesToRadians(
+                                                            TargetingComputer
+                                                                .getSourceTargetingAngle(
+                                                                    drivetrain.getPose())))
+                                                    .minus(drivetrain.getPose().getRotation())
+                                                    .getRadians())
+                                                * rotP
+                                            > .5
+                                        && claw.hasAlgae()
+                                    ? .5
+                                    : (new Rotation2d(
                                                 Units.degreesToRadians(
                                                     TargetingComputer.getSourceTargetingAngle(
-                                                        drivetrain.getPose())))
+                                                        drivetrain.getPose()))))
                                             .minus(drivetrain.getPose().getRotation())
-                                            .getRadians())
-                                        * rotP)
-                                .times(claw.hasAlgae() ? .5 : 1))))
+                                            .getRadians()
+                                        * rotP))))
         .and(
             () ->
                 !TargetingComputer.stillOuttakingAlgae
@@ -864,7 +903,72 @@ public class RobotContainer {
 
     targetSource
         .and(() -> claw.hasAlgae())
-        .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true)));
+        .onTrue(new InstantCommand(() -> TargetingComputer.setStillOuttakingAlgae(true)))
+        .and(
+            () ->
+                TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                    == TargetingComputer.Targets.NET.getTargetingAngle())
+        .and(grabAlgae)
+        .onTrue(elevator.L4().alongWith(claw.NET()))
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                    ((FieldConstants.aprilTags
+                                                        .getTagPose(
+                                                            TargetingComputer.Targets.NET
+                                                                .getApriltag())
+                                                        .get()
+                                                        .getX()
+                                                    + (Robot.getAlliance()
+                                                        ? TargetingComputer.Targets.NET
+                                                            .getOffset()
+                                                            .getX()
+                                                        : -TargetingComputer.Targets.NET
+                                                            .getOffset()
+                                                            .getX())
+                                                    - drivetrain.getPose().getX()))
+                                                * alignP
+                                            > TargetingComputer.maxAlignSpeed
+                                        ? TargetingComputer.maxAlignSpeed
+                                        : (FieldConstants.aprilTags
+                                                    .getTagPose(
+                                                        TargetingComputer.Targets.NET.getApriltag())
+                                                    .get()
+                                                    .getX()
+                                                + (Robot.getAlliance()
+                                                    ? TargetingComputer.Targets.NET
+                                                        .getOffset()
+                                                        .getX()
+                                                    : -TargetingComputer.Targets.NET
+                                                        .getOffset()
+                                                        .getX())
+                                                - drivetrain.getPose().getX())
+                                            * alignP)
+                                .times(Robot.getAlliance() ? -1 : 1))
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX() * .5))
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                (new Rotation2d(
+                                                        Units.degreesToRadians(
+                                                            TargetingComputer
+                                                                .getSourceTargetingAngle(
+                                                                    drivetrain.getPose())))
+                                                    .minus(drivetrain.getPose().getRotation())
+                                                    .getRadians())
+                                                * rotP
+                                            > .5
+                                        && claw.hasAlgae()
+                                    ? .5
+                                    : (new Rotation2d(
+                                                Units.degreesToRadians(
+                                                    TargetingComputer.getSourceTargetingAngle(
+                                                        drivetrain.getPose()))))
+                                            .minus(drivetrain.getPose().getRotation())
+                                            .getRadians()
+                                        * rotP))));
 
     // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED.
     // Instructions

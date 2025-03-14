@@ -501,7 +501,7 @@ public class TargetingComputer {
     SOURCE_LEFT(0, 12, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
     PROCESSOR(0, 14, new Translation2d(), Levels.INTAKE),
-    NET(0, 15, new Translation2d(), Levels.L4);
+    NET(0, 15, new Translation2d(1.75, Units.inchesToMeters(0)), Levels.L4);
 
     public final int preferredCamera;
     public final int gameID;
