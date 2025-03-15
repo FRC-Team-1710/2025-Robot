@@ -488,7 +488,7 @@ public class LimelightHelpers {
       double avgTagDist,
       double avgTagArea,
       double ambiguity,
-      AngularVelocity yawVelocity,
+      double yawVelocity,
       Pose2d robotPose,
       boolean isMegaTag2) {
 
@@ -741,7 +741,7 @@ public class LimelightHelpers {
             tagDist,
             tagArea,
             ambiguity,
-            RadiansPerSecond.of(0),
+            0,
             Pose2d.kZero,
             isMegaTag2),
         rawFiducials);

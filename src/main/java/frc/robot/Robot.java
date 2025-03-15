@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.FieldConstants;
-import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
 import java.util.Optional;
@@ -33,6 +32,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
+  // Configuration constants
+  public static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
 
   private final RobotContainer m_robotContainer;
 
@@ -42,8 +43,6 @@ public class Robot extends LoggedRobot {
   public Robot() {
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
-
-    Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
@@ -89,6 +88,10 @@ public class Robot extends LoggedRobot {
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
+    // Warmup the PPLib library
+
+    FollowPathCommand.warmupCommand().schedule();
+
     m_robotContainer = new RobotContainer();
 
     m_gcTimer.start();
@@ -96,7 +99,6 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    Threads.setCurrentThreadPriority(true, 99);
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
@@ -162,6 +164,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
+    BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
 
@@ -176,10 +179,15 @@ public class Robot extends LoggedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    } // Somehow this makes it so that when A-Stop is hit it doesnt run during teleop :shrug:
+  }
 
   @Override
   public void teleopInit() {
+    BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
     if (TargetingComputer.gameMode) {

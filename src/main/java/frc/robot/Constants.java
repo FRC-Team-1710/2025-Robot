@@ -1,5 +1,9 @@
 // Copyright (c) 2025 FRC 5712
+// Copyright (c) 2025 FRC 5712
 //
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
 // the root directory of this project.
@@ -11,6 +15,8 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -45,7 +51,9 @@ public final class Constants {
       KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.7112 / 2) * (0.001703 / 0.0029193));
 
   private static final double WHEEL_COF = 1.5;
-  public static final SwerveModuleConstants SWERVE_MODULE_CONSTANTS = TunerConstants.FrontLeft;
+  public static final SwerveModuleConstants<
+          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+      SWERVE_MODULE_CONSTANTS = TunerConstants.FrontLeft;
   public static final Translation2d[] SWERVE_MODULE_OFFSETS =
       new Translation2d[] {
         new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),

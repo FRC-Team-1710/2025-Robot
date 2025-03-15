@@ -4,6 +4,12 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
@@ -24,6 +30,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.PoseObservation;
+import frc.robot.Robot;
 import frc.robot.utils.FieldConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,15 +41,13 @@ import java.util.List;
  * vision systems.
  */
 public class VisionUtil {
-  // Configuration constants
-  private static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
   public static final Distance FIELD_MARGIN =
       Meters.of(0.5); // Meters beyond field boundaries to accept measurements
   public static final Distance Z_MARGIN =
       Meters.of(0.5); // Meters above/below field to accept measurements
   public static final AngularVelocity MT2_SPIN_MAX =
       DegreesPerSecond.of(40.0); // Maximum rotation speed for MT2 measurements
-  public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted (Default 0.05)
+  public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
@@ -237,8 +242,7 @@ public class VisionUtil {
       return !invalidPose(poseEst.pose())
           && !invalidMT2Time(poseEst)
           && !invalidRotationVelocity(poseEst)
-          && !invalidAmbiguity(poseEst)
-          && !invalidTagArea(poseEst);
+          && !invalidAmbiguity(poseEst);
     }
   }
 
@@ -302,7 +306,7 @@ public class VisionUtil {
    * @return True if the measurement is invalid due to timing constraints
    */
   private static boolean invalidMT2Time(PoseEstimate mt) {
-    return mt.isMegaTag2() && beforeMatch();
+    return mt.isMegaTag2() && Robot.BEFORE_MATCH;
   }
 
   /**
@@ -312,7 +316,7 @@ public class VisionUtil {
    * @return True if the rotation velocity exceeds the maximum allowed speed
    */
   private static boolean invalidRotationVelocity(PoseEstimate mt) {
-    return mt.yawVelocity().abs(RadiansPerSecond) > MT2_SPIN_MAX.in(RadiansPerSecond);
+    return Math.abs(mt.yawVelocity()) > MT2_SPIN_MAX.in(DegreesPerSecond);
   }
 
   /**
@@ -348,18 +352,5 @@ public class VisionUtil {
    */
   private static boolean invalidTagArea(PoseEstimate mt) {
     return mt.avgTagArea() < MIN_TAG_AREA;
-  }
-
-  /**
-   * Checks if the robot is in the pre-match phase where only MT1 should be used. Updates the
-   * BEFORE_MATCH flag when the robot becomes enabled.
-   *
-   * @return True if the robot is in pre-match phase
-   */
-  public static boolean beforeMatch() {
-    if (DriverStation.isEnabled()) {
-      BEFORE_MATCH = false;
-    }
-    return BEFORE_MATCH;
   }
 }
