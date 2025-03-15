@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean homeField = false; // TODO: Change before comp
+  public static final boolean homeField = true; // TODO: Change before comp
   public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -498,8 +498,8 @@ public class TargetingComputer {
             Units.inchesToMeters(xOffset),
             homeField ? Units.inchesToMeters(6.5 + homeYOffset) : Units.inchesToMeters(yOffset)),
         Levels.ALGAE_LOW),
-    SOURCE_LEFT(0, 12, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
-    SOURCE_RIGHT(0, 13, new Translation2d(Units.inchesToMeters(16), 0), Levels.INTAKE),
+    SOURCE_LEFT(0, 12, new Translation2d(Units.inchesToMeters(15.5), 0), Levels.INTAKE),
+    SOURCE_RIGHT(0, 13, new Translation2d(Units.inchesToMeters(15.5), 0), Levels.INTAKE),
     PROCESSOR(0, 14, new Translation2d(), Levels.INTAKE),
     NET(0, 15, new Translation2d(1.75, Units.inchesToMeters(0)), Levels.L4);
 

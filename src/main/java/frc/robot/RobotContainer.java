@@ -39,6 +39,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
+import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
@@ -438,6 +439,19 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED.
+    // Instructions
+    // can be found here
+    // https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-tuning.html
+    SwerveSetpointGen setpointGen =
+        new SwerveSetpointGen(
+                drivetrain.getChassisSpeeds(),
+                drivetrain.getModuleStates(),
+                drivetrain::getRotation)
+            .withDeadband(MaxSpeed.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .8;
     double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
 
@@ -492,7 +506,7 @@ public class RobotContainer {
         // Drivetrain will execute this command periodically
         drivetrain.applyRequest(
             () ->
-                drive
+                setpointGen
                     .withVelocityX(
                         MaxSpeed.times(
                             -driver.customLeft().getY())) // Drive forward with negative Y (forward)
@@ -735,7 +749,7 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
+                    setpointGen
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -788,7 +802,7 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
+                    setpointGen
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
@@ -862,7 +876,7 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
+                    setpointGen
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -913,7 +927,7 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    drive
+                    setpointGen
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((FieldConstants.aprilTags
@@ -970,32 +984,18 @@ public class RobotContainer {
                                             .getRadians()
                                         * rotP))));
 
-    // Custom Swerve Request that use PathPlanner Setpoint Generator. Tuning NEEDED.
-    // Instructions
-    // can be found here
-    // https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-tuning.html
-    // SwerveSetpointGen setpointGen =
-    // new SwerveSetpointGen(
-    // drivetrain.getChassisSpeeds(),
-    // drivetrain.getModuleStates(),
-    // drivetrain::getRotation)
-    // .withDeadband(MaxSpeed.times(0.025))
-    // .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
-    // .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-    // driver
-    // .x()
-    // .whileTrue(
-    // drivetrain.applyRequest(
-    // () ->
-    // setpointGen
-    // .withVelocityX(
-    // MaxSpeed.times(
-    // -driver.getLeftY())) // Drive forward with negative Y (forward)
-    // .withVelocityY(MaxSpeed.times(-driver.getLeftX()))
-    // .withRotationalRate(Constants.MaxAngularRate.times(-driver.getRightX()))
-    //
-    // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
+    sysID
+        .x()
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    setpointGen
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -sysID.getLeftY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-sysID.getLeftX()))
+                        .withRotationalRate(Constants.MaxAngularRate.times(-sysID.getRightX()))
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single
