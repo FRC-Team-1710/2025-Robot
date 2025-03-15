@@ -2,6 +2,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -493,7 +494,7 @@ public class LimelightHelpers {
       boolean isMegaTag2) {
 
     public PoseEstimate() {
-      this(new Pose3d(), 0, 0, 0, 0, 0, 0, 0, RadiansPerSecond.of(0), Pose2d.kZero, false);
+      this(new Pose3d(), 0, 0, 0, 0, 0, 0, 0, 0, Pose2d.kZero, false);
     }
 
     public PoseEstimate setVisionParams(VisionParameters visionParams) {
@@ -506,7 +507,7 @@ public class LimelightHelpers {
           avgTagDist,
           avgTagArea,
           ambiguity,
-          visionParams.gyroRate(),
+          visionParams.gyroRate().in(DegreesPerSecond),
           visionParams.robotPose(),
           isMegaTag2);
     }
