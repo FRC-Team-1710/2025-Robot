@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Meters;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -541,10 +540,10 @@ public class RobotContainer {
                             -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
-                            .times(
-                                claw.hasAlgae()
-                                    ? .5
-                                    : 1)))); // Drive counterclockwise with negative X (left)
+                            .times(claw.hasAlgae() ? .5 : 1))
+                    .withOperatorForwardDirection(
+                        drivetrain.getOperatorForwardDirection()))); // Drive counterclockwise with
+    // negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
     // mech.getLeftY()));
@@ -776,6 +775,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -829,6 +829,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
@@ -903,6 +904,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -954,6 +956,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
@@ -998,6 +1001,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -sysID.getLeftY())) // Drive forward with negative Y (forward)
