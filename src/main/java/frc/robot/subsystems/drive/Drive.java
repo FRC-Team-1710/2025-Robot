@@ -4,11 +4,20 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
+// Copyright (c) 2025 FRC 5712
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -17,6 +26,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -24,29 +34,40 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.Robot;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
+import frc.robot.utils.FieldConstants;
+import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Targets;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
- * be used in command-based projects.
+ * Class that extends the Phoenix 6 Swerveclass and implements Subsystem so it can easily be used in
+ * command-based projects.
  */
 public class Drive extends SubsystemBase {
 
@@ -166,7 +187,10 @@ public class Drive extends SubsystemBase {
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+
+  // logging
+  private Field2d m_field = new Field2d();
 
   public Drive(DriveIO io) {
 
@@ -211,13 +235,146 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Returns a command that applies the specified control request to this swerve drivetrain.
+   * Returns a command that applies the specified control request to this swerve
    *
    * @param request Function returning the request to apply
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> io.setControl(requestSupplier.get()));
+  }
+
+  public BooleanSupplier hasSpeed(Targets target, Vision vision) {
+    BooleanSupplier yes =
+        (() ->
+            TargetingComputer.getSelectTargetBranchPose(target).getX() - getPose().getX() < 0.05);
+    return yes;
+  }
+
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
+  public Command Alignment(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                                - getPose().getX())
+                                            * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                            - getPose().getX())
+                                        * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                                - getPose().getY())
+                                            * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                            - getPose().getY())
+                                        * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
+  public Command SourceAlignment(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+
+    Pose2d selectedPos =
+        Robot.getAlliance()
+            ? new Pose2d(
+                    Units.inchesToMeters(690.876 - 33.526),
+                    Units.inchesToMeters(317 - 25.824),
+                    FieldConstants.CoralStation.rightCenterFace
+                        .getRotation()
+                        .plus(new Rotation2d(Math.PI)))
+                .plus(new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()))
+            : FieldConstants.CoralStation.rightCenterFace.plus(
+                new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()));
+
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getX() - getPose().getX()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getX() - getPose().getX()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                (selectedPos.getY() - getPose().getY()) * .8
+                                        > TargetingComputer.maxAlignSpeed
+                                    ? TargetingComputer.maxAlignSpeed
+                                    : (selectedPos.getY() - getPose().getY()) * .8)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            selectedPos.getRotation().minus(getPose().getRotation()).getRadians()
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(selectedPos).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  public Command stop(RobotCentric requestSupplier) {
+    return run(
+        () ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)));
   }
 
   public void setControl(SwerveRequest request) {
@@ -284,6 +441,14 @@ public class Drive extends SubsystemBase {
               });
     }
     updateWithTime();
+
+    Logger.recordOutput(
+        "distance to target",
+        Units.metersToInches(
+            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()));
+
+    m_field.setRobotPose(getPose());
+    SmartDashboard.putData("field", m_field);
   }
 
   public void resetPose(Pose2d pose) {
@@ -320,6 +485,122 @@ public class Drive extends SubsystemBase {
       return poseEstimator.getEstimatedPosition();
     }
     return inputs.pose;
+  }
+
+  public Translation2d getDistanceToPose(Pose2d pose) {
+    Pose2d currentPose = getPose();
+    return pose.minus(currentPose).getTranslation().unaryMinus();
+  }
+
+  @AutoLogOutput
+  public boolean isInAlignmentZone() {
+    Pose2d currentPose = getPose();
+    double zoneRadius = TargetingComputer.alignmentRange;
+    double angle =
+        Robot.getAlliance()
+            ? new Translation2d(
+                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees()
+            : FieldConstants.Reef.center
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees();
+    int zone;
+
+    Logger.recordOutput("angle", angle);
+
+    if (angle >= -30 && angle < 30) { // Golf / Alpha
+      zone = 4;
+    } else if (angle >= 30 && angle < 90) { // India / Charlie
+      zone = 5;
+    } else if (angle >= 90 && angle < 150) { // Kilo / Echo
+      zone = 6;
+    } else if (angle >= -150 && angle < -90) { // Charlie / India
+      zone = 2;
+    } else if (angle >= -90 && angle < -30) { // Echo / Kilo
+      zone = 3;
+    } else { // Alpha / Golf
+      zone = 1;
+    }
+
+    switch (TargetingComputer.getCurrentTargetBranch().getApriltag()) {
+      default:
+        return false;
+      case (6):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
+      case (7):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
+      case (8):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
+      case (9):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
+      case (10):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
+      case (11):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
+      case (17):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 2;
+      case (18):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 1;
+      case (19):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 6;
+      case (20):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 5;
+      case (21):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 4;
+      case (22):
+        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
+                < zoneRadius
+            && zone == 3;
+    }
+  }
+
+  public BooleanSupplier inAlignmentZone(Targets target) {
+    TargetingComputer.setTargetBranch(target);
+    return () -> isInAlignmentZone();
+  }
+
+  @AutoLogOutput
+  public boolean isNearProcessor() {
+    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
+        .minus(FieldConstants.Processor.centerFace.getTranslation());
+    Pose2d processor =
+        Robot.getAlliance()
+            ? new Pose2d(
+                new Translation2d(
+                        FieldConstants.fieldLength.magnitude(),
+                        FieldConstants.fieldWidth.magnitude())
+                    .minus(FieldConstants.Processor.centerFace.getTranslation()),
+                FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
+            : FieldConstants.Processor.centerFace;
+
+    return getDistanceToPose(processor).getNorm() < 1.5;
   }
 
   public Rotation2d getRotation() {

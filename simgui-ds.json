@@ -20,11 +20,15 @@
           "keyRate": 0.5
         },
         {
+          "decKey": 49,
           "decayRate": 0.0,
+          "incKey": 50,
           "keyRate": 0.009999999776482582
         },
         {
+          "decKey": 52,
           "decayRate": 0.5,
+          "incKey": 51,
           "keyRate": 0.5
         },
         {
@@ -112,6 +116,9 @@
     },
     {
       "useGamepad": true
+    },
+    {
+      "guid": "03000000790000000600000000000000"
     }
   ]
 }

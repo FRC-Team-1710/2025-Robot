@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.109,
-        "y": 5.3705
+        "x": 5.414573863636364,
+        "y": 5.515752840909091
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.261888960900398,
-        "y": 5.56830031758012
+        "x": 4.553867557596854,
+        "y": 6.025507636492533
       },
       "isLocked": false,
       "linkedName": "Juliet"
@@ -20,8 +20,8 @@
         "y": 7.29125
       },
       "prevControl": {
-        "x": 1.3919718783470416,
-        "y": 7.477267545291134
+        "x": 3.1915195170408484,
+        "y": 6.523898440934842
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.7616475354490171,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 7.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {

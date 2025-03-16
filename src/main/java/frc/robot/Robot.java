@@ -7,6 +7,9 @@ package frc.robot;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -16,8 +19,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.LocalADStarAK;
+import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Targets;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -28,6 +32,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
+  // Configuration constants
+  public static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
 
   private final RobotContainer m_robotContainer;
 
@@ -37,8 +43,6 @@ public class Robot extends LoggedRobot {
   public Robot() {
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
-
-    Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
@@ -84,6 +88,10 @@ public class Robot extends LoggedRobot {
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
+    // Warmup the PPLib library
+
+    FollowPathCommand.warmupCommand().schedule();
+
     m_robotContainer = new RobotContainer();
 
     m_gcTimer.start();
@@ -91,17 +99,43 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    Threads.setCurrentThreadPriority(true, 99);
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putString(
         "Current Target", TargetingComputer.getCurrentTargetBranch().toString());
+    SmartDashboard.putString(
+        "Current Target Level", TargetingComputer.getCurrentTargetLevel().toString());
     Logger.recordOutput("Target Level", TargetingComputer.getCurrentTargetLevel().toString());
     SmartDashboard.putString(
         "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
+    SmartDashboard.putString(
+        "Random Target Level", TargetingComputer.getCurrentTargetLevelForBranchGame().toString());
     SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
     // if (m_gcTimer.advanceIfElapsed(5)) System.gc();
+    Logger.recordOutput("Time since startup", m_gcTimer.get());
+    Logger.recordOutput(
+        "Branch Game/Random Target Position",
+        new Transform3d(
+                FieldConstants.aprilTags
+                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
+                    .get()
+                    .getTranslation(),
+                FieldConstants.aprilTags
+                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
+                    .get()
+                    .getRotation())
+            .plus(
+                new Transform3d(
+                    new Translation3d(
+                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getX(),
+                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getY(),
+                        -FieldConstants.aprilTags
+                            .getTagPose(
+                                TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
+                            .get()
+                            .getZ()),
+                    new Rotation3d(0, 0, -Math.PI))));
   }
 
   /** Gets the current alliance, true is red */
@@ -130,6 +164,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
+    BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
 
@@ -144,10 +179,15 @@ public class Robot extends LoggedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    } // Somehow this makes it so that when A-Stop is hit it doesnt run during teleop :shrug:
+  }
 
   @Override
   public void teleopInit() {
+    BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
     if (TargetingComputer.gameMode) {
@@ -157,6 +197,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override

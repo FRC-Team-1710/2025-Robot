@@ -7,7 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
 import java.util.function.DoubleSupplier;
 
 public class ElevationManual extends Command {
@@ -37,7 +37,7 @@ public class ElevationManual extends Command {
     } else {
       if (!locked) {
         m_elevatorSubsystem.setManual(0);
-        m_elevatorSubsystem.stopHere();
+        // m_elevatorSubsystem.stopHere();
         locked = true;
       }
     }

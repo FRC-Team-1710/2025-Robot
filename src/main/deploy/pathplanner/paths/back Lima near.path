@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5977499999999996,
-        "y": 5.22425
+        "x": 3.2127049180327862,
+        "y": 5.70327868852459
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5391235961417404,
-        "y": 6.435332955450385
+        "x": 2.154078514174527,
+        "y": 6.914361643974976
       },
       "isLocked": false,
       "linkedName": "Lima"
@@ -29,7 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.44834571235652204,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 7.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {

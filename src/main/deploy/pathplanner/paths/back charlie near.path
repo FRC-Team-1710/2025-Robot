@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.549,
-        "y": 2.855
+        "x": 3.1168032786885242,
+        "y": 2.3946721311475403
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.2968007570771536,
-        "y": 2.5310371322249035
+        "x": 2.864604035765678,
+        "y": 2.0707092633724438
       },
       "isLocked": false,
       "linkedName": "charlie"
     },
     {
       "anchor": {
-        "x": 1.75,
-        "y": 0.75
+        "x": 1.7948863636363637,
+        "y": 1.1980539772727274
       },
       "prevControl": {
-        "x": 1.9694474208832715,
-        "y": 1.010644413260123
+        "x": 2.0143337845196347,
+        "y": 1.4586983905328503
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 50.042451069170944
+    "rotation": 54.0
   },
   "reversed": false,
   "folder": null,

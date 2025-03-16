@@ -1,5 +1,9 @@
 // Copyright (c) 2025 FRC 5712
+// Copyright (c) 2025 FRC 5712
 //
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
 // the root directory of this project.
@@ -11,6 +15,8 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -40,11 +46,14 @@ public final class Constants {
   public static final AngularVelocity MaxModuleRate = RotationsPerSecond.of(20.0);
 
   // PathPlanner config constants
-  private static final Mass ROBOT_MASS = Kilogram.of(32.36);
+  private static final Mass ROBOT_MASS = Kilogram.of(52.163);
   private static final MomentOfInertia ROBOT_MOI =
-      KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.52705 / 2) * (0.0010165 / 0.00094588));
+      KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.7112 / 2) * (0.001703 / 0.0029193));
+
   private static final double WHEEL_COF = 1.5;
-  public static final SwerveModuleConstants SWERVE_MODULE_CONSTANTS = TunerConstants.FrontLeft;
+  public static final SwerveModuleConstants<
+          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+      SWERVE_MODULE_CONSTANTS = TunerConstants.FrontLeft;
   public static final Translation2d[] SWERVE_MODULE_OFFSETS =
       new Translation2d[] {
         new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
@@ -81,10 +90,12 @@ public final class Constants {
 
   // Vision constants
 
+  public static final double kCameraRejectionDistance = 4.5; // METERS
+
   public static final String kFrontLeftCameraName = "Front Left";
   public static final String kFrontRightCameraName = "Front Right";
   public static final String kBackLeftCameraName = "Back Left";
-  public static final String kbackRightCameraName = "Back Right";
+  public static final String kBackRightCameraName = "Back Right";
 
   public static final Transform3d kFrontLeftStdDev =
       new Transform3d(
@@ -129,7 +140,7 @@ public final class Constants {
     REPLAY
   }
 
-  public static double stickDeadband = 0.07;
+  public static double stickDeadband = 0.3;
 
   static {
     // Checks to make sure config matches GUI values. Code should not throw as not breaking
@@ -139,7 +150,12 @@ public final class Constants {
     }
   }
 
-  public static class ClawSubsystemConstants {
-    public static final double ClawIntakePower = 0.5;
+  public static class ClawConstants {
+    public static final double CLAW_INTAKE_POWER = 0.5;
+  }
+
+  public static class FunnelConstants {
+    public static final double intakeSpeed = 0.4;
+    public static final double insideSpeed = 0.2;
   }
 }

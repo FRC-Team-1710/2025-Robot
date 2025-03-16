@@ -1,0 +1,97 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to foxtrot start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Foxtrot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back foxtrot near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to delta near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Delta"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back delta near"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to charlie near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Charlie"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

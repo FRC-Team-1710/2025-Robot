@@ -1,0 +1,163 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to Juliet start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Juliet"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Juliet"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to kilo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Kilo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Kilo near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to Lima near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Lima"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Lima near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "flipped to alpha near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Alpha"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

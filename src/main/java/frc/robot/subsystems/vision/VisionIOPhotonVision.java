@@ -17,7 +17,9 @@ import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
-import java.util.*;
+
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 import java.util.*;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -35,6 +37,10 @@ public class VisionIOPhotonVision implements VisionIO {
   PhotonPipelineResult latestResult;
   List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
+
+  boolean rejectTagsFromDistance = false;
+  double tagRejectionDistance = 3.5; // METERS
+  List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -59,26 +65,37 @@ public class VisionIOPhotonVision implements VisionIO {
     if (!latestResult.hasTargets()) {
       return new PoseObservation();
     }
-
-    var multitagResult = latestResult.getMultiTagResult();
-
-    if (multitagResult.isPresent()) {
-      Transform3d fieldToRobot =
-          multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
+    if (rejectTagsFromDistance && latestResult.hasTargets()) {
+      List<PhotonTrackedTarget> tags = latestResult.targets;
+      for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+        if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+            > tagRejectionDistance) {
+          latestResult.targets.remove(tagIndex);
+        }
+      }
     }
-    var target = latestResult.targets.get(0);
-    // Calculate robot pose
-    var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
-    if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
-      Transform3d fieldToTarget =
-          new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
-      Transform3d cameraToTarget = target.bestCameraToTarget;
-      Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
-      Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-      Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-      return buildPoseObservation(latestResult, robotPose);
+
+    if (latestResult.hasTargets()) {
+      var multitagResult = latestResult.getMultiTagResult();
+
+      if (multitagResult.isPresent()) {
+        Transform3d fieldToRobot =
+            multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
+      var target = latestResult.targets.get(0);
+      // Calculate robot pose
+      var tagPose = FieldConstants.aprilTags.getTagPose(target.fiducialId);
+      if (tagPose.isPresent() && Constants.currentMode != Constants.Mode.SIM) {
+        Transform3d fieldToTarget =
+            new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+        Transform3d cameraToTarget = target.bestCameraToTarget;
+        Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        return buildPoseObservation(latestResult, robotPose);
+      }
     }
     return new PoseObservation();
   }
@@ -109,7 +126,7 @@ public class VisionIOPhotonVision implements VisionIO {
             avgDistance,
             avgArea,
             ambiguity,
-            visionParams.get().gyroRate(),
+            visionParams.get().gyroRate().in(DegreesPerSecond),
             visionParams.get().robotPose(),
             false),
         rawFiducialsList.toArray(new RawFiducial[0]));
@@ -179,12 +196,13 @@ public class VisionIOPhotonVision implements VisionIO {
     } catch (Exception e) {
       return new Transform3d();
     }
-    Logger.recordOutput("tagToCameraPose via " + camera.getName(), tagToCameraPose);
+    Logger.recordOutput("VisionDebugging/tagToCameraPose via " + camera.getName(), tagToCameraPose);
     return tagToCameraPose;
   }
 
   /**
    * Provides the Transform3d that represents the robots position relative to the provided AprilTag
+   *
    * @param id Requested tag ID
    * @return Returns the robots position relative to the AprilTag
    */
@@ -202,30 +220,49 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Checks to make sure that the camera has AprilTag results/targets
+   *
    * @return Boolean to represent the presence of AprilTag results
    */
   public boolean hasTargets() {
     return !cameraTargets.isEmpty();
   }
 
-  /**
-   * Redundant perchance.
-   */
+  /** Redundant perchance. */
   public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
-  /**
-   * Also probably redundant perchance.
-   */
+  /** Also probably redundant perchance. */
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
   }
 
   /**
    * Provides the camera's most recent targets
+   *
    * @return List of targets
    */
   public List<PhotonTrackedTarget> getCameraTargets() {
     return cameraTargets;
+  }
+
+  /**
+   * Enables or disables rejecting tags from a distance
+   *
+   * @param useRejectionDistance Boolean to set whether the camera can reject tags from a distance
+   *     or not
+   */
+  public void useRejectionDistance(boolean useRejectionDistance) {
+    this.rejectTagsFromDistance = useRejectionDistance;
+  }
+
+  /**
+   * Sets the camera's rejection distance and allows the camera to reject the tags further than this
+   * distance.4
+   *
+   * @param rejectionDistance Preferred camera range in meters
+   */
+  public void useRejectionDistance(double rejectionDistance) {
+    this.tagRejectionDistance = rejectionDistance;
+    this.rejectTagsFromDistance = true;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
@@ -252,5 +289,28 @@ public class VisionIOPhotonVision implements VisionIO {
     } else {
       cameraTargets = new ArrayList<>();
     }
+
+    // Filtering //
+    if (latestResult.hasTargets()) {
+      for (int tagIndex = 0; tagIndex < cameraTargets.size(); tagIndex++) {
+        if (bargeTagIDs.contains(cameraTargets.get(tagIndex).fiducialId)) {
+          removeTag(tagIndex);
+        }
+      }
+
+      if (rejectTagsFromDistance) {
+        List<PhotonTrackedTarget> tags = latestResult.targets;
+        for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
+          if (tags.get(tagIndex).bestCameraToTarget.getTranslation().getNorm()
+              > tagRejectionDistance) {
+            removeTag(tagIndex);
+          }
+        }
+      }
+    }
+  }
+
+  private void removeTag(int index) {
+    cameraTargets.remove(index);
   }
 }
