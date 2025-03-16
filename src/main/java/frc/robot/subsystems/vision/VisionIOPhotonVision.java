@@ -6,6 +6,8 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -17,9 +19,6 @@ import frc.robot.LimelightHelpers.PoseObservation;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
-
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-
 import java.util.*;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;

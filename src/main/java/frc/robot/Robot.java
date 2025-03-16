@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -198,7 +197,8 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    TargetingComputer.setTargetBranch(Targets.ALPHA);
+    if (TargetingComputer.getCurrentTargetBranch() == TargetingComputer.Targets.SOURCE_LEFT)
+      TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override

@@ -42,5 +42,6 @@
   "wpilib.autoSaveOnDeploy": true,
   "files.autoSave": "afterDelay",
   "java.format.settings.url": "eclipse-formatter.xml",
-  "git.pruneOnFetch": true
+  "git.pruneOnFetch": true,
+  "editor.tabSize": 2
 }
