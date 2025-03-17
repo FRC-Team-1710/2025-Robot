@@ -14,6 +14,7 @@ import frc.robot.subsystems.superstructure.claw.Claw;
 public class GrabAlgae extends Command {
   Claw claw;
   Timer timer = new Timer();
+
   /** Creates a new GrabAlgae. */
   public GrabAlgae(Claw claw) {
     this.claw = claw;

@@ -43,6 +43,7 @@ public class FunnelIOCTRE implements FunnelIO {
 
   /** The leader TalonFX motor controller (CAN ID: 20) */
   public final TalonFX leader = new TalonFX(31);
+
   /** The follower TalonFX motor controller (CAN ID: 21) */
   // public final TalonFX follower = new TalonFX(32);
   /** The follower TalonFX motor controller (CAN ID: 21) */

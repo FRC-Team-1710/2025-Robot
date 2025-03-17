@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -127,55 +129,78 @@ public class RobotContainer {
 
   /** Driver Y */
   private final Trigger placeL4 = new Trigger(driver.y());
+
   /** Driver X */
   private final Trigger placeL3 = new Trigger(driver.x());
+
   /** Driver A */
   private final Trigger placeL2 = new Trigger(driver.a());
+
   /** Driver B */
   private final Trigger grabAlgae = new Trigger(driver.b());
+
   /** Driver RT */
 
   /** Driver RT */
   private final Trigger targetReef = new Trigger(driver.rightTrigger());
+
   /** Driver LT */
   private final Trigger targetSource = new Trigger(driver.leftTrigger());
+
   /** Driver Left */
   private final Trigger previousTarget = new Trigger(driver.povLeft());
+
   /** Driver Right */
   private final Trigger nextTarget = new Trigger(driver.povRight());
+
   /** Driver Up */
   private final Trigger driverUp = new Trigger(driver.povUp());
+
   /** Driver Down */
   private final Trigger driverDown = new Trigger(driver.povDown());
+
   /** Driver Start */
   private final Trigger resetGyro = new Trigger(driver.start());
+
   /** Driver Back */
   private final Trigger prepClimb = new Trigger(driver.back());
+
   /** Driver RB */
   private final Trigger shootAlgae = new Trigger(driver.rightBumper());
+
   /** Driver LB */
   private final Trigger grabAlgaeFromFloor = new Trigger(driver.leftBumper());
 
   /** Mech Y */
   private final Trigger targetL4 = new Trigger(mech.y());
+
   /** Mech X */
   private final Trigger targetL3 = new Trigger(mech.x());
+
   /** Mech A */
   private final Trigger targetL2 = new Trigger(mech.a());
+
   /** Mech B */
   private final Trigger targetAlgae = new Trigger(mech.b());
+
   /** Mech Right */
   private final Trigger outtakeCoral = new Trigger(mech.povRight());
+
   /** Mech LB */
   private final Trigger bumpCoral = new Trigger(mech.leftBumper());
+
   /** Mech RB */
   private final Trigger intakeCoral = new Trigger(mech.rightBumper());
+
   /** Mech RT */
   private final Trigger climberUp = new Trigger(mech.rightTrigger());
+
   /** Mech LT */
   private final Trigger climberDown = new Trigger(mech.leftTrigger());
+
   /** Mech Left */
   private final Trigger overrideTargetingController = new Trigger(mech.povLeft());
+
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
 
@@ -452,8 +477,8 @@ public class RobotContainer {
             .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    double alignP = Constants.currentMode == Constants.Mode.SIM ? .75 : .8;
-    double rotP = Constants.currentMode == Constants.Mode.SIM ? 1 : .4;
+    double alignP = .8;
+    double rotP = .4;
 
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
@@ -515,10 +540,10 @@ public class RobotContainer {
                             -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
-                            .times(
-                                claw.hasAlgae()
-                                    ? .5
-                                    : 1)))); // Drive counterclockwise with negative X (left)
+                            .times(claw.hasAlgae() ? .5 : 1))
+                    .withOperatorForwardDirection(
+                        drivetrain.getOperatorForwardDirection()))); // Drive counterclockwise with
+    // negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
     // mech.getLeftY()));
@@ -625,11 +650,11 @@ public class RobotContainer {
                 .alongWith(
                     new ElevatorToTargetLevel(elevator)
                         .alongWith(claw.GRAB().alongWith(new GrabAlgae(claw)))
-                        .onlyIf(() -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean()))
-                .unless(
-                    () ->
-                        TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == TargetingComputer.Targets.NET.getTargetingAngle()));
+                        .onlyIf(() -> drivetrain.isInAlignmentZone() && targetReef.getAsBoolean())
+                        .unless(
+                            () ->
+                                TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                                    == TargetingComputer.Targets.NET.getTargetingAngle())));
 
     grabAlgae
         .and(targetReef)
@@ -750,6 +775,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -803,6 +829,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
@@ -877,6 +904,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -921,44 +949,27 @@ public class RobotContainer {
         .and(
             () ->
                 TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                    == TargetingComputer.Targets.NET.getTargetingAngle())
-        .and(grabAlgae)
+                        == TargetingComputer.Targets.NET.getTargetingAngle()
+                    && grabAlgae.getAsBoolean())
         .onTrue(elevator.L4().alongWith(claw.NET()))
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
-                                    ((FieldConstants.aprilTags
-                                                        .getTagPose(
-                                                            TargetingComputer.Targets.NET
-                                                                .getApriltag())
-                                                        .get()
-                                                        .getX()
-                                                    + (Robot.getAlliance()
-                                                        ? TargetingComputer.Targets.NET
-                                                            .getOffset()
-                                                            .getX()
-                                                        : -TargetingComputer.Targets.NET
-                                                            .getOffset()
-                                                            .getX())
-                                                    - drivetrain.getPose().getX()))
+                                    ((Robot.getAlliance()
+                                                        ? FieldConstants.fieldLength.in(Meters)
+                                                            - 6.55
+                                                        : 6.55)
+                                                    - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
-                                        : (FieldConstants.aprilTags
-                                                    .getTagPose(
-                                                        TargetingComputer.Targets.NET.getApriltag())
-                                                    .get()
-                                                    .getX()
-                                                + (Robot.getAlliance()
-                                                    ? TargetingComputer.Targets.NET
-                                                        .getOffset()
-                                                        .getX()
-                                                    : -TargetingComputer.Targets.NET
-                                                        .getOffset()
-                                                        .getX())
+                                        : ((Robot.getAlliance()
+                                                    ? FieldConstants.fieldLength.in(Meters) - 6.55
+                                                    : 6.55)
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
@@ -990,6 +1001,7 @@ public class RobotContainer {
             drivetrain.applyRequest(
                 () ->
                     setpointGen
+                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -sysID.getLeftY())) // Drive forward with negative Y (forward)

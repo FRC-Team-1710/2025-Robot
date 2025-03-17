@@ -24,6 +24,7 @@ public class AlignmentForAuto extends Command {
   SwerveRequest robotCentric;
   double current;
   CommonTalon drivemotor = TunerConstants.createDrivetrain().getModule(2).getDriveMotor();
+
   /** Creates a new MyMentalHealth. */
   public AlignmentForAuto(Vision vision, Drive drivetrain, Targets target) {
     this.vision = vision;

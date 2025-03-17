@@ -11,6 +11,7 @@ import frc.robot.subsystems.superstructure.climber.Climber;
 public class Climb extends Command {
   Climber climber;
   double targetRotations = 8.2;
+
   /** Creates a new Climb. */
   public Climb(Climber climber) {
     this.climber = new Climber();

@@ -38,11 +38,13 @@ public class SwerveSetpointGen implements NativeSwerveRequest {
    * convention, so this determines how fast to travel forward.
    */
   public double VelocityX = 0;
+
   /**
    * The velocity in the Y direction, in m/s. Y is defined as to the left according to WPILib
    * convention, so this determines how fast to travel to the left.
    */
   public double VelocityY = 0;
+
   /**
    * The angular rate to rotate at, in radians per second. Angular rate is defined as
    * counterclockwise positive, so this determines how fast to turn counterclockwise.
@@ -51,10 +53,13 @@ public class SwerveSetpointGen implements NativeSwerveRequest {
 
   /** The allowable deadband of the request, in m/s. */
   public double Deadband = 0;
+
   /** The rotational deadband of the request, in radians per second. */
   public double RotationalDeadband = 0;
+
   /* The current rotation of the robot */
   public Rotation2d CurrentRotation = Rotation2d.kZero;
+
   /**
    * The center of rotation the robot should rotate around. This is (0,0) by default, which will
    * rotate around the center of the robot.
@@ -64,8 +69,10 @@ public class SwerveSetpointGen implements NativeSwerveRequest {
   /** The type of control request to use for the drive motor. */
   public SwerveModule.DriveRequestType DriveRequestType =
       SwerveModule.DriveRequestType.OpenLoopVoltage;
+
   /** The type of control request to use for the steer motor. */
   public SwerveModule.SteerRequestType SteerRequestType = SwerveModule.SteerRequestType.Position;
+
   /**
    * Whether to desaturate wheel speeds before applying. For more information, see the documentation
    * of {@link SwerveDriveKinematics#desaturateWheelSpeeds}.
@@ -77,6 +84,7 @@ public class SwerveSetpointGen implements NativeSwerveRequest {
 
   /** The direction the operator is facing */
   public Rotation2d ForwardDirection = Rotation2d.kZero;
+
   // events password at line 50 in the file above
   private final ApplyRobotSpeeds m_swerveSetpoint = new ApplyRobotSpeeds();
 
