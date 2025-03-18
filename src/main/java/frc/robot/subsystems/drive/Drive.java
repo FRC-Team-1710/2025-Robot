@@ -592,12 +592,7 @@ public class Drive extends SubsystemBase {
         .minus(FieldConstants.Processor.centerFace.getTranslation());
     Pose2d processor =
         Robot.getAlliance()
-            ? new Pose2d(
-                new Translation2d(
-                        FieldConstants.fieldLength.magnitude(),
-                        FieldConstants.fieldWidth.magnitude())
-                    .minus(FieldConstants.Processor.centerFace.getTranslation()),
-                FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
             : FieldConstants.Processor.centerFace;
 
     return getDistanceToPose(processor).getNorm() < 1.5;

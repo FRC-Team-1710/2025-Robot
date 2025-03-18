@@ -197,7 +197,8 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    TargetingComputer.setTargetBranch(Targets.ALPHA);
+    if (TargetingComputer.getCurrentTargetBranch() == TargetingComputer.Targets.SOURCE_LEFT)
+      TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override

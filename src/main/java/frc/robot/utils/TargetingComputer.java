@@ -22,8 +22,15 @@ public class TargetingComputer {
   public static Random random = new Random();
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
+
+  /** should set the alignment target to the secondary grabbing pose */
   public static boolean readyToGrabAlgae = false;
+
+  /**
+   * should start the algae grabbing sequence (sets alignment target to the primary grabbing pose)
+   */
   public static boolean aligningWithAlgae = false;
+
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
   public static int randomHeight;

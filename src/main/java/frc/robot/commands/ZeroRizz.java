@@ -14,6 +14,7 @@ import frc.robot.subsystems.superstructure.claw.Claw;
 public class ZeroRizz extends Command {
   Claw claw;
   Timer timer = new Timer();
+
   /** Creates a new GrabAlgae. */
   public ZeroRizz(Claw claw) {
     this.claw = claw;

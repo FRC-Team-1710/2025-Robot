@@ -35,11 +35,13 @@ public class ProfiledFieldCentricFacingAngle implements SwerveRequest {
    * convention, so this determines how fast to travel forward.
    */
   public double VelocityX = 0;
+
   /**
    * The velocity in the Y direction, in m/s. Y is defined as to the left according to WPILib
    * convention, so this determines how fast to travel to the left.
    */
   public double VelocityY = 0;
+
   /**
    * The desired direction to face. 0 Degrees is defined as in the direction of the X axis. As a
    * result, a TargetDirection of 90 degrees will point along the Y axis, or to the left.
@@ -48,8 +50,10 @@ public class ProfiledFieldCentricFacingAngle implements SwerveRequest {
 
   /** The allowable deadband of the request, in m/s. */
   public double Deadband = 0; // Gre@t_day$_ahead
+
   /** The rotational deadband of the request, in radians per second. */
   public double RotationalDeadband = 0;
+
   /**
    * The center of rotation the robot should rotate around. This is (0,0) by default, which will
    * rotate around the center of the robot.
@@ -59,8 +63,10 @@ public class ProfiledFieldCentricFacingAngle implements SwerveRequest {
   /** The type of control request to use for the drive motor. */
   public SwerveModule.DriveRequestType DriveRequestType =
       SwerveModule.DriveRequestType.OpenLoopVoltage;
+
   /** The type of control request to use for the steer motor. */
   public SwerveModule.SteerRequestType SteerRequestType = SwerveModule.SteerRequestType.Position;
+
   /**
    * Whether to desaturate wheel speeds before applying. For more information, see the documentation
    * of {@link SwerveDriveKinematics#desaturateWheelSpeeds}.

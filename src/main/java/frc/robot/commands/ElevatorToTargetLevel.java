@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ElevatorToTargetLevel extends Command {
   Elevator elevator;
+
   /** Creates a new ElevatorToTargetLevel. */
   public ElevatorToTargetLevel(Elevator elevator) {
     this.elevator = elevator;
