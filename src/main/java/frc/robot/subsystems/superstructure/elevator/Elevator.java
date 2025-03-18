@@ -192,6 +192,11 @@ public class Elevator extends SubsystemBase {
     return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
   }
 
+  @AutoLogOutput
+  public boolean isClearOfStage1() {
+    return inputs.elevatorDistance.in(Inches) > 30;
+  }
+
   /**
    * Logs target angle for given mode.
    *

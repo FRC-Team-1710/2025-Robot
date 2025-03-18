@@ -47,6 +47,7 @@ import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
@@ -475,8 +476,9 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> TargetingComputer.updateSourceCutoffDistance(true)))
         .onFalse(
             claw.IDLE()
-                .alongWith(
-                    new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))));
+                .alongWith(new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))))
+        .and(() -> elevator.getMode() == ElevatorPosition.L4 && elevator.isClearOfStage1())
+        .onTrue(claw.NET());
 
     new Trigger(() -> TargetingComputer.stillOuttakingAlgae)
         .onFalse(
@@ -573,14 +575,16 @@ public class RobotContainer {
     placeL4
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
-                .alongWith(new ElevatorToTargetLevel(elevator))
-                .alongWith(
-                    claw.NET()
-                        .onlyIf(
-                            () ->
-                                TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                                        == TargetingComputer.Targets.NET.getTargetingAngle()
-                                    && targetSource.getAsBoolean())))
+                .alongWith(new ElevatorToTargetLevel(elevator)))
+        // .alongWith(
+        //     claw.NET()
+        //         .onlyIf(
+        //             () ->
+        //                 claw.hasAlgae() && elevator.isClearOfStage1()
+        //                     && TargetingComputer.getSourceTargetingAngle(
+        //                             drivetrain.getPose())
+        //                         == TargetingComputer.Targets.NET.getTargetingAngle()
+        //                     && targetSource.getAsBoolean())))
         .onFalse(elevator.intake().unless(targetReef).alongWith(claw.IDLE()))
         .and(
             () ->
@@ -600,13 +604,14 @@ public class RobotContainer {
                     && !TargetingComputer.targetingAlgae)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
-    placeL4
-        .and(
-            () ->
-                elevator.isAtTarget()
-                    && claw.hasAlgae()
-                    && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
-        .onTrue(claw.NET()); // TODO: fix
+    // placeL4
+    //     .and(
+    //         () ->
+    //             elevator.getMode() == ElevatorPosition.L4
+    //                 && elevator.isClearOfStage1()
+    //                 && claw.hasAlgae()
+    //                 && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
+    //     .onTrue(claw.NET()); // TODO: fix
 
     grabAlgae
         .onFalse(
@@ -923,7 +928,8 @@ public class RobotContainer {
                 TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
                     == TargetingComputer.Targets.NET.getTargetingAngle())
         .and(grabAlgae)
-        .onTrue(elevator.L4().alongWith(claw.NET()))
+        .onTrue(elevator.L4())
+        .onFalse(claw.IDLE())
         .whileTrue(
             drivetrain.applyRequest(
                 () ->

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.*;
@@ -87,8 +88,8 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
    */
   public ElevatorIOSIM() {
     super();
-    m_firstStage2d.setColor(new Color8Bit(0, 255, 0));
-    m_secondStage2d.setColor(new Color8Bit(0, 255, 255));
+    m_firstStage2d.setColor(new Color8Bit(Color.kNavy));
+    m_secondStage2d.setColor(new Color8Bit(Color.kSteelBlue));
     enc.setDistancePerPulse((2 * Math.PI * Units.inchesToMeters(2.383)) / 4096);
     Logger.recordOutput("Elevator Sim", m_mech2d);
     SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
