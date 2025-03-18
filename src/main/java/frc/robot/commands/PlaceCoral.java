@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
+import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TunableController;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -33,7 +34,8 @@ public class PlaceCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (elevator.isAtTarget()) {
+    if (elevator.isAtTarget()
+        && elevator.getMode() == TargetingComputer.getCurrentTargetLevel().getElevatorPosition()) {
       manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
       if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
         controller.setRumble(RumbleType.kBothRumble, 1);

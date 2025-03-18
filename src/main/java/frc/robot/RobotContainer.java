@@ -71,7 +71,6 @@ import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -555,7 +554,10 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L2))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef))
+        .onFalse(
+            elevator
+                .intake()
+                .unless(() -> targetReef.getAsBoolean() && drivetrain.isInAlignmentZone()))
         .and(
             () ->
                 Math.abs(
@@ -571,14 +573,18 @@ public class RobotContainer {
                     //         .getNorm()
                     //     < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
-                    && !TargetingComputer.targetingAlgae)
+                    && !TargetingComputer.targetingAlgae
+                    && !TargetingComputer.targetingControllerOverride)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     placeL3
         .onTrue(
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L3))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
-        .onFalse(elevator.intake().unless(targetReef))
+        .onFalse(
+            elevator
+                .intake()
+                .unless(() -> targetReef.getAsBoolean() && drivetrain.isInAlignmentZone()))
         .and(
             () ->
                 Math.abs(
@@ -594,7 +600,8 @@ public class RobotContainer {
                     //         .getNorm()
                     //     < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
-                    && !TargetingComputer.targetingAlgae)
+                    && !TargetingComputer.targetingAlgae
+                    && !TargetingComputer.targetingControllerOverride)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     placeL4
@@ -610,7 +617,11 @@ public class RobotContainer {
         //                             drivetrain.getPose())
         //                         == TargetingComputer.Targets.NET.getTargetingAngle()
         //                     && targetSource.getAsBoolean())))
-        .onFalse(elevator.intake().unless(targetReef).alongWith(claw.IDLE()))
+        .onFalse(
+            elevator
+                .intake()
+                .unless(() -> targetReef.getAsBoolean() && drivetrain.isInAlignmentZone())
+                .alongWith(claw.IDLE()))
         .and(
             () ->
                 Math.abs(
@@ -626,7 +637,8 @@ public class RobotContainer {
                     //         .getNorm()
                     //     < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
-                    && !TargetingComputer.targetingAlgae)
+                    && !TargetingComputer.targetingAlgae
+                    && !TargetingComputer.targetingControllerOverride)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     // placeL4
@@ -641,7 +653,10 @@ public class RobotContainer {
     grabAlgae
         .onFalse(
             new InstantCommand(() -> claw.lockRoller())
-                .alongWith(elevator.intake().unless(targetReef))
+                .alongWith(
+                    elevator
+                        .intake()
+                        .unless(() -> targetReef.getAsBoolean() && drivetrain.isInAlignmentZone()))
                 .alongWith(new ElevatorToTargetLevel(elevator).unless(targetReef.negate())))
         .and(() -> !claw.hasAlgae() && !TargetingComputer.stillOuttakingAlgae)
         .onFalse(
@@ -745,17 +760,17 @@ public class RobotContainer {
 
     // AprilTag Alignment
 
-    targetReef // Get the closest reef AprilTag and set it to the target tag
-        .onTrue(
-        new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
-            .alongWith( // Log the curent target branch for debugging
-                new InstantCommand(
-                    () ->
-                        Logger.recordOutput(
-                            "Overide Target", TargetingComputer.getCurrentTargetBranch())))
-            .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
-                // move to the set target)
-                new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
+    // targetReef // Get the closest reef AprilTag and set it to the target tag
+    //     .onTrue(
+    //     new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
+    //         .alongWith( // Log the curent target branch for debugging
+    //             new InstantCommand(
+    //                 () ->
+    //                     Logger.recordOutput(
+    //                         "Overide Target", TargetingComputer.getCurrentTargetBranch())))
+    //         .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
+    //             // move to the set target)
+    //             new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
 
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
@@ -791,8 +806,18 @@ public class RobotContainer {
                             Constants.MaxAngularRate.times(
                                 (new Rotation2d(
                                                         Units.degreesToRadians(
-                                                            TargetingComputer
-                                                                .getCurrentTargetBranch()
+                                                            (TargetingComputer
+                                                                        .targetingControllerOverride
+                                                                    ? drivetrain.getAlignmentZone(
+                                                                        (placeL2.getAsBoolean()
+                                                                            || placeL3
+                                                                                .getAsBoolean()
+                                                                            || placeL4
+                                                                                .getAsBoolean()
+                                                                            || grabAlgae
+                                                                                .getAsBoolean()))
+                                                                    : TargetingComputer
+                                                                        .getCurrentTargetBranch())
                                                                 .getTargetingAngle()))
                                                     .minus(drivetrain.getPose().getRotation())
                                                     .getRadians())
@@ -802,7 +827,14 @@ public class RobotContainer {
                                     ? .5
                                     : (new Rotation2d(
                                                 Units.degreesToRadians(
-                                                    TargetingComputer.getCurrentTargetBranch()
+                                                    (TargetingComputer.targetingControllerOverride
+                                                            ? drivetrain.getAlignmentZone(
+                                                                (placeL2.getAsBoolean()
+                                                                    || placeL3.getAsBoolean()
+                                                                    || placeL4.getAsBoolean()
+                                                                    || grabAlgae.getAsBoolean()))
+                                                            : TargetingComputer
+                                                                .getCurrentTargetBranch())
                                                         .getTargetingAngle())))
                                             .minus(drivetrain.getPose().getRotation())
                                             .getRadians()
@@ -829,7 +861,13 @@ public class RobotContainer {
                                             .getTargetingAngle()))
                                 .minus(drivetrain.getPose().getRotation())
                                 .getDegrees())
-                        < TargetingComputer.alignmentAngleTolerance)
+                        < TargetingComputer.alignmentAngleTolerance
+                    && (TargetingComputer.targetingControllerOverride
+                        ? (placeL2.getAsBoolean()
+                            || placeL3.getAsBoolean()
+                            || placeL4.getAsBoolean()
+                            || grabAlgae.getAsBoolean())
+                        : true))
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -954,7 +992,8 @@ public class RobotContainer {
         .and(
             () ->
                 TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                    == TargetingComputer.Targets.NET.getTargetingAngle() && grabAlgae.getAsBoolean())
+                        == TargetingComputer.Targets.NET.getTargetingAngle()
+                    && grabAlgae.getAsBoolean())
         .onTrue(elevator.L4())
         .onFalse(claw.IDLE())
         .whileTrue(

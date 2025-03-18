@@ -493,9 +493,65 @@ public class Drive extends SubsystemBase {
   }
 
   @AutoLogOutput
+  public Targets getAlignmentZone(boolean aligning) {
+    Pose2d currentPose = getPose();
+    double angle =
+        Robot.getAlliance()
+            ? new Translation2d(
+                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees()
+            : FieldConstants.Reef.center
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees();
+    Targets zone = Targets.ALPHA;
+
+    Logger.recordOutput("angle", angle);
+
+    if (angle >= 0 && angle < 30) {
+      zone = Robot.getAlliance() ? Targets.BRAVO : Targets.HOTEL;
+    } else if (angle >= 30 && angle < 60) {
+      zone = Robot.getAlliance() ? Targets.CHARLIE : Targets.INDIA;
+    } else if (angle >= 60 && angle < 90) {
+      zone = Robot.getAlliance() ? Targets.DELTA : Targets.JULIET;
+    } else if (angle >= 90 && angle < 120) {
+      zone = Robot.getAlliance() ? Targets.ECHO : Targets.KILO;
+    } else if (angle >= 120 && angle < 150) {
+      zone = Robot.getAlliance() ? Targets.FOXTROT : Targets.LIMA;
+    } else if (angle >= 150 && angle <= 180) {
+      zone = Robot.getAlliance() ? Targets.GOLF : Targets.ALPHA;
+    } else if (angle > -180 && angle < -150) {
+      zone = Robot.getAlliance() ? Targets.HOTEL : Targets.BRAVO;
+    } else if (angle >= -150 && angle < -120) {
+      zone = Robot.getAlliance() ? Targets.INDIA : Targets.CHARLIE;
+    } else if (angle >= -120 && angle < -90) {
+      zone = Robot.getAlliance() ? Targets.JULIET : Targets.DELTA;
+    } else if (angle >= -90 && angle < -60) {
+      zone = Robot.getAlliance() ? Targets.KILO : Targets.ECHO;
+    } else if (angle >= -60 && angle < -30) {
+      zone = Robot.getAlliance() ? Targets.LIMA : Targets.FOXTROT;
+    } else if (angle >= -30 && angle < 0) {
+      zone = Robot.getAlliance() ? Targets.ALPHA : Targets.GOLF;
+    }
+
+    if (TargetingComputer.targetingControllerOverride
+        && TargetingComputer.currentTargetBranch != zone
+        && !aligning) {
+      TargetingComputer.setTargetBranch(zone);
+    }
+
+    return zone;
+  }
+
+  @AutoLogOutput
   public boolean isInAlignmentZone() {
     Pose2d currentPose = getPose();
-    double zoneRadius = TargetingComputer.alignmentRange;
+    double zoneRadius =
+        TargetingComputer.targetingControllerOverride ? 2 : TargetingComputer.alignmentRange;
     double angle =
         Robot.getAlliance()
             ? new Translation2d(
