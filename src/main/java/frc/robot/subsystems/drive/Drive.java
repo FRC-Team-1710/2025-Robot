@@ -654,6 +654,18 @@ public class Drive extends SubsystemBase {
     return getDistanceToPose(processor).getNorm() < 1.5;
   }
 
+  @AutoLogOutput
+  public boolean isNearFarProcessor() {
+    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
+        .minus(FieldConstants.Processor.centerFace.getTranslation());
+    Pose2d processor =
+        !Robot.getAlliance()
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
+            : FieldConstants.Processor.centerFace;
+
+    return getDistanceToPose(processor).getNorm() < 1.5;
+  }
+
   public Rotation2d getRotation() {
     return getPose().getRotation();
   }

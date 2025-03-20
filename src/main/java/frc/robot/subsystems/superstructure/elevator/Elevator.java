@@ -98,7 +98,7 @@ public class Elevator extends SubsystemBase {
   public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the elevator
     INTAKE(Inches.of(0), Inches.of(1.25)), // Elevator tucked in
-    L1(Inches.of(0)), // Position for scoring in L1
+    L1(Inches.of(0), Inches.of(1)), // Position for scoring in L1
     L2(Inches.of(15.75)), // Position for scoring in L2
     L3(Inches.of(32.25)), // Position for scoring in L3
     L4(Inches.of(54.5)), // Position for scoring in L4
@@ -258,21 +258,21 @@ public class Elevator extends SubsystemBase {
   /**
    * @return Command to move the arm to the low algae distance
    */
-  public final Command AlgaeLow() {
+  public final Command ALGAE_LOW() {
     return setPositionCommand(ElevatorPosition.ALGAE_LOW);
   }
 
   /**
    * @return Command to move the arm to the high algae distance
    */
-  public final Command AlgaeHigh() {
+  public final Command ALGAE_HIGH() {
     return setPositionCommand(ElevatorPosition.ALGAE_HIGH);
   }
 
   /**
    * @return Command to intake the arm
    */
-  public final Command intake() {
+  public final Command INTAKE() {
     return setPositionCommand(ElevatorPosition.INTAKE)
         .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }

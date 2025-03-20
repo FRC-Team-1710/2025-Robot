@@ -35,7 +35,7 @@ public class TargetingComputer {
   public static boolean targetingControllerOverride = false;
   public static int randomBranch;
   public static int randomHeight;
-  public static double sourceCutoffDistance = 7.5;
+  public static double sourceCutoffDistance = 15;
   public static boolean stillOuttakingAlgae = false;
   public static boolean goForClimb = false;
 
@@ -89,6 +89,7 @@ public class TargetingComputer {
       case SOURCE_LEFT -> isRedAlliance ? 1 : 13;
       case SOURCE_RIGHT -> isRedAlliance ? 2 : 12;
       case PROCESSOR -> isRedAlliance ? 3 : 16;
+      case FAR_PROCESSOR -> isRedAlliance ? 16 : 3;
       case NET -> isRedAlliance ? 5 : 14;
     };
   }
@@ -130,15 +131,16 @@ public class TargetingComputer {
 
   public static double getAngleForTarget(Targets target) {
     return switch (target) { // XOR RAAAHHHHHH!!
-      case ALPHA, BRAVO -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 180 : 0;
-      case CHARLIE, DELTA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 240 : 60;
-      case ECHO, FOXTROT -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 300 : 120;
-      case GOLF, HOTEL -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 0 : 180;
-      case INDIA, JULIET -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 60 : 240;
-      case KILO, LIMA -> isRedAlliance ^ currentTargetLevel == Levels.L1 ? 120 : 300;
+      case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
+      case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
+      case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
+      case GOLF, HOTEL -> isRedAlliance ? 0 : 180;
+      case INDIA, JULIET -> isRedAlliance ? 60 : 240;
+      case KILO, LIMA -> isRedAlliance ? 120 : 300;
       case SOURCE_LEFT -> isRedAlliance ? 126 : 306;
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
+      case FAR_PROCESSOR -> isRedAlliance ? 270 : 90;
       case NET -> isRedAlliance ? 180 : 0;
     };
   }
@@ -254,7 +256,7 @@ public class TargetingComputer {
   }
 
   public static void updateSourceCutoffDistance(boolean hasAlgae) {
-    sourceCutoffDistance = hasAlgae ? 4.5 : 8.5;
+    sourceCutoffDistance = hasAlgae ? 4.5 : 15;
   }
 
   public static void setStillOuttakingAlgae(boolean value) {
@@ -267,46 +269,36 @@ public class TargetingComputer {
         : pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance;
   }
 
+  /** Degrees */
   public static double getSourceTargetingAngle(Pose2d pose) {
     if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
-    // if (isRedAlliance) {
-    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // red
-    //       ? (pose.getX()
-    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // top half
-    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-    //           : Targets.PROCESSOR.getTargetingAngle() // far
-    //       : (pose.getX()
-    //               >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) // bottom half
-    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-    //           : Targets.NET.getTargetingAngle(); // far
-    // } else {
-    //   return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2) // blue
-    //       ? (pose.getX() <= sourceCutoffDistance) // top half
-    //           ? Targets.SOURCE_LEFT.getTargetingAngle() // close
-    //           : Targets.NET.getTargetingAngle() // far
-    //       : (pose.getX() <= sourceCutoffDistance) // bottom half
-    //           ? Targets.SOURCE_RIGHT.getTargetingAngle() // close
-    //           : Targets.PROCESSOR.getTargetingAngle(); // far
-    // }
 
     if (isRedAlliance) {
       if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close
         return (pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2)
             ? Targets.SOURCE_RIGHT.getTargetingAngle()
             : Targets.SOURCE_LEFT.getTargetingAngle();
-      } else
+      } else if (pose.getX() < FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance
+          && pose.getX() >= FieldConstants.fieldLength.in(Meters) - 10) {
         return (pose.getY() < FieldConstants.fieldWidth.in(Meters) - 3)
             ? Targets.NET.getTargetingAngle()
             : Targets.PROCESSOR.getTargetingAngle();
+      } else
+        return new Rotation2d(Units.degreesToRadians(Targets.FAR_PROCESSOR.getTargetingAngle()))
+            .getDegrees();
     } else {
       if (pose.getX() <= sourceCutoffDistance) { // close
         return (pose.getY() < FieldConstants.fieldWidth.in(Meters) / 2)
             ? Targets.SOURCE_RIGHT.getTargetingAngle()
             : Targets.SOURCE_LEFT.getTargetingAngle();
-      } else
+      } else if (pose.getX() > sourceCutoffDistance && pose.getX() <= 10) {
         return (pose.getY() > 3)
             ? Targets.NET.getTargetingAngle()
             : Targets.PROCESSOR.getTargetingAngle();
+      } else {
+        return new Rotation2d(Units.degreesToRadians(Targets.FAR_PROCESSOR.getTargetingAngle()))
+            .getDegrees();
+      }
     }
   }
 
@@ -509,7 +501,8 @@ public class TargetingComputer {
     SOURCE_LEFT(0, 12, new Translation2d(Units.inchesToMeters(15.5), 0), Levels.INTAKE),
     SOURCE_RIGHT(0, 13, new Translation2d(Units.inchesToMeters(15.5), 0), Levels.INTAKE),
     PROCESSOR(0, 14, new Translation2d(), Levels.INTAKE),
-    NET(0, 15, new Translation2d(1.75, Units.inchesToMeters(0)), Levels.L4);
+    NET(0, 15, new Translation2d(1.75, Units.inchesToMeters(0)), Levels.L4),
+    FAR_PROCESSOR(0, 16, new Translation2d(), Levels.INTAKE);
 
     public final int preferredCamera;
     public final int gameID;

@@ -25,6 +25,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Conversions;
@@ -48,6 +49,8 @@ public class FunnelIOCTRE implements FunnelIO {
   // public final TalonFX follower = new TalonFX(32);
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
+
+  public final Servo aileron = new Servo(3);
 
   private final DigitalInput forwardBeamBreak = new DigitalInput(3);
   private final DigitalInput reverseBeamBreak = new DigitalInput(2);
@@ -256,6 +259,7 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("POSITION", inputs.funnelAngle);
     SmartDashboard.putNumber("GOAL", anglePID.getGoal().position);
     SmartDashboard.putNumber("SETPOINT", anglePID.getSetpoint().position);
+    SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
   }
 
   /**
@@ -290,6 +294,10 @@ public class FunnelIOCTRE implements FunnelIO {
   public void stop() {
     leader.stopMotor();
     angleMotor.stopMotor();
+  }
+
+  public void setAileron(double angle) {
+    aileron.setAngle(angle);
   }
 
   private void tempPIDTuning() {
