@@ -203,6 +203,12 @@ public class RobotContainer {
   /** Mech Left */
   private final Trigger overrideTargetingController = new Trigger(mech.povLeft());
 
+  /** Mech LS */
+  private final Trigger killElevator = new Trigger(mech.leftStick());
+
+  /** Mech RS */
+  private final Trigger killWrist = new Trigger(mech.rightStick());
+
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
 
@@ -1210,6 +1216,11 @@ public class RobotContainer {
             () ->
                 TargetingComputer.setTargetLevel(
                     TargetingComputer.getCurrentTargetBranch().getAlgaeLevel())));
+
+    // Micah: "So elevator might be 'cooked'"
+    killElevator.onTrue(new InstantCommand(() -> elevator.toggleKillSwich()));
+
+    killWrist.onTrue(new InstantCommand(() -> claw.toggleKillSwich()));
 
     mech.pov(0).onTrue(new StartClimb(climber));
     mech.pov(180).onTrue(new Climb(climber));
