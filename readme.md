@@ -1,5 +1,5 @@
-# Team 1710 2025 Robot Code <div style="text-align: right">[![Build](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml) [![Spotless](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml)
-We use PhotonVision with 3 Orange Pi 5s, SDS Mk4i swerve modules, and PathPlanner for autos. Special thanks to 5712 for their template (see below).
+# Team 1710 2025 Robot Code <div style="text-align: right">[![Build](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml) [![Spotless](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml)</div>
+We use PhotonVision with 3 Orange Pi 5s, SDS Mk4i swerve modules, and PathPlanner for autos. Special thanks to 5712 for their [template](https://github.com/Hemlock5712/2025SwerveTemplate).
 
 ```
 F  I  R  S  T   R  O  B  O  T  I  C  S   T  E  A  M
@@ -27,5 +27,3 @@ ___
 This is a full featured template repository designed to make setting up a new robot as easy as possible. We use the Phoenix 6 Swerve library to provide top of the line drivetrain responsiveness, along with the new [PathPlanner setpoint generation API](https://pathplanner.dev/pplib-swerve-setpoint-generator.html) (based on a version created by team 254) to prevent skidding and wheel slipping.
 
 This template comes with full simulation and replay support built in, which allow you to program the robot, without even having the robot finished yet. More information on replay usage can be found on the [AdvantageKit documentation website](https://docs.advantagekit.org/getting-started/traditional-replay).
-
-For more info, check out the template repo [here](https://github.com/Hemlock5712/2025SwerveTemplate)!
