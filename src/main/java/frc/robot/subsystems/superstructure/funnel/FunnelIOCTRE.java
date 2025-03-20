@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Conversions;
 import java.io.File;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * CTRE-based implementation of the ArmIO interface for controlling a robot arm mechanism. This
@@ -50,7 +51,7 @@ public class FunnelIOCTRE implements FunnelIO {
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
 
-  public final Servo aileron = new Servo(3);
+  public final Servo aileron = new Servo(0);
 
   private final DigitalInput forwardBeamBreak = new DigitalInput(3);
   private final DigitalInput reverseBeamBreak = new DigitalInput(2);
@@ -167,6 +168,7 @@ public class FunnelIOCTRE implements FunnelIO {
     // timer.start();
 
     angleMotor.setPosition(0);
+    aileron.setAngle(65);
   }
 
   /**
@@ -260,6 +262,7 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("GOAL", anglePID.getGoal().position);
     SmartDashboard.putNumber("SETPOINT", anglePID.getSetpoint().position);
     SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
+    Logger.recordOutput("Funnel/Aileron Pos", aileron.getAngle());
   }
 
   /**

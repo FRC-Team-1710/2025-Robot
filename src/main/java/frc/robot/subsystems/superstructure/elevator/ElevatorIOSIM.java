@@ -54,7 +54,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
           elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, Units.inchesToMeters(1));
   private final Encoder enc = new Encoder(4, 5);
   private final EncoderSim m_EncoderSim = new EncoderSim(enc);
-  private final PWMTalonFX pwmTalonFX = new PWMTalonFX(0);
+  private final PWMTalonFX pwmTalonFX = new PWMTalonFX(10);
   // private final TalonFXSimState pwmTalonFX = new TalonFXSimState();
   private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
   public final LoggedMechanism2d m_mech2d =

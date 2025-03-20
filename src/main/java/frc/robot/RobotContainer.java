@@ -55,6 +55,7 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
+import frc.robot.subsystems.superstructure.funnel.Funnel.FunnelMode;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
@@ -531,6 +532,19 @@ public class RobotContainer {
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR());
 
+    new Trigger(() -> funnel.getMode() == FunnelMode.INTAKE && funnel.isAtTarget())
+        .onTrue(new InstantCommand(() -> funnel.retractAileron()))
+        .onFalse(new InstantCommand(() -> funnel.extendAileron()));
+    new Trigger(
+            () ->
+                targetSource.getAsBoolean()
+                    && (TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                            == Targets.SOURCE_LEFT.getTargetingAngle()
+                        || TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                            == Targets.SOURCE_RIGHT.getTargetingAngle()))
+        .onTrue(new InstantCommand(() -> funnel.extendAileron()))
+        .onFalse(new InstantCommand(() -> funnel.retractAileron()));
+
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
@@ -791,13 +805,13 @@ public class RobotContainer {
             () ->
                 !drivetrain.isInAlignmentZone()
                     || Math.abs(
-                            new Rotation2d(
-                                    Units.degreesToRadians(
-                                        TargetingComputer.getCurrentTargetBranch()
-                                            .getTargetingAngle()))
-                                .minus(drivetrain.getPose().getRotation())
-                                .getDegrees())
-                        > 5)
+                                new Rotation2d(
+                                        Units.degreesToRadians(
+                                            TargetingComputer.getCurrentTargetBranch()
+                                                .getTargetingAngle()))
+                                    .minus(drivetrain.getPose().getRotation())
+                                    .getDegrees())
+                            > 5)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -986,12 +1000,10 @@ public class RobotContainer {
                 !TargetingComputer.stillOuttakingAlgae
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
-        .whileTrue(
-            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
-                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
-        .onFalse(
-            new EndIntake(manipulator, funnel, mech.leftBumper())
-                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
+        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
+        // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
+        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+    // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     targetSource
         .and(
@@ -1206,9 +1218,8 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(() -> funnel.setRollerPower(-0.075))
                 .alongWith(new InstantCommand(() -> manipulator.runPercent(-0.075))))
-        .onFalse(
-            new EndIntake(manipulator, funnel, mech.leftBumper())
-                .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
+        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+    // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     mech.start().whileTrue(new ZeroRizz(claw));
 

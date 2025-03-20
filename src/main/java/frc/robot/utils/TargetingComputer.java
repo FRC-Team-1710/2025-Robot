@@ -203,7 +203,7 @@ public class TargetingComputer {
                 .toRotation2d())
         .plus(
             new Transform2d(
-                TargetingComputer.currentTargetBranch.getOffset().getX(),
+                TargetingComputer.currentTargetBranch.getOffset().getX() + (currentTargetLevel == Levels.L1 && !aligningWithAlgae ? 5 : 0),
                 TargetingComputer.currentTargetBranch.getOffset().getY(),
                 new Rotation2d(Math.PI)));
   }
