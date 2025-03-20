@@ -39,16 +39,16 @@ public class ElevatorToTargetLevel extends Command {
         elevator.L4().schedule();
         break;
       case ALGAE_LOW:
-        elevator.AlgaeLow().schedule();
+        elevator.ALGAE_LOW().schedule();
         break;
       case ALGAE_HIGH:
-        elevator.AlgaeHigh().schedule();
+        elevator.ALGAE_HIGH().schedule();
         break;
       case INTAKE:
-        elevator.intake().schedule();
+        elevator.INTAKE().schedule();
         break;
       default:
-        elevator.intake().schedule();
+        elevator.INTAKE().schedule();
         break;
     }
   }
