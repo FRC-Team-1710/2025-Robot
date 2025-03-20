@@ -36,6 +36,8 @@ public interface ClawIO {
     public boolean hasAlgae = false;
     public boolean rollerLocked = false;
 
+    public boolean killSwich = false;
+
     public Angle wristMotorAngle = Degrees.of(0);
     public Angle angle = Degrees.of(0);
 

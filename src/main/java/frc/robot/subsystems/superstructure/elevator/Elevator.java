@@ -192,6 +192,12 @@ public class Elevator extends SubsystemBase {
     return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
   }
 
+  /** Only allows manual inputs because it wants to break itself */
+  @AutoLogOutput
+  public void toggleKillSwich() {
+    inputs.killSwich = inputs.killSwich ? false : true;
+  }
+
   @AutoLogOutput
   public boolean isClearOfStage1() {
     return inputs.elevatorDistance.in(Inches) > 30;

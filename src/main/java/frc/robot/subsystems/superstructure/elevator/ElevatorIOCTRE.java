@@ -4,6 +4,7 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -26,8 +27,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Conversions;
 
 /**
- * CTRE-based implementation of the ElevatorIO interface for controlling an elevator mechanism. This
- * implementation uses TalonFX motors and a CANcoder for position feedback. The elevator consists of
+ * CTRE-based implementation of the ElevatorIO interface for controlling an
+ * elevator mechanism. This
+ * implementation uses TalonFX motors and a CANcoder for position feedback. The
+ * elevator consists of
  * a leader motor, a follower motor, and an encoder for precise positioning.
  */
 public class ElevatorIOCTRE implements ElevatorIO {
@@ -36,6 +39,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   /** The gear ratio between the CANCoder and the elevator mechanism */
   public static final double CANCODER_GEAR_RATIO = 1.0;
+
+  /** Whoops */
+  public boolean encoderFault = false;
 
   /** The leader TalonFX motor controller (CAN ID: 11) */
   public final TalonFX leader = new TalonFX(11);
@@ -56,6 +62,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private double kAcel = 175;
 
   private boolean locked = false;
+
+  private boolean zeroed = true;
 
   private final TrapezoidProfile.Constraints m_Constraints;
   private final ProfiledPIDController elevatorPID;
@@ -88,20 +96,26 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private Distance setpoint = Inches.of(0);
 
   /**
-   * The radius of the elevator pulley/drum, used for converting between rotations and linear
+   * The radius of the elevator pulley/drum, used for converting between rotations
+   * and linear
    * distance
    */
   protected final Distance elevatorRadius = Inches.of(1.105);
 
+  protected final Distance encoderTripThreshold = Inches.of(15);
+
   /**
-   * The radius of the elevator pulley/drum, used for converting between rotations and linear
+   * The radius of the elevator pulley/drum, used for converting between rotations
+   * and linear
    * distance
    */
   protected Distance encoderRadius = Inches.of(0.7638888888888888);
 
   /**
-   * Constructs a new ElevatorIOCTRE instance and initializes all hardware components. This includes
-   * configuring both motors, setting up the follower relationship, and optimizing CAN bus
+   * Constructs a new ElevatorIOCTRE instance and initializes all hardware
+   * components. This includes
+   * configuring both motors, setting up the follower relationship, and optimizing
+   * CAN bus
    * utilization for all devices.
    */
   public ElevatorIOCTRE() {
@@ -159,7 +173,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Creates the motor configuration with appropriate settings. Sets up neutral mode, PID gains, and
+   * Creates the motor configuration with appropriate settings. Sets up neutral
+   * mode, PID gains, and
    * feedback device configuration.
    *
    * @return The configured TalonFXConfiguration object
@@ -171,37 +186,37 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Updates the elevator's input values with the latest sensor readings. This includes position,
-   * velocity, voltage, and current measurements from both motors and the encoder, as well as
+   * Updates the elevator's input values with the latest sensor readings. This
+   * includes position,
+   * velocity, voltage, and current measurements from both motors and the encoder,
+   * as well as
    * connection status for all devices.
    *
-   * @param inputs The ElevatorIOInputs object to update with the latest values
+   * @param inputs
+   *          The ElevatorIOInputs object to update with the latest values
    */
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     // Refresh all sensor data
-    StatusCode leaderStatus =
-        BaseStatusSignal.refreshAll(
-            leaderPosition,
-            leaderRotorPosition,
-            leaderVelocity,
-            leaderRotorVelocity,
-            leaderAppliedVolts,
-            leaderStatorCurrent,
-            leaderSupplyCurrent);
+    StatusCode leaderStatus = BaseStatusSignal.refreshAll(
+        leaderPosition,
+        leaderRotorPosition,
+        leaderVelocity,
+        leaderRotorVelocity,
+        leaderAppliedVolts,
+        leaderStatorCurrent,
+        leaderSupplyCurrent);
 
-    StatusCode followerStatus =
-        BaseStatusSignal.refreshAll(
-            followerPosition,
-            followerRotorPosition,
-            followerVelocity,
-            followerRotorVelocity,
-            followerAppliedVolts,
-            followerStatorCurrent,
-            followerSupplyCurrent);
+    StatusCode followerStatus = BaseStatusSignal.refreshAll(
+        followerPosition,
+        followerRotorPosition,
+        followerVelocity,
+        followerRotorVelocity,
+        followerAppliedVolts,
+        followerStatorCurrent,
+        followerSupplyCurrent);
 
-    StatusCode encoderStatus =
-        BaseStatusSignal.refreshAll(encoderPosition, encoderVelocity, encoderAbsPosition);
+    StatusCode encoderStatus = BaseStatusSignal.refreshAll(encoderPosition, encoderVelocity, encoderAbsPosition);
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
@@ -225,8 +240,12 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    inputs.elevatorDistance =
-        Conversions.rotationsToDistance(inputs.encoderPosition, CANCODER_GEAR_RATIO, encoderRadius);
+    inputs.encoderDistance = Conversions.rotationsToDistance(inputs.encoderPosition, CANCODER_GEAR_RATIO,
+        encoderRadius);
+    inputs.motorDistance = Conversions.rotationsToDistance(inputs.leaderPosition, GEAR_RATIO, elevatorRadius);
+
+    inputs.elevatorDistance = decideEncoderStatus(inputs.encoderDistance, inputs.motorDistance);
+
     inputs.elevatorSetpoint = setpoint;
 
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.magnitude());
@@ -235,9 +254,13 @@ public class ElevatorIOCTRE implements ElevatorIO {
     tempPIDTuning();
 
     if (locked) {
-      leader.setVoltage(
-          (elevatorPID.calculate(inputs.elevatorDistance.magnitude())
-              + elevatorFF.calculate(elevatorPID.getSetpoint().velocity)));
+      if (inputs.killSwich || !zeroed) {
+        leader.stopMotor();
+      } else {
+        leader.setVoltage(
+            (elevatorPID.calculate(inputs.elevatorDistance.magnitude())
+                + elevatorFF.calculate(elevatorPID.getSetpoint().velocity)));
+      }
       inputs.manual = 0.0;
     } else {
       inputs.manual = leader.getMotorVoltage().getValueAsDouble();
@@ -245,28 +268,46 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Sets the desired distance for the elevator to move to. Converts the desired linear distance to
+   * Sets the desired distance for the elevator to move to. Converts the desired
+   * linear distance to
    * encoder rotations and applies position control.
    *
-   * @param distance The target distance for the elevator
+   * @param distance
+   *          The target distance for the elevator
    */
   @Override
   public void setDistance(Distance distance) {
+    if (!encoderFault) {
+      leader.setPosition(Conversions.metersToRotations(
+          Conversions.rotationsToDistance(encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius), GEAR_RATIO,
+          elevatorRadius));
+    }
     elevatorPID.setGoal(distance.magnitude());
     setpoint = distance;
     locked = true;
+  }
+
+  private Distance decideEncoderStatus(Distance encoderDistance, Distance motorDistance) {
+    if (!encoderFault) {
+      if (encoderDistance.isNear(motorDistance, encoderTripThreshold)) {
+        return encoderDistance;
+      } else {
+        encoderFault = true;
+        zeroed = false;
+      }
+    }
+    return motorDistance;
   }
 
   @Override
   public void stopHere() {
     elevatorPID.reset(
         Conversions.rotationsToDistance(
-                encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
+            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
             .magnitude(),
         0);
-    setpoint =
-        Conversions.rotationsToDistance(
-            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
+    setpoint = Conversions.rotationsToDistance(
+        encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
     locked = true;
   }
 
@@ -279,11 +320,12 @@ public class ElevatorIOCTRE implements ElevatorIO {
   @Override
   public void zero() {
     encoder.setPosition(0);
+    leader.setPosition(0);
   }
 
   /**
-   * Stops all elevator movement by stopping the leader motor. The follower will also stop due to
-   * the follower relationship.
+   * Stops all elevator movement by stopping the leader motor. The follower will
+   * also stop due to the follower relationship.
    */
   @Override
   public void stop() {

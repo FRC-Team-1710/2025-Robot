@@ -140,6 +140,10 @@ public class Claw extends SubsystemBase {
     rollerPositionWhenAlgaeGrabbed = position;
   }
 
+  public void toggleKillSwich() {
+    inputs.killSwich = inputs.killSwich ? false : true;
+  }
+
   /** Zeros wrist */
   public void zero() {
     io.zero();
