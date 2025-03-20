@@ -1,5 +1,18 @@
-# Team 1710's 2025 Robot Code
-yep heres our code
+# Team 1710 2025 Robot Code <div style="text-align: right">[![Build](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/main.yml) [![Spotless](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml/badge.svg)](https://github.com/FRC-Team-1710/2024-Robot/actions/workflows/spotless.yml)
+We use PhotonVision with 3 Orange Pi 5s, SDS Mk4i swerve modules, and PathPlanner for autos. Special thanks to 5712 for their template (see below).
+
+```
+F  I  R  S  T   R  O  B  O  T  I  C  S   T  E  A  M
+______________  _  _____   _  _____  ______________
+\_____________|/ ||___  | / ||  _  ||_____________/
+ \_ _ _ _ _ _ || |   / /  | || | | || _ _ _ _ _ _/
+  \ _ _ _ _ _ || |  / /   | || |_| || _ _ _ _ _ /
+   \__________||_|_/_/___ |_||_____||__________/
+    \___________________/ \___________________/
+                     ___.^.___
+                     '.     .'
+                      /.' '.\
+```
 ___
 ![AdvantageKit Swerve Base Logo](assets/logo.png)
 
@@ -15,54 +28,4 @@ This is a full featured template repository designed to make setting up a new ro
 
 This template comes with full simulation and replay support built in, which allow you to program the robot, without even having the robot finished yet. More information on replay usage can be found on the [AdvantageKit documentation website](https://docs.advantagekit.org/getting-started/traditional-replay).
 
-> Running the simulator on a fresh version of the code will give you a drivable robot, even without following any steps past step 1 in the "Use the template" section
-
-# Setup
-
-All of the documentation needed for setup and more can be found [on our documentation site](https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-setup.html).
-
-### Download dependencies
-
-1. Either make a new repository with the "Use this template" button, fork this repository, or just download the zip file.
-
-[![Use this template](https://img.shields.io/badge/Use_this_template-238636?style=for-the-badge)](https://github.com/new?template_name=2025SwerveTemplate&template_owner=Hemlock5712)
-
-2. Download [WPILib](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html)
-3. Download the [FRC Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/frc-game-tools.html)
-4. Download [Tuner X](https://github.com/CrossTheRoadElec/Phoenix-Releases/releases)
-
-### Use the template
-
-1. Clone the repository you made (or open the downloaded version) and open it in WPILib VSCode.
-2. Run the `WPILib: Set Team Number` task from the WPILib icon in the VSCode toolbar and set your team number.
-3. Connect to your robot
-4. Open Tuner X (run the temporary diagnostic server if your RoboRIO doesn't have code yet)
-5. Follow the swerve setup guide in the mechanisms tab
-6. In the final step of the swerve setup, choose the `Generate only TunerConstants` option and overwrite the file at `src/main/java/frc/robot/generated/TunerConstants.java`.
-7. Inside the TunerConstants.java file, change the last import and the last method in the file
-```diff
-- import frc.robot.subsystems.CommandSwerveDrivetrain;
-+ import frc.robot.subsystems.drive.DriveIOCTRE;
-```
-
-```diff
-- public static CommandSwerveDrivetrain createDrivetrain() {
--     return new CommandSwerveDrivetrain(
--         DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
--     );
-- }
-+ public static DriveIOCTRE createDrivetrain() {
-+     return new DriveIOCTRE(
-+         DrivetrainConstants,
-+         FrontLeft, FrontRight, BackLeft, BackRight
-+     );
-+ }
-```
-
-If you followed all of these steps, your robot should be drivable now!
-
-You can improve your driving experience drastically by following the steps [in this guide](https://hemlock5712.github.io/Swerve-Setup/talonfx-swerve-tuning.html). Make sure you tune your drivetrain again after your robot is assembled, since adding weight to your robot will change a lot of physical properties of how it will act.
-
-## Having issues?
-
-Feel free to create a GitHub issue and we'll try to help out as quickly as possible.
+For more info, check out the template repo [here](https://github.com/Hemlock5712/2025SwerveTemplate)!
