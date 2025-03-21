@@ -31,7 +31,7 @@ public class Funnel extends SubsystemBase {
   private final FunnelIOInputsAutoLogged inputs;
 
   // Current arm position mode
-  private ArmMode currentMode = ArmMode.INTAKE;
+  private FunnelMode currentMode = FunnelMode.INTAKE;
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -91,7 +91,7 @@ public class Funnel extends SubsystemBase {
   }
 
   /** Enumeration of available arm positions with their corresponding target angles. */
-  private enum ArmMode {
+  public enum FunnelMode {
     CLIMB(Degrees.of(105), Degrees.of(2.5)), // Arm fully raised
     INTAKE(Degrees.of(0), Degrees.of(2.5)), // Arm tucked in
     L1(Degrees.of(85), Degrees.of(2.5)); // Position for scoring in L1
@@ -99,7 +99,7 @@ public class Funnel extends SubsystemBase {
     private final Angle targetAngle;
     private final Angle angleTolerance;
 
-    ArmMode(Angle targetAngle, Angle angleTolerance) {
+    FunnelMode(Angle targetAngle, Angle angleTolerance) {
       this.targetAngle = targetAngle;
       this.angleTolerance = angleTolerance;
     }
@@ -110,7 +110,7 @@ public class Funnel extends SubsystemBase {
    *
    * @return The current ArmMode
    */
-  public ArmMode getMode() {
+  public FunnelMode getMode() {
     return currentMode;
   }
 
@@ -123,7 +123,7 @@ public class Funnel extends SubsystemBase {
    *
    * @param mode The desired ArmMode
    */
-  private void setArmMode(ArmMode mode) {
+  private void setArmMode(FunnelMode mode) {
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;
@@ -135,12 +135,12 @@ public class Funnel extends SubsystemBase {
   private final Command currentCommand =
       new SelectCommand<>(
           Map.of(
-              ArmMode.CLIMB,
-              createPositionCommand(ArmMode.CLIMB),
-              ArmMode.INTAKE,
-              createPositionCommand(ArmMode.INTAKE),
-              ArmMode.L1,
-              createPositionCommand(ArmMode.L1)),
+              FunnelMode.CLIMB,
+              createPositionCommand(FunnelMode.CLIMB),
+              FunnelMode.INTAKE,
+              createPositionCommand(FunnelMode.INTAKE),
+              FunnelMode.L1,
+              createPositionCommand(FunnelMode.L1)),
           this::getMode);
 
   /**
@@ -150,7 +150,7 @@ public class Funnel extends SubsystemBase {
    * @param mode The arm position to create a command for
    * @return A command that implements the arm movement
    */
-  private Command createPositionCommand(ArmMode mode) {
+  private Command createPositionCommand(FunnelMode mode) {
     return Commands.runOnce(() -> setPosition(mode.targetAngle))
         .withName("Move to " + mode.toString());
   }
@@ -189,7 +189,7 @@ public class Funnel extends SubsystemBase {
    * @param mode The desired arm mode
    * @return Command to set the mode
    */
-  private Command setPositionCommand(ArmMode mode) {
+  private Command setPositionCommand(FunnelMode mode) {
     return Commands.runOnce(() -> setArmMode(mode)).withName("SetArmMode(" + mode.toString() + ")");
   }
 
@@ -199,20 +199,30 @@ public class Funnel extends SubsystemBase {
    * @return Command to move the arm to L1 scoring position
    */
   public final Command CLIMB() {
-    return setPositionCommand(ArmMode.CLIMB);
+    return setPositionCommand(FunnelMode.CLIMB);
   }
 
   /**
    * @return Command to move the arm to L1 scoring position
    */
   public final Command L1() {
-    return setPositionCommand(ArmMode.L1);
+    return setPositionCommand(FunnelMode.L1);
   }
 
   /**
    * @return Command to intake the arm
    */
   public final Command intake() {
-    return setPositionCommand(ArmMode.INTAKE);
+    return setPositionCommand(FunnelMode.INTAKE);
+  }
+
+  /** Extends Aileron */
+  public final void extendAileron() {
+    io.setAileron(FunnelConstants.AILERON_OUT);
+  }
+
+  /** Retracts Aileron */
+  public final void retractAileron() {
+    io.setAileron(FunnelConstants.AILERON_IN);
   }
 }

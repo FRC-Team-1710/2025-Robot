@@ -75,7 +75,7 @@ public class LEDSubsystem extends SubsystemBase {
   /** Sets the input booleans based on the current state of the robot */
   private void set() { // Decimal phase
 
-    if (DriverStation.getMatchTime() <= 25 && DriverStation.getMatchTime() > 20) {
+    if (DriverStation.getMatchTime() < 25 && DriverStation.getMatchTime() > 20) {
       inputBooleans[0] = true;
     } else {
       inputBooleans[0] = false;
@@ -169,6 +169,7 @@ public class LEDSubsystem extends SubsystemBase {
     byte[] data = new byte[1]; // Create a byte array of length 1
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
+    SmartDashboard.putRaw("LED Byte", data);
     uart.write(data, data.length); // Write the byte array to the serial port
     // System.out.println("Sending Data: " + value); // Print the data
   }

@@ -43,6 +43,7 @@ public class ClawIOSIM extends ClawIOCTRE {
 
   private final LoggedMechanismLigament2d m_wrist;
   private final LoggedMechanismLigament2d m_wristEXTENSION;
+  private final LoggedMechanismLigament2d[] m_Algae;
   private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
   private final ProfiledPIDController m_bottomController =
       new ProfiledPIDController(kp, ki, kd, new TrapezoidProfile.Constraints(maxvel, maxacel));
@@ -71,6 +72,17 @@ public class ClawIOSIM extends ClawIOCTRE {
         m_wristEXTENSION.append(
             new LoggedMechanismLigament2d(
                 "Wrist", Units.inchesToMeters(14), 0, 4.8, new Color8Bit(Color.kPurple)));
+    m_Algae = new LoggedMechanismLigament2d[15];
+    // for (int i = 0; i < 15; i++) {
+    //   m_Algae[i] =
+    //       m_wrist.append(
+    //           new LoggedMechanismLigament2d(
+    //               "Algae Line " + i,
+    //               Units.inchesToMeters(16.5) / 2.0,
+    //               (360.0 / 15) * i,
+    //               16.5,
+    //               new Color8Bit(Color.kAquamarine)));
+    // }
     SmartDashboard.putNumber("Claw/p", kp);
     SmartDashboard.putNumber("Claw/i", ki);
     SmartDashboard.putNumber("Claw/d", kd);
@@ -158,6 +170,12 @@ public class ClawIOSIM extends ClawIOCTRE {
     if (maxvel != SmartDashboard.getNumber("Claw/maxvel", maxvel)) {
       maxvel = SmartDashboard.getNumber("Claw/maxvel", maxvel);
       m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+    }
+
+    if (inputs.hasAlgae) {
+      m_wrist.setColor(new Color8Bit(Color.kAquamarine));
+    } else {
+      m_wrist.setColor(new Color8Bit(Color.kPurple));
     }
   }
 }

@@ -4,42 +4,37 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
-import frc.robot.utils.TargetingComputer;
-import frc.robot.utils.TunableController;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class PlaceCoral extends Command {
-  private Elevator elevator;
-  private Manipulator manipulator;
-  private TunableController controller;
+public class FlipCoralIntoL1 extends Command {
+  Elevator elevator;
+  Manipulator manipulator;
 
-  /** Creates a new PlaceCoral. */
-  public PlaceCoral(Elevator elevator, Manipulator manipulator, TunableController controller) {
-    // Use addRequirements() here to declare subsystem dependencies.
+  /** Creates a new FlipCoralIntoL1. */
+  public FlipCoralIntoL1(Elevator elevator, Manipulator manipulator) {
     this.elevator = elevator;
     this.manipulator = manipulator;
-    this.controller = controller;
+    // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(elevator, manipulator);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    elevator.L1().schedule();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (elevator.isAtTarget()
-        && elevator.getMode() == TargetingComputer.getCurrentTargetLevel().getElevatorPosition()) {
+    if (elevator.isAtTarget()) {
       manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
-      if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
-        controller.setRumble(RumbleType.kBothRumble, 1);
-      }
+      elevator.L2().schedule();
     }
   }
 
@@ -47,12 +42,12 @@ public class PlaceCoral extends Command {
   @Override
   public void end(boolean interrupted) {
     manipulator.runPercent(0);
-    controller.setRumble(RumbleType.kBothRumble, 0);
+    elevator.INTAKE().schedule();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return elevator.getMode() == ElevatorPosition.L2 && elevator.isAtTarget();
   }
 }

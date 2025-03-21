@@ -8,4 +8,7 @@ package frc.robot.subsystems.superstructure.funnel;
 public class FunnelConstants {
   public static final double intakeSpeed = 0.4;
   public static final double insideSpeed = 0.2;
+
+  public static final double AILERON_OUT = 155;
+  public static final double AILERON_IN = 65;
 }

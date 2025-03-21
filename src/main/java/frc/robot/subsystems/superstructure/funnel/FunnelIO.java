@@ -58,4 +58,6 @@ public interface FunnelIO {
 
   /** Stop in open loop. */
   public default void stop() {}
+
+  public default void setAileron(double setpoint) {}
 }
