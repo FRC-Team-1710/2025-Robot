@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.Inches;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.CANrange;
-
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.utils.Conversions;
@@ -54,7 +53,8 @@ public class ElevatorEncoder {
   public Distance getDistance() {
     switch (encoderType) {
       case stringEncoder:
-        return Conversions.rotationsToDistance(cancoder.getPosition().getValue(), 1, Inches.of(0.7638888888888888));
+        return Conversions.rotationsToDistance(
+            cancoder.getPosition().getValue(), 1, Inches.of(0.7638888888888888));
       case canRange:
         return canrange.getDistance().getValue().minus(canrangeoffset);
       default:
