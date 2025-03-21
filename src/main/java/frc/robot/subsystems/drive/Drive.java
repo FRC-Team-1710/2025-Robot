@@ -51,6 +51,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.vision.Vision;
@@ -251,6 +252,12 @@ public class Drive extends SubsystemBase {
     return yes;
   }
 
+
+  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
+  public ChassisSpeeds getChassisSpeeds() {
+    return inputs.speeds;
+  }
+
   /**
    * Guys I can add comments to this
    *
@@ -264,12 +271,19 @@ public class Drive extends SubsystemBase {
    * @param elevator
    * @return
    */
-  public Command Alignment(
-      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+  public Command Alignment(Targets target, Vision vision, Elevator elevator) {
     TargetingComputer.setTargetBranch(target);
+
+    SwerveSetpointGen setpointGenAuto =
+        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
+            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     return run(() ->
             io.setControl(
-                requestSupplier
+                setpointGenAuto
+                    .withOperatorForwardDirection(getOperatorForwardDirection())
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(
                         TunerConstants.kSpeedAt12Volts
@@ -703,11 +717,6 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the measured chassis speeds of the robot. */
-  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  public ChassisSpeeds getChassisSpeeds() {
-    return inputs.speeds;
-  }
-
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured/velocity")
   public double getChassisVelocity() {
 

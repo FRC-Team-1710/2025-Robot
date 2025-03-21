@@ -395,34 +395,33 @@ public class RobotContainer {
     }
 
     NamedCommands.registerCommand(
-        "Align to Alpha", drivetrain.Alignment(drive, Targets.ALPHA, vision, elevator));
+        "Align to Alpha", drivetrain.Alignment(Targets.ALPHA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Bravo", drivetrain.Alignment(drive, Targets.BRAVO, vision, elevator));
+        "Align to Bravo", drivetrain.Alignment(Targets.BRAVO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Charlie", drivetrain.Alignment(drive, Targets.CHARLIE, vision, elevator));
+        "Align to Charlie", drivetrain.Alignment(Targets.CHARLIE, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Delta", drivetrain.Alignment(drive, Targets.DELTA, vision, elevator));
+        "Align to Delta", drivetrain.Alignment(Targets.DELTA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Echo", drivetrain.Alignment(drive, Targets.ECHO, vision, elevator));
+        "Align to Echo", drivetrain.Alignment(Targets.ECHO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Foxtrot", drivetrain.Alignment(drive, Targets.FOXTROT, vision, elevator));
+        "Align to Foxtrot", drivetrain.Alignment(Targets.FOXTROT, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Golf", drivetrain.Alignment(drive, Targets.GOLF, vision, elevator));
+        "Align to Golf", drivetrain.Alignment(Targets.GOLF, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Hotel", drivetrain.Alignment(drive, Targets.HOTEL, vision, elevator));
+        "Align to Hotel", drivetrain.Alignment(Targets.HOTEL, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to India", drivetrain.Alignment(drive, Targets.INDIA, vision, elevator));
+        "Align to India", drivetrain.Alignment(Targets.INDIA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Juliet", drivetrain.Alignment(drive, Targets.JULIET, vision, elevator));
+        "Align to Juliet", drivetrain.Alignment(Targets.JULIET, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Kilo", drivetrain.Alignment(drive, Targets.KILO, vision, elevator));
+        "Align to Kilo", drivetrain.Alignment(Targets.KILO, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Lima", drivetrain.Alignment(drive, Targets.LIMA, vision, elevator));
+        "Align to Lima", drivetrain.Alignment(Targets.LIMA, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Source Right",
-        drivetrain.Alignment(drive, Targets.SOURCE_RIGHT, vision, elevator));
+        "Align to Source Right", drivetrain.Alignment(Targets.SOURCE_RIGHT, vision, elevator));
     NamedCommands.registerCommand(
-        "Align to Source Left", drivetrain.Alignment(drive, Targets.SOURCE_LEFT, vision, elevator));
+        "Align to Source Left", drivetrain.Alignment(Targets.SOURCE_LEFT, vision, elevator));
     NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
     NamedCommands.registerCommand(
         "outtake coral",
