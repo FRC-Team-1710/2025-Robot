@@ -23,6 +23,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.superstructure.elevator.ElevatorEncoder.EncoderType;
 import frc.robot.utils.Conversions;
 
 /**
@@ -31,6 +32,9 @@ import frc.robot.utils.Conversions;
  * a leader motor, a follower motor, and an encoder for precise positioning.
  */
 public class ElevatorIOCTRE implements ElevatorIO {
+  /** The encoder that can be swiched with one variable */
+  private final ElevatorEncoder encoder = new ElevatorEncoder(EncoderType.stringEncoder);
+
   /** The gear ratio between the motor and the elevator mechanism */
   public static final double GEAR_RATIO = 6.0;
 
@@ -45,8 +49,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   /** The follower TalonFX motor controller (CAN ID: 12) */
   public final TalonFX follower = new TalonFX(12);
-
-  public final CANcoder encoder = new CANcoder(13);
 
   private double kP = 0.0;
   private double kI = 0.0;
@@ -67,9 +69,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private ElevatorFeedforward elevatorFF;
 
   // Status signals for monitoring motor and encoder states
-  private final StatusSignal<Angle> encoderPosition = encoder.getPosition();
-  private final StatusSignal<Angle> encoderAbsPosition = encoder.getAbsolutePosition();
-  private final StatusSignal<AngularVelocity> encoderVelocity = encoder.getVelocity();
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
   private final StatusSignal<Angle> leaderRotorPosition = leader.getRotorPosition();
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
@@ -88,7 +87,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
   // Debouncers for connection status (filters out brief disconnections)
   private final Debouncer leaderDebounce = new Debouncer(0.5);
   private final Debouncer followerDebounce = new Debouncer(0.5);
-  private final Debouncer encoderDebounce = new Debouncer(0.5);
 
   private Distance setpoint = Inches.of(0);
 
@@ -135,23 +133,22 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leaderStatorCurrent,
         followerStatorCurrent,
         leaderSupplyCurrent,
-        followerSupplyCurrent,
-        encoderPosition,
-        encoderVelocity,
-        encoderAbsPosition);
+        followerSupplyCurrent);
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
     follower.optimizeBusUtilization(4, 0.1);
-    encoder.optimizeBusUtilization(4, 0.1);
 
     follower.setPosition(0);
     leader.setPosition(0);
-    encoder.setPosition(0);
 
     m_Constraints = new TrapezoidProfile.Constraints(kVel, kAcel); // MAX velocity, MAX aceleration
     elevatorPID = new ProfiledPIDController(kP, kI, kD, m_Constraints);
     elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
+
+    if (encoder.isMotorEncoders()) {
+      encoderFault = true;
+    }
 
     SmartDashboard.putNumber("Elevator/PID/P", kP);
     SmartDashboard.putNumber("Elevator/PID/I", kI);
@@ -207,23 +204,15 @@ public class ElevatorIOCTRE implements ElevatorIO {
             followerStatorCurrent,
             followerSupplyCurrent);
 
-    StatusCode encoderStatus =
-        BaseStatusSignal.refreshAll(encoderPosition, encoderVelocity, encoderAbsPosition);
-
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
-    inputs.encoderConnected = encoderDebounce.calculate(encoderStatus.isOK());
 
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderRotorPosition = leaderRotorPosition.getValue();
     inputs.leaderVelocity = leaderVelocity.getValue();
     inputs.leaderRotorVelocity = leaderRotorVelocity.getValue();
-
-    inputs.encoderAbsPosition = encoderAbsPosition.getValue();
-    inputs.encoderPosition = encoderPosition.getValue();
-    inputs.encoderVelocity = encoderVelocity.getValue();
 
     // Update voltage and current measurements
     inputs.appliedVoltage = leaderAppliedVolts.getValue();
@@ -232,18 +221,13 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    inputs.encoderDistance =
-        Conversions.rotationsToDistance(inputs.encoderPosition, CANCODER_GEAR_RATIO, encoderRadius);
-    inputs.motorDistance =
-        Conversions.rotationsToDistance(inputs.leaderPosition, GEAR_RATIO, elevatorRadius);
-
     inputs.encoderFault = encoderFault;
 
-    inputs.elevatorDistance = decideEncoderStatus(inputs.encoderDistance, inputs.motorDistance);
+    inputs.elevatorDistance = decideEncoderStatus();
 
     inputs.elevatorSetpoint = setpoint;
 
-    SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.magnitude());
+    SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.in(Inches));
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
     SmartDashboard.putNumber("Elevator Goal", elevatorPID.getGoal().position);
     tempPIDTuning();
@@ -253,7 +237,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leader.stopMotor();
       } else {
         leader.setVoltage(
-            (elevatorPID.calculate(inputs.elevatorDistance.magnitude())
+            (elevatorPID.calculate(inputs.elevatorDistance.in(Inches))
                 + elevatorFF.calculate(elevatorPID.getSetpoint().velocity)));
       }
       inputs.manual = 0.0;
@@ -270,41 +254,49 @@ public class ElevatorIOCTRE implements ElevatorIO {
    */
   @Override
   public void setDistance(Distance distance) {
-    if (!encoderFault) {
+    if (!encoderFault && !encoder.isMotorEncoders()) {
       leader.setPosition(
           Conversions.metersToRotations(
-              Conversions.rotationsToDistance(
-                  encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius),
+              encoder.getDistance(),
               GEAR_RATIO,
               elevatorRadius));
     }
-    elevatorPID.setGoal(distance.magnitude());
+    elevatorPID.setGoal(distance.in(Inches));
     setpoint = distance;
     locked = true;
   }
 
-  private Distance decideEncoderStatus(Distance encoderDistance, Distance motorDistance) {
-    if (!encoderFault) {
-      if (encoderDistance.isNear(motorDistance, encoderTripThreshold)) {
-        return encoderDistance;
-      } else {
-        encoderFault = true;
-        zeroed = false;
+  private Distance decideEncoderStatus() {
+    if (encoder.isCancoder() || encoder.isCanrange()) {
+      if (!encoderFault) {
+        if ((encoder.getDistance().isNear(motorDistance(), encoderTripThreshold) && encoder.isCancoder()) || encoder.isCanrange()) {
+          return encoder.getDistance();
+        } else {
+          encoderFault = true;
+          zeroed = false;
+        }
       }
     }
-    return motorDistance;
+    return motorDistance();
+  }
+
+  private Distance getEncoderDistance() {
+    if (encoder.isCancoder() || encoder.isCanrange()) {
+      return encoder.getDistance();
+    }
+    return motorDistance();
+  }
+
+  private Distance motorDistance() {
+    return Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
   }
 
   @Override
   public void stopHere() {
-    elevatorPID.reset(
-        Conversions.rotationsToDistance(
-                encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius)
-            .magnitude(),
+    elevatorPID.reset(getEncoderDistance()
+            .in(Inches),
         0);
-    setpoint =
-        Conversions.rotationsToDistance(
-            encoderPosition.getValue(), CANCODER_GEAR_RATIO, encoderRadius);
+    setpoint = getEncoderDistance();
     locked = true;
   }
 
@@ -316,7 +308,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void zero() {
-    encoder.setPosition(0);
+    encoder.zero();
     leader.setPosition(0);
   }
 
