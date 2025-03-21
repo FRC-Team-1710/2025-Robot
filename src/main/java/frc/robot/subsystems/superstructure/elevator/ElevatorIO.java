@@ -30,8 +30,9 @@ public interface ElevatorIO {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
     public boolean encoderConnected = false;
-    
+
     public boolean killSwich = false;
+    public boolean encoderFault = false;
 
     public Angle leaderPosition = Rotations.of(0);
     public Angle leaderRotorPosition = Rotations.of(0);
