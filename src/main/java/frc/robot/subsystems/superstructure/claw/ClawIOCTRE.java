@@ -46,7 +46,7 @@ public class ClawIOCTRE implements ClawIO {
   private double kG = 0.0;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kacel = 600;
+  private double kacel = 900;
   private double kvel = 300;
 
   private double RollerkP = 3;

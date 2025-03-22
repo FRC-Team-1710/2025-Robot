@@ -556,7 +556,7 @@ public class RobotContainer {
         // Drivetrain will execute this command periodically
         drivetrain.applyRequest(
             () ->
-                setpointGen
+                drive
                     .withVelocityX(
                         MaxSpeed.times(
                             -driver.customLeft().getY())) // Drive forward with negative Y (forward)
@@ -565,9 +565,7 @@ public class RobotContainer {
                             -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
-                            .times(claw.hasAlgae() ? .5 : 1))
-                    .withOperatorForwardDirection(
-                        drivetrain.getOperatorForwardDirection()))); // Drive counterclockwise with
+                            .times(claw.hasAlgae() ? .5 : 1)))); // Drive counterclockwise with
     // negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
@@ -820,8 +818,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -897,8 +895,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
@@ -972,8 +970,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -1021,8 +1019,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
@@ -1072,8 +1070,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((!Robot.getAlliance()
@@ -1125,21 +1123,21 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
                                                         ? FieldConstants.fieldLength.in(Meters)
-                                                            - 6.55
-                                                        : 6.55)
+                                                            - 7.4
+                                                        : 7.4)
                                                     - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : ((Robot.getAlliance()
-                                                    ? FieldConstants.fieldLength.in(Meters) - 6.55
-                                                    : 6.55)
+                                                    ? FieldConstants.fieldLength.in(Meters) - 7.4
+                                                    : 7.4)
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))

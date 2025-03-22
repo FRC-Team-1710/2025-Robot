@@ -11,7 +11,7 @@ import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
 import java.util.Random;
 
 public class TargetingComputer {
-  public static final boolean homeField = true; // TODO: Change before comp
+  public static final boolean homeField = false; // TODO: Change before comp
   public static final boolean gameMode = false;
   public static final Translation2d primaryAlgaeOffset =
       new Translation2d(Units.inchesToMeters(32), 0);
@@ -141,7 +141,7 @@ public class TargetingComputer {
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
       case FAR_PROCESSOR -> isRedAlliance ? 270 : 90;
-      case NET -> isRedAlliance ? 180 : 0;
+      case NET -> isRedAlliance ? 220 : 40;
     };
   }
 

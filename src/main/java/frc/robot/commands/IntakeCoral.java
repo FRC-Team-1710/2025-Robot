@@ -42,7 +42,7 @@ public class IntakeCoral extends Command {
   public void execute() {
     if (!mechLB.getAsBoolean()) {
       if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
-        m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
+        m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
         controller.setRumble(RumbleType.kBothRumble, 0);
         funnel.setRollerPower(.2);
       } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
@@ -53,6 +53,10 @@ public class IntakeCoral extends Command {
         m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
         funnel.setRollerPower(.4);
         controller.setRumble(RumbleType.kBothRumble, 0);
+      } else if (m_Manipulator.beam1Broken() && !m_Manipulator.beam2Broken()) {
+        m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
+        controller.setRumble(RumbleType.kBothRumble, 0);
+        funnel.setRollerPower(.2);
       }
     }
   }
