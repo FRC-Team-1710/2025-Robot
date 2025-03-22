@@ -7,6 +7,7 @@ package frc.robot.subsystems.superstructure.elevator;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
+import au.grapplerobotics.CanBridge;
 import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
@@ -43,45 +44,47 @@ public class ElevatorEncoder {
   public ElevatorEncoder(EncoderType encoderType, TalonFX motor) {
     this.motor = motor;
     this.encoderType = encoderType;
-    switch (this.encoderType) {
-      case stringEncoder:
-        cancoder = new CANcoder(13);
-        cancoder.optimizeBusUtilization(4, 0.1);
-        cancoder.setPosition(0);
-        canrange = null;
-        lasercan = null;
-        break;
-      case canRange:
-        cancoder = null;
-        canrange = new CANrange(13);
-        canrange.optimizeBusUtilization(4, 0.1);
-        encoderoffset = Inches.of(0); // Change
-        lasercan = null;
-        break;
-      case lasercan:
-        cancoder = null;
-        canrange = null;
-        lasercan = new LaserCan(13);
-        try {
-          lasercan.setRangingMode(RangingMode.SHORT);
-        } catch (ConfigurationFailedException error) {
-          Logger.recordOutput(
-              "Laser Can Error",
-              "Error "
-                  + error.getErrorCode()
-                  + ": Bruh, the lasercan didn't set the ranging mode. :skull: "
-                  + error.getMessage());
-        }
-        encoderoffset = Inches.of(0); // Change
-        break;
-      default:
-        cancoder = null;
-        canrange = null;
-        lasercan = null;
+    // switch (encoderType) {
+    //   case lasercan:
+    cancoder = null;
+    canrange = null;
+    CanBridge.runTCP();
+    lasercan = new LaserCan(22);
+    try {
+      lasercan.setRangingMode(RangingMode.LONG);
+    } catch (ConfigurationFailedException error) {
+      Logger.recordOutput(
+          "Laser Can Error",
+          "Error "
+              + error.getErrorCode()
+              + ": Bruh, the lasercan didn't set the ranging mode. :skull: "
+              + error.getMessage());
     }
+    encoderoffset = Inches.of(0); // Change
+    // break;
+    // case stringEncoder:
+    //   cancoder = new CANcoder(13);
+    //   cancoder.optimizeBusUtilization(4, 0.1);
+    //   cancoder.setPosition(0);
+    //   canrange = null;
+    //   lasercan = null;
+    //   break;
+    // case canRange:
+    //   cancoder = null;
+    //   canrange = new CANrange(13);
+    //   canrange.optimizeBusUtilization(4, 0.1);
+    //   encoderoffset = Inches.of(0); // Change
+    //   lasercan = null;
+    //   break;
+    // default:
+    //   cancoder = null;
+    //   canrange = null;
+    //   lasercan = null;
+
   }
 
   public Distance getLasercanDistance() {
+    // if (isLasercan()) {
     Measurement measurment = lasercan.getMeasurement();
     if (measurment != null) {
       Logger.recordOutput("Laser Can Error", "No errors getting distance yet :)");
@@ -93,6 +96,8 @@ public class ElevatorEncoder {
         "Laser Can Error",
         "Error: measurment is literally null. Why can't the string encoder just work?");
     return null;
+    // }
+    // return Inches.of(1);
   }
 
   public Distance getDistance() {

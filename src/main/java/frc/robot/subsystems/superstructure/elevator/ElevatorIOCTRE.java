@@ -4,7 +4,6 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -206,6 +205,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
 
     SmartDashboard.putNumber("Leader position", leaderPosition.getValueAsDouble());
+    SmartDashboard.putNumber(
+        "Lasercan distance",
+        encoder.getLasercanDistance() == null ? 0 : encoder.getLasercanDistance().magnitude());
 
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
@@ -227,21 +229,26 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.elevatorSetpoint = setpoint;
 
     // Crazy good logic
-    if (encoderType == EncoderType.lasercan
-        && setpoint == Inches.of(0)
-        && locked
-        && inputs.leaderVelocity.in(RotationsPerSecond) < 0.5
-        && inputs.leaderVelocity.in(RotationsPerSecond) > -0.5) {
-      timer.start();
-      if (timer.get() >= 0.2) {
-        Distance msmnt = encoder.getLasercanDistance();
-        if (msmnt != null) {
-          leader.setPosition(Conversions.metersToRotations(msmnt, GEAR_RATIO, elevatorRadius));
-        }
-      }
-    } else {
-      timer.reset();
-    }
+    // if (encoder.isLasercan()
+    //     && locked
+    //     && inputs.leaderVelocity.in(RotationsPerSecond) < 0.5
+    //     && inputs.leaderVelocity.in(RotationsPerSecond) > -0.5) {
+    //   timer.start();
+    //   if (timer.get() >= 0.2) {
+    //     Distance msmnt = encoder.getLasercanDistance();
+    //     if (msmnt != null) {
+    //       Logger.recordOutput(
+    //           "LaserCAN Updater",
+    //           "Updated from "
+    //               + leader.getPosition().getValueAsDouble()
+    //               + " to "
+    //               + Conversions.metersToRotations(msmnt, GEAR_RATIO, elevatorRadius));
+    //       leader.setPosition(Conversions.metersToRotations(msmnt, GEAR_RATIO, elevatorRadius));
+    //     }
+    //   }
+    // } else {
+    //   timer.reset();
+    // }
 
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.in(Inches));
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
