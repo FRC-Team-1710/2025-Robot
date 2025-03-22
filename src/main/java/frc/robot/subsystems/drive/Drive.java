@@ -252,7 +252,6 @@ public class Drive extends SubsystemBase {
     return yes;
   }
 
-
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() {
     return inputs.speeds;

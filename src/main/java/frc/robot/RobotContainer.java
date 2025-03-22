@@ -810,13 +810,13 @@ public class RobotContainer {
             () ->
                 !drivetrain.isInAlignmentZone()
                     || Math.abs(
-                                new Rotation2d(
-                                        Units.degreesToRadians(
-                                            TargetingComputer.getCurrentTargetBranch()
-                                                .getTargetingAngle()))
-                                    .minus(drivetrain.getPose().getRotation())
-                                    .getDegrees())
-                            > 5)
+                            new Rotation2d(
+                                    Units.degreesToRadians(
+                                        TargetingComputer.getCurrentTargetBranch()
+                                            .getTargetingAngle()))
+                                .minus(drivetrain.getPose().getRotation())
+                                .getDegrees())
+                        > 5)
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
