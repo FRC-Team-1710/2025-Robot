@@ -37,7 +37,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Align to Source Right"
+            "name": "Align to Source Left"
           }
         },
         {
@@ -79,7 +79,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Align to Source Right"
+            "name": "Align to Source Left"
           }
         },
         {
@@ -121,37 +121,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Align to Source Right"
+            "name": "Align to Source Left"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "intake coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "flipped to alpha near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Align to Alpha"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake position"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "L4"
           }
         }
       ]

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.553867557596854,
-        "y": 6.025507636492533
+        "x": 4.219893071270779,
+        "y": 6.068340520423845
       },
       "isLocked": false,
       "linkedName": "Juliet"
     },
     {
       "anchor": {
-        "x": 1.794,
-        "y": 7.29125
+        "x": 1.9779713114754096,
+        "y": 6.758196721311475
       },
       "prevControl": {
-        "x": 3.1915195170408484,
-        "y": 6.523898440934842
+        "x": 2.401201309981445,
+        "y": 6.581066328254565
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.7616475354490171,
+      "minWaypointRelativePos": 0.6918114143920623,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.5,
@@ -50,7 +50,7 @@
     "maxVelocity": 5.0,
     "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

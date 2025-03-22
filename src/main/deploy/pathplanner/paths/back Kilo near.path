@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8210197755302486,
-        "y": 5.893436830562382
+        "x": 2.531809009992928,
+        "y": 6.4619914186964476
       },
       "isLocked": false,
       "linkedName": "kilo"
     },
     {
       "anchor": {
-        "x": 1.794,
-        "y": 7.29125
+        "x": 1.9779713114754096,
+        "y": 6.758196721311475
       },
       "prevControl": {
-        "x": 1.7420372711196879,
-        "y": 7.046709870762872
+        "x": 2.86807315466916,
+        "y": 6.285340879500735
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     "maxVelocity": 5.0,
     "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
