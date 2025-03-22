@@ -226,7 +226,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     inputs.elevatorSetpoint = setpoint;
 
-    if (encoderType == EncoderType.lasercan && setpoint == Inches.of(0)
+    // Crazy good logic
+    if (encoderType == EncoderType.lasercan
+        && setpoint == Inches.of(0)
+        && locked
         && inputs.leaderVelocity.in(RotationsPerSecond) < 0.5
         && inputs.leaderVelocity.in(RotationsPerSecond) > -0.5) {
       timer.start();
