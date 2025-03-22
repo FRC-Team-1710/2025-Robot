@@ -4,11 +4,19 @@
 
 package frc.robot.subsystems.superstructure.elevator;
 
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.CANrange;
+import com.ctre.phoenix6.hardware.TalonFX;
+
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
+import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.utils.Conversions;
@@ -17,19 +25,24 @@ import frc.robot.utils.Conversions;
 public class ElevatorEncoder {
   private final EncoderType encoderType;
 
-  private Distance canrangeoffset = Inches.of(0);
+  private Distance encoderoffset = Inches.of(0);
 
   private final CANcoder cancoder;
   private final CANrange canrange;
+  private final LaserCan lasercan;
+
+  private final TalonFX motor;
 
   public enum EncoderType {
     stringEncoder(),
     canRange(),
-    motorEncoders()
+    motorEncoders(),
+    lasercan()
   }
 
   /** ID: 13 */
-  public ElevatorEncoder(EncoderType encoderType) {
+  public ElevatorEncoder(EncoderType encoderType, TalonFX motor) {
+    this.motor = motor;
     this.encoderType = encoderType;
     switch (this.encoderType) {
       case stringEncoder:
@@ -37,17 +50,41 @@ public class ElevatorEncoder {
         cancoder.optimizeBusUtilization(4, 0.1);
         cancoder.setPosition(0);
         canrange = null;
+        lasercan = null;
         break;
       case canRange:
         cancoder = null;
         canrange = new CANrange(13);
         canrange.optimizeBusUtilization(4, 0.1);
-        canrangeoffset = canrange.getDistance().getValue();
+        encoderoffset = Inches.of(0); // Change
+        lasercan = null;
+        break;
+      case lasercan:
+        cancoder = null;
+        canrange = null;
+        lasercan = new LaserCan(13);
+        try {
+          lasercan.setRangingMode(RangingMode.LONG);
+        } catch (ConfigurationFailedException error) {
+          Logger.recordOutput("Laser Can Error", "Error " + error.getErrorCode() + ": Bruh, the lasercan didn't set the ranging mode. :skull: " + error.getMessage());
+        }
+        encoderoffset = Inches.of(0); // Change
         break;
       default:
         cancoder = null;
         canrange = null;
+        lasercan = null;
     }
+  }
+
+  public Distance getLasercanDistance() {
+    Measurement measurment = lasercan.getMeasurement();
+    if (measurment != null) {
+      Logger.recordOutput("Laser Can Error", "No errors yet :)");
+      return Inches.of(Units.metersToInches(lasercan.getMeasurement().distance_mm/1000));
+    }
+    Logger.recordOutput("Laser Can Error", "Error: measurment is literally null. Why can't the string encoder just work?");
+    return null;
   }
 
   public Distance getDistance() {
@@ -56,9 +93,10 @@ public class ElevatorEncoder {
         return Conversions.rotationsToDistance(
             cancoder.getPosition().getValue(), 1, Inches.of(0.7638888888888888));
       case canRange:
-        return canrange.getDistance().getValue().minus(canrangeoffset);
+        return canrange.getDistance().getValue().minus(encoderoffset);
       default:
-        return null;
+        return Conversions.rotationsToDistance(
+          motor.getPosition().getValue(), 6, Inches.of(1.1338619402985));
     }
   }
 
@@ -66,10 +104,8 @@ public class ElevatorEncoder {
     switch (encoderType) {
       case stringEncoder:
         return cancoder.getVelocity().getValue();
-      case canRange:
-        return DegreesPerSecond.of(0);
       default:
-        return null;
+        return motor.getVelocity().getValue();
     }
   }
 
@@ -77,8 +113,7 @@ public class ElevatorEncoder {
     switch (encoderType) {
       case stringEncoder:
         cancoder.setPosition(0);
-      case canRange:
-        canrangeoffset = canrange.getDistance().getValue();
+        break;
       default:
     }
   }
@@ -99,6 +134,13 @@ public class ElevatorEncoder {
 
   public boolean isMotorEncoders() {
     if (encoderType == EncoderType.motorEncoders) {
+      return true;
+    }
+    return false;
+  }
+
+  public boolean isLasercan() {
+    if (encoderType == EncoderType.lasercan) {
       return true;
     }
     return false;
