@@ -84,8 +84,10 @@ public class ElevatorEncoder {
   public Distance getLasercanDistance() {
     Measurement measurment = lasercan.getMeasurement();
     if (measurment != null) {
-      Logger.recordOutput("Laser Can Error", "No errors yet :)");
-      return Inches.of(Units.metersToInches(Double.valueOf(lasercan.getMeasurement().distance_mm) / 1000)-encoderoffset.in(Meters));
+      Logger.recordOutput("Laser Can Error", "No errors getting distance yet :)");
+      return Inches.of(
+          Units.metersToInches(Double.valueOf(lasercan.getMeasurement().distance_mm) / 1000)
+              - encoderoffset.in(Meters));
     }
     Logger.recordOutput(
         "Laser Can Error",

@@ -34,7 +34,7 @@ import frc.robot.utils.Conversions;
  */
 public class ElevatorIOCTRE implements ElevatorIO {
 
-  private final EncoderType encoderType = EncoderType.motorEncoders;
+  private final EncoderType encoderType = EncoderType.lasercan;
 
   private final Timer timer = new Timer();
 
@@ -226,7 +226,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     inputs.elevatorSetpoint = setpoint;
 
-    if (encoderType == EncoderType.lasercan
+    if (encoderType == EncoderType.lasercan && setpoint == Inches.of(0)
         && inputs.leaderVelocity.in(RotationsPerSecond) < 0.5
         && inputs.leaderVelocity.in(RotationsPerSecond) > -0.5) {
       timer.start();
