@@ -46,15 +46,15 @@ public class ElevatorIOCTRE implements ElevatorIO {
   /** The follower TalonFX motor controller (CAN ID: 12) */
   public final TalonFX follower = new TalonFX(12);
 
-  private double kP = 0.0;
+  private double kP = 0.75;
   private double kI = 0.0;
   private double kD = 0.0;
-  private double kS = 0.0;
-  private double kG = 0.0;
+  private double kS = 0.225;
+  private double kG = 0.375;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kVel = 0;
-  private double kAcel = 0;
+  private double kAcel = 175;
+  private double kVel = 250;
 
   private boolean locked = false;
 
@@ -90,7 +90,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
    * The radius of the elevator pulley/drum, used for converting between rotations and linear
    * distance
    */
-  protected final Distance elevatorRadius = Inches.of(1.105);
+  protected final Distance elevatorRadius = Inches.of(1.1338619402985);
 
   protected final Distance cancoderTripThreshold = Inches.of(15);
 
@@ -197,6 +197,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
+
+    SmartDashboard.putNumber("Leader position", leaderPosition.getValueAsDouble());
 
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
