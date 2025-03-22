@@ -63,7 +63,7 @@ public class ElevatorEncoder {
         canrange = null;
         lasercan = new LaserCan(13);
         try {
-          lasercan.setRangingMode(RangingMode.LONG);
+          lasercan.setRangingMode(RangingMode.SHORT);
         } catch (ConfigurationFailedException error) {
           Logger.recordOutput(
               "Laser Can Error",
