@@ -5,21 +5,20 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
-
-import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.CANrange;
-import com.ctre.phoenix6.hardware.TalonFX;
+import static edu.wpi.first.units.Units.Meters;
 
 import au.grapplerobotics.ConfigurationFailedException;
 import au.grapplerobotics.LaserCan;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.CANrange;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.utils.Conversions;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class ElevatorEncoder {
@@ -66,7 +65,12 @@ public class ElevatorEncoder {
         try {
           lasercan.setRangingMode(RangingMode.LONG);
         } catch (ConfigurationFailedException error) {
-          Logger.recordOutput("Laser Can Error", "Error " + error.getErrorCode() + ": Bruh, the lasercan didn't set the ranging mode. :skull: " + error.getMessage());
+          Logger.recordOutput(
+              "Laser Can Error",
+              "Error "
+                  + error.getErrorCode()
+                  + ": Bruh, the lasercan didn't set the ranging mode. :skull: "
+                  + error.getMessage());
         }
         encoderoffset = Inches.of(0); // Change
         break;
@@ -81,9 +85,11 @@ public class ElevatorEncoder {
     Measurement measurment = lasercan.getMeasurement();
     if (measurment != null) {
       Logger.recordOutput("Laser Can Error", "No errors yet :)");
-      return Inches.of(Units.metersToInches(lasercan.getMeasurement().distance_mm/1000));
+      return Inches.of(Units.metersToInches(Double.valueOf(lasercan.getMeasurement().distance_mm) / 1000)-encoderoffset.in(Meters));
     }
-    Logger.recordOutput("Laser Can Error", "Error: measurment is literally null. Why can't the string encoder just work?");
+    Logger.recordOutput(
+        "Laser Can Error",
+        "Error: measurment is literally null. Why can't the string encoder just work?");
     return null;
   }
 
@@ -96,7 +102,7 @@ public class ElevatorEncoder {
         return canrange.getDistance().getValue().minus(encoderoffset);
       default:
         return Conversions.rotationsToDistance(
-          motor.getPosition().getValue(), 6, Inches.of(1.1338619402985));
+            motor.getPosition().getValue(), 6, Inches.of(1.1338619402985));
     }
   }
 
