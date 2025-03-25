@@ -437,7 +437,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "intake coral",
         new InstantCommand(() -> funnel.extendAileron())
-            //.alongWith(new InstantCommand(() -> elevator.setManual(-0.15)))
+            // .alongWith(new InstantCommand(() -> elevator.setManual(-0.15)))
             .andThen(new IntakeForAuto(manipulator, funnel))
             .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
@@ -726,8 +726,9 @@ public class RobotContainer {
 
     grabAlgae
         .and(
-            () -> !claw.hasAlgae() &&
-                Math.abs(
+            () ->
+                !claw.hasAlgae()
+                    && Math.abs(
                             new Rotation2d(
                                     Units.degreesToRadians(
                                         TargetingComputer.getCurrentTargetBranch()
@@ -916,23 +917,35 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                    - drivetrain.getPose().getX()))
+                                                        - drivetrain.getPose().getX())
+                                                    + (Units.inchesToMeters(2)
+                                                        * driver.getLeftY()
+                                                        * (!Robot.getAlliance() ? -1 : 1)))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                - drivetrain.getPose().getX())
+                                                - drivetrain.getPose().getX()
+                                                + (Units.inchesToMeters(2)
+                                                    * driver.getLeftY()
+                                                    * (!Robot.getAlliance() ? -1 : 1)))
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
                                     (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                    - drivetrain.getPose().getY())
+                                                    - drivetrain.getPose().getY()
+                                                    + (Units.inchesToMeters(2)
+                                                        * driver.getLeftX()
+                                                        * (!Robot.getAlliance() ? -1 : 1)))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                - drivetrain.getPose().getY())
+                                                - drivetrain.getPose().getY()
+                                                + (Units.inchesToMeters(2)
+                                                    * driver.getLeftX()
+                                                    * (!Robot.getAlliance() ? -1 : 1)))
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(
