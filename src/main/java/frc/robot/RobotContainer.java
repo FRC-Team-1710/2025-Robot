@@ -710,9 +710,8 @@ public class RobotContainer {
         .onTrue(claw.GRAB().alongWith(new GrabAlgae(claw)));
 
     grabAlgae
-        .and(() -> !claw.hasAlgae())
         .and(
-            () ->
+            () -> !claw.hasAlgae() &&
                 Math.abs(
                             new Rotation2d(
                                     Units.degreesToRadians(
@@ -724,7 +723,7 @@ public class RobotContainer {
                     && drivetrain
                             .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
                             .getNorm()
-                        < TargetingComputer.alignmentTranslationTolerance
+                        < Units.inchesToMeters(3)
                     && elevator.isAtTarget()
                     && claw.isAtTarget()
                     && claw.getMode() == Claw.ClawPosition.GRAB)
