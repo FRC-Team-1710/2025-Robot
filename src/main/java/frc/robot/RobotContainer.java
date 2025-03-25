@@ -396,40 +396,64 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Align to Alpha",
-        drivetrain.Alignment(Targets.ALPHA, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.ALPHA, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Bravo",
-        drivetrain.Alignment(Targets.BRAVO, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.BRAVO, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Charlie",
-        drivetrain.Alignment(Targets.CHARLIE, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.CHARLIE, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Delta",
-        drivetrain.Alignment(Targets.DELTA, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.DELTA, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Echo",
-        drivetrain.Alignment(Targets.ECHO, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.ECHO, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Foxtrot",
-        drivetrain.Alignment(Targets.FOXTROT, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.FOXTROT, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Golf",
-        drivetrain.Alignment(Targets.GOLF, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.GOLF, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Hotel",
-        drivetrain.Alignment(Targets.HOTEL, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.HOTEL, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to India",
-        drivetrain.Alignment(Targets.INDIA, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.INDIA, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Juliet",
-        drivetrain.Alignment(Targets.JULIET, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.JULIET, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Kilo",
-        drivetrain.Alignment(Targets.KILO, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.KILO, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Lima",
-        drivetrain.Alignment(Targets.LIMA, vision, elevator).alongWith(elevator.L4()));
+        drivetrain.Alignment(Targets.LIMA, vision, elevator)
+            .alongWith(elevator.L4())
+            .until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "Align to Source Right", drivetrain.Alignment(Targets.SOURCE_RIGHT, vision, elevator));
     NamedCommands.registerCommand(
@@ -464,7 +488,7 @@ public class RobotContainer {
             .INTAKE()
             .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-            .until(() -> elevator.isAtTarget()));
+            .until(() -> elevator.goingToTarget()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
