@@ -525,7 +525,7 @@ public class RobotContainer {
             .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    double alignP = .8;
+    double alignP = 1.5; // was .8
     double rotP = .4;
 
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
