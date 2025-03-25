@@ -196,6 +196,11 @@ public class Elevator extends SubsystemBase {
     return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
   }
 
+  public boolean goingToTarget() {
+    if (currentMode == ElevatorPosition.STOP) return true;
+    return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance.times(25));
+  }
+
   /** Only allows manual inputs because it wants to break itself */
   @AutoLogOutput
   public void toggleKillSwich() {
