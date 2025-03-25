@@ -395,34 +395,51 @@ public class RobotContainer {
     }
 
     NamedCommands.registerCommand(
-        "Align to Alpha", drivetrain.Alignment(Targets.ALPHA, vision, elevator));
+        "Align to Alpha",
+        drivetrain.Alignment(Targets.ALPHA, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Bravo", drivetrain.Alignment(Targets.BRAVO, vision, elevator));
+        "Align to Bravo",
+        drivetrain.Alignment(Targets.BRAVO, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Charlie", drivetrain.Alignment(Targets.CHARLIE, vision, elevator));
+        "Align to Charlie",
+        drivetrain.Alignment(Targets.CHARLIE, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Delta", drivetrain.Alignment(Targets.DELTA, vision, elevator));
+        "Align to Delta",
+        drivetrain.Alignment(Targets.DELTA, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Echo", drivetrain.Alignment(Targets.ECHO, vision, elevator));
+        "Align to Echo",
+        drivetrain.Alignment(Targets.ECHO, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Foxtrot", drivetrain.Alignment(Targets.FOXTROT, vision, elevator));
+        "Align to Foxtrot",
+        drivetrain.Alignment(Targets.FOXTROT, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Golf", drivetrain.Alignment(Targets.GOLF, vision, elevator));
+        "Align to Golf",
+        drivetrain.Alignment(Targets.GOLF, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Hotel", drivetrain.Alignment(Targets.HOTEL, vision, elevator));
+        "Align to Hotel",
+        drivetrain.Alignment(Targets.HOTEL, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to India", drivetrain.Alignment(Targets.INDIA, vision, elevator));
+        "Align to India",
+        drivetrain.Alignment(Targets.INDIA, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Juliet", drivetrain.Alignment(Targets.JULIET, vision, elevator));
+        "Align to Juliet",
+        drivetrain.Alignment(Targets.JULIET, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Kilo", drivetrain.Alignment(Targets.KILO, vision, elevator));
+        "Align to Kilo",
+        drivetrain.Alignment(Targets.KILO, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
-        "Align to Lima", drivetrain.Alignment(Targets.LIMA, vision, elevator));
+        "Align to Lima",
+        drivetrain.Alignment(Targets.LIMA, vision, elevator).alongWith(elevator.L4()));
     NamedCommands.registerCommand(
         "Align to Source Right", drivetrain.Alignment(Targets.SOURCE_RIGHT, vision, elevator));
     NamedCommands.registerCommand(
         "Align to Source Left", drivetrain.Alignment(Targets.SOURCE_LEFT, vision, elevator));
-    NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
+    NamedCommands.registerCommand(
+        "intake coral",
+        new InstantCommand(() -> funnel.extendAileron())
+            //.alongWith(new InstantCommand(() -> elevator.setManual(-0.15)))
+            .andThen(new IntakeForAuto(manipulator, funnel))
+            .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -436,11 +453,11 @@ public class RobotContainer {
             .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
     NamedCommands.registerCommand(
         "L4",
-        elevator
-            .L4()
-            .alongWith(drivetrain.stop(robotCentric))
-            .until(() -> elevator.isAtTarget())
-            .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+        // elevator
+        // .L4()
+        // .alongWith(drivetrain.stop(robotCentric))
+        // .until(() -> elevator.isAtTarget())
+        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric));
     NamedCommands.registerCommand(
         "intake position",
         elevator
@@ -556,7 +573,7 @@ public class RobotContainer {
         // Drivetrain will execute this command periodically
         drivetrain.applyRequest(
             () ->
-                setpointGen
+                drive
                     .withVelocityX(
                         MaxSpeed.times(
                             -driver.customLeft().getY())) // Drive forward with negative Y (forward)
@@ -565,9 +582,7 @@ public class RobotContainer {
                             -driver.customLeft().getX())) // Drive left with negative X (left)
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(-driver.customRight().getX())
-                            .times(claw.hasAlgae() ? .5 : 1))
-                    .withOperatorForwardDirection(
-                        drivetrain.getOperatorForwardDirection()))); // Drive counterclockwise with
+                            .times(claw.hasAlgae() ? .5 : 1)))); // Drive counterclockwise with
     // negative X (left)
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
@@ -819,8 +834,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -896,8 +911,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
@@ -971,8 +986,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                 -driver
@@ -1020,8 +1035,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
@@ -1071,8 +1086,8 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((!Robot.getAlliance()
@@ -1124,21 +1139,21 @@ public class RobotContainer {
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
-                    setpointGen
-                        .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
+                    drive
+                        // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
                                                         ? FieldConstants.fieldLength.in(Meters)
-                                                            - 6.55
-                                                        : 6.55)
+                                                            - 7.4
+                                                        : 7.4)
                                                     - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : ((Robot.getAlliance()
-                                                    ? FieldConstants.fieldLength.in(Meters) - 6.55
-                                                    : 6.55)
+                                                    ? FieldConstants.fieldLength.in(Meters) - 7.4
+                                                    : 7.4)
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
