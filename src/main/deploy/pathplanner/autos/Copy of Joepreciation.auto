@@ -19,13 +19,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Align to Foxtrot"
+            "name": "L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "L4"
+            "name": "Align to Juliet"
           }
         },
         {
@@ -37,13 +37,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "back foxtrot near"
+            "pathName": "back Juliet"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Source Right"
+            "name": "Align to Source Left"
           }
         },
         {
@@ -55,13 +55,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to delta near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Align to Delta"
+            "pathName": "to kilo near"
           }
         },
         {
@@ -73,19 +67,25 @@
         {
           "type": "named",
           "data": {
+            "name": "Align to Kilo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "back delta near"
+            "pathName": "back Kilo near"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Source Right"
+            "name": "Align to Source Left"
           }
         },
         {
@@ -97,13 +97,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to charlie near"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Align to Charlie"
+            "pathName": "to Lima near"
           }
         },
         {
@@ -115,7 +109,31 @@
         {
           "type": "named",
           "data": {
+            "name": "Align to Lima"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back Lima near"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
           }
         }
       ]

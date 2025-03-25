@@ -434,7 +434,12 @@ public class RobotContainer {
         "Align to Source Right", drivetrain.Alignment(Targets.SOURCE_RIGHT, vision, elevator));
     NamedCommands.registerCommand(
         "Align to Source Left", drivetrain.Alignment(Targets.SOURCE_LEFT, vision, elevator));
-    NamedCommands.registerCommand("intake coral", new IntakeForAuto(manipulator, funnel));
+    NamedCommands.registerCommand(
+        "intake coral",
+        new InstantCommand(() -> funnel.extendAileron())
+            //.alongWith(new InstantCommand(() -> elevator.setManual(-0.15)))
+            .andThen(new IntakeForAuto(manipulator, funnel))
+            .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
