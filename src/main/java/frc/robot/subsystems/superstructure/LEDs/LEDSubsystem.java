@@ -44,6 +44,7 @@ public class LEDSubsystem extends SubsystemBase {
     this.manipulator = manipulator;
     this.climber = climber;
     this.elevator = elevator;
+    this.drivetrain = drivetrain;
     uart = new SerialPort(38400, SerialPort.Port.kMXP); // Set baud rate
   }
 
@@ -176,6 +177,5 @@ public class LEDSubsystem extends SubsystemBase {
     byte checksum = (byte) (data[0] + 0); // Create a byte array of length 1
     data[1] = checksum; // Store value as byte in the array, and mask to ensure unsigned byte
     uart.write(data, data.length); // Write the byte array to the serial port
-    System.out.println("Sending Data: " + value + " with checksum " + checksum); // Print the data that we sent
   }
 }
