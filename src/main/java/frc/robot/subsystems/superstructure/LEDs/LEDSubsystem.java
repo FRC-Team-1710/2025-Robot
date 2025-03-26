@@ -43,6 +43,7 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   private Integer commandValue = 0;
+  private Integer iterate = 0;
 
   public Boolean[] inputBooleans = {
     false, false, false, false, false, false, false, false, false, false, false, false
@@ -61,9 +62,14 @@ public class LEDSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    set(); // Getting condition of robot
-    encoder(); // Setting the command value
-    sendData(commandValue); // Send Phase
+    if (iterate > 4) {
+      set(); // Getting condition of robot
+      encoder(); // Setting the command value
+      sendData(commandValue); // Send Phase
+      iterate = 0;
+    } else {
+      iterate++;
+    }
   }
 
   /** Sets the input booleans based on the current state of the robot */
