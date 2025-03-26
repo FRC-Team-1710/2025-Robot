@@ -1256,7 +1256,9 @@ public class RobotContainer {
     // drivetrain.resetPose(Pose2d.kZero)));
 
     prepClimb.onTrue(
-        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()).alongWith(new StartClimb(climber)));
+        new InstantCommand(() -> TargetingComputer.setGoForClimb(true))
+            .alongWith(funnel.CLIMB())
+            .alongWith(new StartClimb(climber)));
 
     /* Mech Controller Bindings */
     targetL4.onTrue(

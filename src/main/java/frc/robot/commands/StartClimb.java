@@ -10,7 +10,7 @@ import frc.robot.subsystems.superstructure.climber.Climber;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class StartClimb extends Command {
   Climber climber;
-  double targetRotations = 2.66;
+  double targetRotations = 3.4;
 
   /** Creates a new Climb. */
   public StartClimb(Climber climber) {
@@ -21,7 +21,7 @@ public class StartClimb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    climber.SetClimberPower(.5);
+    climber.SetClimberPower(.75);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
