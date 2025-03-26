@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
@@ -19,13 +20,13 @@ public class ZeroRizz extends Command {
   public ZeroRizz(Claw claw) {
     this.claw = claw;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(claw);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.wristManual(-0.05);
+    SmartDashboard.putBoolean("zero?", false);
+    claw.wristManual(-1);
     timer.restart();
   }
 
@@ -36,7 +37,7 @@ public class ZeroRizz extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.IDLE().schedule();
+    SmartDashboard.putBoolean("zero?", true);
   }
 
   // Returns true when the command should end.
@@ -45,7 +46,8 @@ public class ZeroRizz extends Command {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
       return true;
     }
-    if (timer.get() > .25 && claw.getWristCurrent() > 20 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25 && claw.getWristCurrent() > 40 && Constants.currentMode != Mode.SIM) {
+      claw.wristManual(0);
       claw.zero();
       return true;
     }
