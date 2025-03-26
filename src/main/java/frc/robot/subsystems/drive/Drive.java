@@ -8,7 +8,10 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -38,19 +41,24 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.Robot;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
+import frc.robot.utils.TargetingComputer.Targets;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
- * be used in command-based projects.
+ * Class that extends the Phoenix 6 Swerveclass and implements Subsystem so it can easily be used in
+ * command-based projects.
  */
 public class Drive extends SubsystemBase {
 
@@ -215,13 +223,83 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Returns a command that applies the specified control request to this swerve drivetrain.
+   * Returns a command that applies the specified control request to this swerve
    *
    * @param request Function returning the request to apply
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> io.setControl(requestSupplier.get()));
+  }
+
+  public BooleanSupplier hasSpeed(Targets target, Vision vision) {
+    BooleanSupplier yes =
+        (() ->
+            TargetingComputer.getSelectTargetBranchPose(target).getX() - getPose().getX() < 0.05);
+    return yes;
+  }
+
+  /**
+   * Guys I can add comments to this
+   *
+   * <p>I'm gonna be as unhelpful as possible
+   *
+   * <p>Enjoy!
+   *
+   * @param requestSupplier
+   * @param target
+   * @param vision
+   * @param elevator
+   * @return
+   */
+  public Command Alignment(
+      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+    TargetingComputer.setTargetBranch(target);
+    return run(() ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                            - getPose().getX())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                        - getPose().getX())
+                                    * .8))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts.times(
+                            (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                            - getPose().getY())
+                                        * .8
+                                    > TargetingComputer.maxAlignSpeed
+                                ? TargetingComputer.maxAlignSpeed
+                                : (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                        - getPose().getY())
+                                    * .8))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
+                                    .minus(getPose().getRotation())
+                                    .getRadians())
+                                * 0.4))))
+        .until(
+            () ->
+                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
+                    < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  public Command stop(RobotCentric requestSupplier) {
+    return run(
+        () ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)));
   }
 
   public void setControl(SwerveRequest request) {
@@ -424,6 +502,11 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  public BooleanSupplier inAlignmentZone(Targets target) {
+    TargetingComputer.setTargetBranch(target);
+    return () -> isInAlignmentZone();
+  }
+
   @AutoLogOutput
   public boolean isNearProcessor() {
     new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
@@ -438,7 +521,7 @@ public class Drive extends SubsystemBase {
                 FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
             : FieldConstants.Processor.centerFace;
 
-    return getDistanceToPose(processor).getNorm() < 1.25;
+    return getDistanceToPose(processor).getNorm() < 1.5;
   }
 
   public Rotation2d getRotation() {
