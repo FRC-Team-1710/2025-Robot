@@ -44,8 +44,7 @@ public class LEDSubsystem extends SubsystemBase {
     this.manipulator = manipulator;
     this.climber = climber;
     this.elevator = elevator;
-    this.drivetrain = drivetrain;
-    uart = new SerialPort(115200, SerialPort.Port.kMXP); // Set baud rate
+    uart = new SerialPort(38400, SerialPort.Port.kMXP); // Set baud rate
   }
 
   private Integer commandValue = 0;
@@ -171,12 +170,12 @@ public class LEDSubsystem extends SubsystemBase {
     }
   }
 
-  public void sendData(int value) { // Sending data (duh)
-    byte[] data = new byte[1]; // Create a byte array of length 1
-    data[0] =
-        (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
-    SmartDashboard.putRaw("LED Byte", data);
+  public void sendData(int value) { 
+    byte[] data = new byte[2]; // Create a byte array of length 1
+    data[0] = (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
+    byte checksum = (byte) (data[0] + 0); // Create a byte array of length 1
+    data[1] = checksum; // Store value as byte in the array, and mask to ensure unsigned byte
     uart.write(data, data.length); // Write the byte array to the serial port
-    // System.out.println("Sending Data: " + value); // Print the data
+    System.out.println("Sending Data: " + value + " with checksum " + checksum); // Print the data that we sent
   }
 }
