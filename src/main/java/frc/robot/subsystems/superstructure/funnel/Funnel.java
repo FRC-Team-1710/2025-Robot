@@ -16,8 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.superstructure.funnel.FunnelIO.FunnelIOInputs;
-
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -63,7 +61,6 @@ public class Funnel extends SubsystemBase {
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
     angleMotorAlert.set(!inputs.angleMotorConnected);
-    
   }
 
   /**
@@ -75,7 +72,7 @@ public class Funnel extends SubsystemBase {
     io.setPosition(position);
   }
 
-  public Current getFunnelStatorCurrent(){
+  public Current getFunnelStatorCurrent() {
     return inputs.leaderStatorCurrent;
   }
 
