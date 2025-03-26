@@ -1056,9 +1056,13 @@ public class RobotContainer {
                 !TargetingComputer.stillOuttakingAlgae
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
+        .whileTrue(
+            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
+                .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
-        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+        .onFalse(
+            new EndIntake(manipulator, funnel, mech.leftBumper())
+                .unless(() -> TargetingComputer.goForClimb));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     targetSource
@@ -1252,7 +1256,7 @@ public class RobotContainer {
     // drivetrain.resetPose(Pose2d.kZero)));
 
     prepClimb.onTrue(
-        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()));
+        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()).alongWith(new StartClimb(climber)));
 
     /* Mech Controller Bindings */
     targetL4.onTrue(
