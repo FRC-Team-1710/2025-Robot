@@ -283,14 +283,18 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void setManual(double power) {
-    locked = false;
     leader.setVoltage(power*12);
+    if (power == 0) {
+      elevatorPID.reset(encoder.getDistance().in(Inches));
+    }
+    locked = false;
   }
 
   @Override
   public void zero() {
     encoder.zero();
     leader.setPosition(0);
+    elevatorPID.reset(0);
     zeroed = true;
   }
 
