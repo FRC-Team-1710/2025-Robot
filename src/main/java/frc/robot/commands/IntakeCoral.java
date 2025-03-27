@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.FunnelConstants;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
@@ -33,7 +34,7 @@ public class IntakeCoral extends Command {
   @Override
   public void initialize() {
     m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
-    funnel.setRollerPower(.4);
+    funnel.setRollerPower(FunnelConstants.FUNNEL_FAST);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }
 
@@ -44,19 +45,19 @@ public class IntakeCoral extends Command {
       if (m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
         m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
         controller.setRumble(RumbleType.kBothRumble, 0);
-        funnel.setRollerPower(.2);
+        funnel.setRollerPower(FunnelConstants.FUNNEL_SLOW);
       } else if (!m_Manipulator.beam1Broken() && m_Manipulator.beam2Broken()) {
         m_Manipulator.runPercent(0);
         funnel.setRollerPower(0);
         controller.setRumble(RumbleType.kBothRumble, 1);
       } else if (!m_Manipulator.beam1Broken() && !m_Manipulator.beam2Broken()) {
         m_Manipulator.runPercent(ManipulatorConstants.intakeSpeed);
-        funnel.setRollerPower(.4);
+        funnel.setRollerPower(FunnelConstants.FUNNEL_FAST);
         controller.setRumble(RumbleType.kBothRumble, 0);
       } else if (m_Manipulator.beam1Broken() && !m_Manipulator.beam2Broken()) {
         m_Manipulator.runPercent(ManipulatorConstants.insideSpeed);
         controller.setRumble(RumbleType.kBothRumble, 0);
-        funnel.setRollerPower(.2);
+        funnel.setRollerPower(FunnelConstants.FUNNEL_SLOW);
       }
     }
   }

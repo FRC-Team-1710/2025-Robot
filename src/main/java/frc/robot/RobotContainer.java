@@ -525,7 +525,7 @@ public class RobotContainer {
             .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    double alignP = .8;
+    double alignP = 1.5; // was .8
     double rotP = .4;
 
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
@@ -941,23 +941,35 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                    - drivetrain.getPose().getX()))
+                                                        - drivetrain.getPose().getX())
+                                                    + (Units.inchesToMeters(2)
+                                                        * driver.getLeftY()
+                                                        * (!Robot.getAlliance() ? -1 : 1)))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                - drivetrain.getPose().getX())
+                                                - drivetrain.getPose().getX()
+                                                + (Units.inchesToMeters(2)
+                                                    * driver.getLeftY()
+                                                    * (!Robot.getAlliance() ? -1 : 1)))
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
                                     (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                    - drivetrain.getPose().getY())
+                                                    - drivetrain.getPose().getY()
+                                                    + (Units.inchesToMeters(2)
+                                                        * driver.getLeftX()
+                                                        * (!Robot.getAlliance() ? -1 : 1)))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                - drivetrain.getPose().getY())
+                                                - drivetrain.getPose().getY()
+                                                + (Units.inchesToMeters(2)
+                                                    * driver.getLeftX()
+                                                    * (!Robot.getAlliance() ? -1 : 1)))
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(
@@ -1044,9 +1056,13 @@ public class RobotContainer {
                 !TargetingComputer.stillOuttakingAlgae
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
+        .whileTrue(
+            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
+                .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
-        .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
+        .onFalse(
+            new EndIntake(manipulator, funnel, mech.leftBumper())
+                .unless(() -> TargetingComputer.goForClimb));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     targetSource
@@ -1240,7 +1256,9 @@ public class RobotContainer {
     // drivetrain.resetPose(Pose2d.kZero)));
 
     prepClimb.onTrue(
-        new InstantCommand(() -> TargetingComputer.setGoForClimb(true)).alongWith(funnel.CLIMB()));
+        new InstantCommand(() -> TargetingComputer.setGoForClimb(true))
+            .alongWith(funnel.CLIMB())
+            .alongWith(new StartClimb(climber)));
 
     /* Mech Controller Bindings */
     targetL4.onTrue(

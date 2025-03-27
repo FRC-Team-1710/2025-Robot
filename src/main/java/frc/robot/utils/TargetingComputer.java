@@ -42,7 +42,7 @@ public class TargetingComputer {
   public static final double alignmentTranslationTolerance = Units.inchesToMeters(1.5);
   public static final double alignmentAngleTolerance = 5;
   public static final double alignmentRange = 1;
-  public static final double maxAlignSpeed = .3;
+  public static final double maxAlignSpeed = .25;
 
   private static final double xOffset = 17.5;
   private static final double yOffset = 7.5;
@@ -272,7 +272,7 @@ public class TargetingComputer {
 
   /** Degrees */
   public static double getSourceTargetingAngle(Pose2d pose) {
-    if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
+    if (goForClimb) return -Targets.PROCESSOR.getTargetingAngle();
 
     if (isRedAlliance) {
       if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close
