@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.superstructure.elevator.ElevatorEncoder.EncoderType;
 import frc.robot.utils.Conversions;
@@ -33,9 +32,7 @@ import frc.robot.utils.Conversions;
  */
 public class ElevatorIOCTRE implements ElevatorIO {
 
-  private final EncoderType encoderType = EncoderType.lasercan;
-
-  private final Timer timer = new Timer();
+  private final EncoderType encoderType = EncoderType.motorEncoders;
 
   /** The gear ratio between the motor and the elevator mechanism */
   public static final double GEAR_RATIO = 6.0;
@@ -50,7 +47,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   public final TalonFX follower = new TalonFX(12);
 
   /** The encoder that can be swiched with one variable */
-  private final ElevatorEncoder encoder = new ElevatorEncoder(EncoderType.motorEncoders, leader);
+  private final ElevatorEncoder encoder = new ElevatorEncoder(encoderType, leader);
 
   private double kP = 0.6;
   private double kI = 0.0;
@@ -204,11 +201,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
 
-    SmartDashboard.putNumber("Leader position", leaderPosition.getValueAsDouble());
-    SmartDashboard.putNumber(
-        "Lasercan distance",
-        encoder.getLasercanDistance() == null ? 0 : encoder.getLasercanDistance().magnitude());
-
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderRotorPosition = leaderRotorPosition.getValue();
@@ -227,28 +219,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.elevatorDistance = decideEncoderStatus();
 
     inputs.elevatorSetpoint = setpoint;
-
-    // Crazy good logic
-    // if (encoder.isLasercan()
-    //     && locked
-    //     && inputs.leaderVelocity.in(RotationsPerSecond) < 0.5
-    //     && inputs.leaderVelocity.in(RotationsPerSecond) > -0.5) {
-    //   timer.start();
-    //   if (timer.get() >= 0.2) {
-    //     Distance msmnt = encoder.getLasercanDistance();
-    //     if (msmnt != null) {
-    //       Logger.recordOutput(
-    //           "LaserCAN Updater",
-    //           "Updated from "
-    //               + leader.getPosition().getValueAsDouble()
-    //               + " to "
-    //               + Conversions.metersToRotations(msmnt, GEAR_RATIO, elevatorRadius));
-    //       leader.setPosition(Conversions.metersToRotations(msmnt, GEAR_RATIO, elevatorRadius));
-    //     }
-    //   }
-    // } else {
-    //   timer.reset();
-    // }
 
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.in(Inches));
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
@@ -295,7 +265,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
         zeroed = false;
       }
     }
-    return motorDistance();
+    return encoder.isCancoder() ? motorDistance() : encoder.getDistance();
   }
 
   private Distance motorDistance() {
@@ -311,14 +281,18 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void setManual(double power) {
+    leader.setVoltage(power * 12);
+    if (power == 0) {
+      elevatorPID.reset(encoder.getDistance().in(Inches));
+    }
     locked = false;
-    leader.set(power);
   }
 
   @Override
   public void zero() {
     encoder.zero();
     leader.setPosition(0);
+    elevatorPID.reset(0);
     zeroed = true;
   }
 

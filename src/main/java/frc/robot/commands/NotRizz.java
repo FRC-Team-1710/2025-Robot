@@ -9,24 +9,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.subsystems.superstructure.claw.Claw;
+import frc.robot.subsystems.superstructure.elevator.Elevator;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ZeroRizz extends Command {
-  Claw claw;
+public class NotRizz extends Command {
+  Elevator elevator;
   Timer timer = new Timer();
 
   /** Creates a new GrabAlgae. */
-  public ZeroRizz(Claw claw) {
-    this.claw = claw;
+  public NotRizz(Elevator elevator) {
+    this.elevator = elevator;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    SmartDashboard.putBoolean("zero?", false);
-    claw.wristManual(-1);
+    SmartDashboard.putBoolean("zerod?", false);
+    elevator.setManual(-0.1);
     timer.restart();
   }
 
@@ -37,7 +37,7 @@ public class ZeroRizz extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    SmartDashboard.putBoolean("zero?", true);
+    SmartDashboard.putBoolean("zerod?", true);
   }
 
   // Returns true when the command should end.
@@ -46,9 +46,11 @@ public class ZeroRizz extends Command {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
       return true;
     }
-    if (timer.get() > .25 && claw.getWristCurrent() > 40 && Constants.currentMode != Mode.SIM) {
-      claw.wristManual(0);
-      claw.zero();
+    if (timer.get() > .25
+        && elevator.getElevatorCurrent() > 55
+        && Constants.currentMode != Mode.SIM) {
+      elevator.setManual(0);
+      elevator.zero();
       return true;
     }
     return false;

@@ -202,7 +202,7 @@ public class ClawIOCTRE implements ClawIO {
   public void wristManual(double power) {
     locked = false;
     wristManual = power;
-    wrist.set(wristManual);
+    wrist.setVoltage(wristManual);
   }
 
   @Override

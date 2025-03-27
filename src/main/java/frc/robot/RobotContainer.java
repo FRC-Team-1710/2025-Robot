@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +33,7 @@ import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.IntakeForAuto;
 import frc.robot.commands.ManualClimb;
+import frc.robot.commands.NotRizz;
 import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
@@ -208,6 +210,14 @@ public class RobotContainer {
 
   /** Mech RS */
   private final Trigger killWrist = new Trigger(mech.rightStick());
+
+  /** 25 seconds left */
+  private final Trigger endgame =
+      new Trigger(
+          () ->
+              DriverStation.getMatchTime() < 30
+                  && DriverStation.getMatchTime() > 25
+                  && !DriverStation.isAutonomous());
 
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
@@ -528,6 +538,11 @@ public class RobotContainer {
     double alignP = 1.5; // was .8
     double rotP = .4;
 
+    // good logic trust
+    endgame
+        .onTrue(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
+        .onFalse(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
+
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
@@ -562,15 +577,15 @@ public class RobotContainer {
                 .unless(() -> claw.hasAlgae()));
 
     // new Trigger(() -> funnel.hasCoral())
-    //     .onTrue(
-    //         new InstantCommand(() -> funnel.setRollerPower(0))
-    //             .onlyIf(() -> !elevator.isAtIntake())
-    //             .alongWith(elevator.intake())
-    //             .onlyIf(() -> !elevator.isAtIntake()))
-    //     .and(() -> elevator.isAtIntake())
-    //     .onTrue(
-    //         new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
-    //             .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
+    // .onTrue(
+    // new InstantCommand(() -> funnel.setRollerPower(0))
+    // .onlyIf(() -> !elevator.isAtIntake())
+    // .alongWith(elevator.intake())
+    // .onlyIf(() -> !elevator.isAtIntake()))
+    // .and(() -> elevator.isAtIntake())
+    // .onTrue(
+    // new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
+    // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     new Trigger(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor())
         .and(targetSource)
@@ -632,9 +647,9 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
@@ -659,9 +674,9 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
@@ -672,14 +687,14 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         // .alongWith(
-        //     claw.NET()
-        //         .onlyIf(
-        //             () ->
-        //                 claw.hasAlgae() && elevator.isClearOfStage1()
-        //                     && TargetingComputer.getSourceTargetingAngle(
-        //                             drivetrain.getPose())
-        //                         == TargetingComputer.Targets.NET.getTargetingAngle()
-        //                     && targetSource.getAsBoolean())))
+        // claw.NET()
+        // .onlyIf(
+        // () ->
+        // claw.hasAlgae() && elevator.isClearOfStage1()
+        // && TargetingComputer.getSourceTargetingAngle(
+        // drivetrain.getPose())
+        // == TargetingComputer.Targets.NET.getTargetingAngle()
+        // && targetSource.getAsBoolean())))
         .onFalse(
             elevator
                 .INTAKE()
@@ -696,22 +711,22 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     // placeL4
-    //     .and(
-    //         () ->
-    //             elevator.getMode() == ElevatorPosition.L4
-    //                 && elevator.isClearOfStage1()
-    //                 && claw.hasAlgae()
-    //                 && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
-    //     .onTrue(claw.NET()); // TODO: fix
+    // .and(
+    // () ->
+    // elevator.getMode() == ElevatorPosition.L4
+    // && elevator.isClearOfStage1()
+    // && claw.hasAlgae()
+    // && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
+    // .onTrue(claw.NET()); // TODO: fix
 
     grabAlgae
         .onFalse(
@@ -826,16 +841,18 @@ public class RobotContainer {
     // AprilTag Alignment
 
     // targetReef // Get the closest reef AprilTag and set it to the target tag
-    //     .onTrue(
-    //     new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
-    //         .alongWith( // Log the curent target branch for debugging
-    //             new InstantCommand(
-    //                 () ->
-    //                     Logger.recordOutput(
-    //                         "Overide Target", TargetingComputer.getCurrentTargetBranch())))
-    //         .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
-    //             // move to the set target)
-    //             new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
+    // .onTrue(
+    // new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target
+    // side/AprilTag
+    // .alongWith( // Log the curent target branch for debugging
+    // new InstantCommand(
+    // () ->
+    // Logger.recordOutput(
+    // "Overide Target", TargetingComputer.getCurrentTargetBranch())))
+    // .alongWith( // Makes sure that the target hasn't been set officially (won't
+    // instantly
+    // // move to the set target)
+    // new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
 
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
@@ -1288,9 +1305,9 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
-    mech.start().whileTrue(new ZeroRizz(claw));
+    mech.start().onTrue(new ZeroRizz(claw).andThen(claw.IDLE()));
 
-    mech.back().onTrue(new InstantCommand(() -> elevator.zero()));
+    mech.back().onTrue(new NotRizz(elevator)); // new InstantCommand(() -> elevator.zero()));
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
