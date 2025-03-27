@@ -750,8 +750,9 @@ public class RobotContainer {
 
     grabAlgae
         .and(
-            () -> !claw.hasAlgae() &&
-                Math.abs(
+            () ->
+                !claw.hasAlgae()
+                    && Math.abs(
                             new Rotation2d(
                                     Units.degreesToRadians(
                                         TargetingComputer.getCurrentTargetBranch()
