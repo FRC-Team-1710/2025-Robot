@@ -46,7 +46,9 @@ public class NotRizz extends Command {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
       return true;
     }
-    if (timer.get() > .25 && elevator.getElevatorCurrent() > 1000 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25
+        && elevator.getElevatorCurrent() > 55
+        && Constants.currentMode != Mode.SIM) {
       elevator.setManual(0);
       elevator.zero();
       return true;
