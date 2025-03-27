@@ -47,7 +47,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   public final TalonFX follower = new TalonFX(12);
 
   /** The encoder that can be swiched with one variable */
-  private final ElevatorEncoder encoder = new ElevatorEncoder(EncoderType.motorEncoders, leader);
+  private final ElevatorEncoder encoder = new ElevatorEncoder(encoderType, leader);
 
   private double kP = 0.6;
   private double kI = 0.0;
@@ -201,8 +201,6 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
 
-    SmartDashboard.putNumber("Leader position", leaderPosition.getValueAsDouble());
-
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderRotorPosition = leaderRotorPosition.getValue();
@@ -267,7 +265,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
         zeroed = false;
       }
     }
-    return motorDistance();
+    return encoder.isCancoder() ? motorDistance() : encoder.getDistance();
   }
 
   private Distance motorDistance() {
@@ -283,7 +281,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void setManual(double power) {
-    leader.setVoltage(power*12);
+    leader.setVoltage(power * 12);
     if (power == 0) {
       elevatorPID.reset(encoder.getDistance().in(Inches));
     }
