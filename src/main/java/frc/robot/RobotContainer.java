@@ -1256,6 +1256,14 @@ public class RobotContainer {
                         drivetrain.getPose().getY(),
                         new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
 
+    // resetGyro.onTrue(
+    //         drivetrain.runOnce(
+    //                 () -> drivetrain.resetPose(
+    //                         new Pose2d(
+    //                                 drivetrain.getPose().getX(),
+    //                                 drivetrain.getPose().getY(),
+    //                                 TargetingComputer.getCurrentTargetBranchPose().getRotation()))));
+
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
 
