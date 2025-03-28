@@ -168,7 +168,7 @@ public class FunnelIOCTRE implements FunnelIO {
     // timer.start();
 
     angleMotor.setPosition(0);
-    aileron.setAngle(65);
+    aileron.setAngle(FunnelConstants.AILERON_OUT);
   }
 
   /**

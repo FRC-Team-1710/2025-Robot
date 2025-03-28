@@ -767,7 +767,8 @@ public class Drive extends SubsystemBase {
             new Translation2d(
                 visionMeasurement.poseEstimate().pose().toPose2d().getX(),
                 visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-            this.getRotation()),
+            // this.getRotation()),
+            visionMeasurement.poseEstimate().pose().toPose2d().getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }

@@ -57,7 +57,6 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
-import frc.robot.subsystems.superstructure.funnel.Funnel.FunnelMode;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
@@ -472,8 +471,8 @@ public class RobotContainer {
         "intake coral",
         new InstantCommand(() -> funnel.extendAileron())
             .andThen(new NotRizz(elevator))
-            .andThen(new IntakeForAuto(manipulator, funnel))
-            .andThen(new InstantCommand(() -> funnel.retractAileron())));
+            .andThen(new IntakeForAuto(manipulator, funnel)));
+            //.andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -593,18 +592,18 @@ public class RobotContainer {
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR());
 
-    new Trigger(() -> funnel.getMode() == FunnelMode.INTAKE && funnel.isAtTarget())
-        .onTrue(new InstantCommand(() -> funnel.retractAileron()))
-        .onFalse(new InstantCommand(() -> funnel.extendAileron()));
-    new Trigger(
-            () ->
-                targetSource.getAsBoolean()
-                    && (TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == Targets.SOURCE_LEFT.getTargetingAngle()
-                        || TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == Targets.SOURCE_RIGHT.getTargetingAngle()))
-        .onTrue(new InstantCommand(() -> funnel.extendAileron()))
-        .onFalse(new InstantCommand(() -> funnel.retractAileron()));
+    // new Trigger(() -> funnel.getMode() == FunnelMode.INTAKE && funnel.isAtTarget())
+    //     .onTrue(new InstantCommand(() -> funnel.retractAileron()))
+    //     .onFalse(new InstantCommand(() -> funnel.extendAileron()));
+    // new Trigger(
+    //         () ->
+    //             targetSource.getAsBoolean()
+    //                 && (TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+    //                         == Targets.SOURCE_LEFT.getTargetingAngle()
+    //                     || TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+    //                         == Targets.SOURCE_RIGHT.getTargetingAngle()))
+    //     .onTrue(new InstantCommand(() -> funnel.extendAileron()))
+    //     .onFalse(new InstantCommand(() -> funnel.retractAileron()));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -958,35 +957,23 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                        - drivetrain.getPose().getX())
-                                                    + (Units.inchesToMeters(2)
-                                                        * driver.getLeftY()
-                                                        * (!Robot.getAlliance() ? -1 : 1)))
+                                                    - drivetrain.getPose().getX()))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                - drivetrain.getPose().getX()
-                                                + (Units.inchesToMeters(2)
-                                                    * driver.getLeftY()
-                                                    * (!Robot.getAlliance() ? -1 : 1)))
+                                                - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
                                     (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                    - drivetrain.getPose().getY()
-                                                    + (Units.inchesToMeters(2)
-                                                        * driver.getLeftX()
-                                                        * (!Robot.getAlliance() ? -1 : 1)))
+                                                    - drivetrain.getPose().getY())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                - drivetrain.getPose().getY()
-                                                + (Units.inchesToMeters(2)
-                                                    * driver.getLeftX()
-                                                    * (!Robot.getAlliance() ? -1 : 1)))
+                                                - drivetrain.getPose().getY())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(

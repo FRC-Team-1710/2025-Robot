@@ -158,6 +158,6 @@ public final class Constants {
     public static final double intakeSpeed = 0.4;
     public static final double insideSpeed = 0.2;
     public static final double FUNNEL_SLOW = 0.2;
-    public static final double FUNNEL_FAST = 0.4;
+    public static final double FUNNEL_FAST = 0.6;
   }
 }

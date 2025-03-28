@@ -26,7 +26,7 @@ public class ZeroRizz extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putBoolean("zero?", false);
-    claw.wristManual(-1); //Volts
+    claw.wristManual(-1); // Volts
     timer.restart();
   }
 
