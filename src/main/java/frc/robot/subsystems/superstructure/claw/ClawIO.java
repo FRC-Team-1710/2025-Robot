@@ -28,6 +28,8 @@ public interface ClawIO {
     public double wristManual = 0.0;
     public double intakePercent = 0.0;
 
+    public boolean locked = false;
+
     public Angle setpoint = Degrees.of(0);
 
     public boolean clawConnected = false;

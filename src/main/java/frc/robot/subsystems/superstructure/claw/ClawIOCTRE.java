@@ -133,6 +133,8 @@ public class ClawIOCTRE implements ClawIO {
     inputs.intakeVelocity =
         DegreesPerSecond.of(intakeVelocity.getValue().magnitude() * 360 / GEAR_RATIO);
 
+    inputs.locked = locked;
+
     inputs.wristAppliedVoltage = wristAppliedVolts.getValue();
     inputs.wristStatorCurrent = wristStatorCurrent.getValue();
     inputs.wristSupplyCurrent = wristSupplyCurrent.getValue();
@@ -177,6 +179,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void zero() {
     wrist.setPosition(0);
+    wristPID.reset(0);
   }
 
   @Override

@@ -240,7 +240,7 @@ public class FunnelIOCTRE implements FunnelIO {
 
     if (locked) {
       if (anglePID.getGoal().position != 0
-          || (anglePID.getGoal().position == 0 && inputs.funnelAngle >= 5)) {
+          || (anglePID.getGoal().position == 0 && inputs.funnelAngle >= 10)) {
         angleMotor.setVoltage(
             (anglePID.calculate(inputs.funnelAngle)
                 + angleFF.calculate(

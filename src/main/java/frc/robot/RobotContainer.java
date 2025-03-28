@@ -1305,7 +1305,7 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
-    mech.start().onTrue(new ZeroRizz(claw).andThen(claw.IDLE()));
+    mech.start().onTrue(new ZeroRizz(claw));
 
     mech.back().onTrue(new NotRizz(elevator)); // new InstantCommand(() -> elevator.zero()));
 
