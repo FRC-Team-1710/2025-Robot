@@ -472,7 +472,7 @@ public class RobotContainer {
         new InstantCommand(() -> funnel.extendAileron())
             .andThen(new NotRizz(elevator))
             .andThen(new IntakeForAuto(manipulator, funnel)));
-            //.andThen(new InstantCommand(() -> funnel.retractAileron())));
+    // .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -786,7 +786,11 @@ public class RobotContainer {
     grabAlgae
         .onFalse(
             claw.IDLE()
-                .unless(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor() || targetReef.getAsBoolean()))
+                .unless(
+                    () ->
+                        drivetrain.isNearProcessor()
+                            || drivetrain.isNearFarProcessor()
+                            || targetReef.getAsBoolean()))
         .and(
             () ->
                 claw.hasAlgae()
@@ -1247,6 +1251,15 @@ public class RobotContainer {
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
+    // resetGyro.onTrue(
+    //     drivetrain.runOnce(
+    //         () ->
+    //             drivetrain.resetPose(
+    //                 new Pose2d(
+    //                     drivetrain.getPose().getX(),
+    //                     drivetrain.getPose().getY(),
+    //                     new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
+
     resetGyro.onTrue(
         drivetrain.runOnce(
             () ->
@@ -1254,15 +1267,7 @@ public class RobotContainer {
                     new Pose2d(
                         drivetrain.getPose().getX(),
                         drivetrain.getPose().getY(),
-                        new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
-
-    // resetGyro.onTrue(
-    //         drivetrain.runOnce(
-    //                 () -> drivetrain.resetPose(
-    //                         new Pose2d(
-    //                                 drivetrain.getPose().getX(),
-    //                                 drivetrain.getPose().getY(),
-    //                                 TargetingComputer.getCurrentTargetBranchPose().getRotation()))));
+                        TargetingComputer.getCurrentTargetBranchPose().getRotation()))));
 
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
