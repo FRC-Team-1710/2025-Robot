@@ -110,8 +110,10 @@ public class DriveIOCTRE extends TunerSwerveDrivetrain implements DriveIO {
     registerTelemetry(this::updateTelemetry);
     super.getOdometryThread().setThreadPriority(2);
     setupSimulation();
+    
+    //TEST
     getPigeon2().getConfigurator().apply(new Pigeon2Configuration());
-    getPigeon2().getConfigurator().setYaw(0.0);
+    getPigeon2().getConfigurator().setYaw(0.0); 
 
     // // Attempt to load the chrp
     // var status =
