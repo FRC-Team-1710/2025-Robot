@@ -763,12 +763,7 @@ public class Drive extends SubsystemBase {
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
     this.addVisionMeasurement(
-        new Pose2d(
-            new Translation2d(
-                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
-                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-            // this.getRotation()),
-            visionMeasurement.poseEstimate().pose().toPose2d().getRotation()),
+        visionMeasurement.poseEstimate().robotPose(),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }
