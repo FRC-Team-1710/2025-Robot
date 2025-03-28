@@ -147,6 +147,7 @@ public class Claw extends SubsystemBase {
   /** Zeros wrist */
   public void zero() {
     io.zero();
+    io.setAngle(ClawPosition.IDLE.targetAngle);
   }
 
   public void lockRoller() {

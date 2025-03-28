@@ -26,7 +26,7 @@ public class ZeroRizz extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putBoolean("zero?", false);
-    claw.wristManual(-1);
+    claw.wristManual(-1); //Volts
     timer.restart();
   }
 
@@ -37,7 +37,6 @@ public class ZeroRizz extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.IDLE().schedule();
     SmartDashboard.putBoolean("zero?", true);
   }
 
