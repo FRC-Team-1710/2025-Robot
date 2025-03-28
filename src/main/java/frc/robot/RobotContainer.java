@@ -786,7 +786,7 @@ public class RobotContainer {
     grabAlgae
         .onFalse(
             claw.IDLE()
-                .unless(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor()))
+                .unless(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor() || targetReef.getAsBoolean()))
         .and(
             () ->
                 claw.hasAlgae()
