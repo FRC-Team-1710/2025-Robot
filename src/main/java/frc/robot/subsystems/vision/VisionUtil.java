@@ -99,8 +99,8 @@ public class VisionUtil {
       public VisionMeasurement getVisionMeasurement(PoseEstimate mt) {
         double xyStdDev = calculateStdDev(mt, MA_VISION_STD_DEV_XY);
         // MT2 measurements don't provide reliable rotation data
-        double thetaStdDev =
-            mt.isMegaTag2() ? Double.MAX_VALUE : calculateStdDev(mt, MA_VISION_STD_DEV_THETA);
+        double thetaStdDev = Double.MAX_VALUE;
+        // mt.isMegaTag2() ? Double.MAX_VALUE : calculateStdDev(mt, MA_VISION_STD_DEV_THETA);
         return new VisionMeasurement(mt, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
       }
 

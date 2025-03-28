@@ -8,6 +8,7 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -109,6 +110,10 @@ public class DriveIOCTRE extends TunerSwerveDrivetrain implements DriveIO {
     registerTelemetry(this::updateTelemetry);
     super.getOdometryThread().setThreadPriority(2);
     setupSimulation();
+    
+    //TEST
+    getPigeon2().getConfigurator().apply(new Pigeon2Configuration());
+    getPigeon2().getConfigurator().setYaw(0.0); 
 
     // // Attempt to load the chrp
     // var status =
