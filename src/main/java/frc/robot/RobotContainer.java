@@ -472,7 +472,7 @@ public class RobotContainer {
         new InstantCommand(() -> funnel.extendAileron())
             .andThen(new NotRizz(elevator))
             .andThen(new IntakeForAuto(manipulator, funnel)));
-            //.andThen(new InstantCommand(() -> funnel.retractAileron())));
+    // .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)

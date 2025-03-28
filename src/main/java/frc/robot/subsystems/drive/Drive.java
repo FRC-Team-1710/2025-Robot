@@ -762,6 +762,10 @@ public class Drive extends SubsystemBase {
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
+    Logger.recordOutput(
+        "Odom minus Vision",
+        this.getRotation().getRadians()
+            - visionMeasurement.poseEstimate().pose().getRotation().getZ());
     this.addVisionMeasurement(
         visionMeasurement.poseEstimate().robotPose(),
         visionMeasurement.poseEstimate().timestampSeconds(),
