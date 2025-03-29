@@ -1011,7 +1011,7 @@ public class RobotContainer {
                             || grabAlgae.getAsBoolean()
                             || targetReef.getAsBoolean()
                             || targetAlgae.getAsBoolean())
-                .alongWith(claw.IDLE())
+                .alongWith(claw.IDLE().unless(() -> grabAlgae.getAsBoolean()))
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
         .onTrue(new ElevatorToTargetLevel(elevator))
         .and(
@@ -1194,15 +1194,15 @@ public class RobotContainer {
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
                                                         ? FieldConstants.fieldLength.in(Meters)
-                                                            - 7.4
-                                                        : 7.4)
+                                                            - 7.26
+                                                        : 7.26)
                                                     - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : ((Robot.getAlliance()
-                                                    ? FieldConstants.fieldLength.in(Meters) - 7.4
-                                                    : 7.4)
+                                                    ? FieldConstants.fieldLength.in(Meters) - 7.26
+                                                    : 7.26)
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
