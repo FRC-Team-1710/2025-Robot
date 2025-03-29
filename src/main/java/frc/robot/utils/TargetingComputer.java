@@ -45,7 +45,7 @@ public class TargetingComputer {
   public static final double maxAlignSpeed = .25;
 
   private static final double xOffset = 17.5;
-  private static final double yOffset = 7.5;
+  private static final double yOffset = 7;
   private static final double homeYOffset = 1;
 
   // AprilTag Targeting

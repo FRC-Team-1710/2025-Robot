@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +33,7 @@ import frc.robot.commands.GrabAlgae;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.IntakeForAuto;
 import frc.robot.commands.ManualClimb;
+import frc.robot.commands.NotRizz;
 import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
@@ -55,7 +57,6 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
-import frc.robot.subsystems.superstructure.funnel.Funnel.FunnelMode;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
@@ -208,6 +209,14 @@ public class RobotContainer {
 
   /** Mech RS */
   private final Trigger killWrist = new Trigger(mech.rightStick());
+
+  /** 25 seconds left */
+  private final Trigger endgame =
+      new Trigger(
+          () ->
+              DriverStation.getMatchTime() < 30
+                  && DriverStation.getMatchTime() > 25
+                  && !DriverStation.isAutonomous());
 
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
@@ -461,9 +470,9 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "intake coral",
         new InstantCommand(() -> funnel.extendAileron())
-            // .alongWith(new InstantCommand(() -> elevator.setManual(-0.15)))
-            .andThen(new IntakeForAuto(manipulator, funnel))
-            .andThen(new InstantCommand(() -> funnel.retractAileron())));
+            .andThen(new NotRizz(elevator))
+            .andThen(new IntakeForAuto(manipulator, funnel)));
+    // .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -528,6 +537,11 @@ public class RobotContainer {
     double alignP = 1.5; // was .8
     double rotP = .4;
 
+    // good logic trust
+    endgame
+        .onTrue(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
+        .onFalse(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
+
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
@@ -562,15 +576,15 @@ public class RobotContainer {
                 .unless(() -> claw.hasAlgae()));
 
     // new Trigger(() -> funnel.hasCoral())
-    //     .onTrue(
-    //         new InstantCommand(() -> funnel.setRollerPower(0))
-    //             .onlyIf(() -> !elevator.isAtIntake())
-    //             .alongWith(elevator.intake())
-    //             .onlyIf(() -> !elevator.isAtIntake()))
-    //     .and(() -> elevator.isAtIntake())
-    //     .onTrue(
-    //         new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
-    //             .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
+    // .onTrue(
+    // new InstantCommand(() -> funnel.setRollerPower(0))
+    // .onlyIf(() -> !elevator.isAtIntake())
+    // .alongWith(elevator.intake())
+    // .onlyIf(() -> !elevator.isAtIntake()))
+    // .and(() -> elevator.isAtIntake())
+    // .onTrue(
+    // new InstantCommand(() -> funnel.setRollerPower(FunnelConstants.intakeSpeed))
+    // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
     new Trigger(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor())
         .and(targetSource)
@@ -578,18 +592,18 @@ public class RobotContainer {
         .and(() -> claw.hasAlgae())
         .onTrue(claw.PROCESSOR());
 
-    new Trigger(() -> funnel.getMode() == FunnelMode.INTAKE && funnel.isAtTarget())
-        .onTrue(new InstantCommand(() -> funnel.retractAileron()))
-        .onFalse(new InstantCommand(() -> funnel.extendAileron()));
-    new Trigger(
-            () ->
-                targetSource.getAsBoolean()
-                    && (TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == Targets.SOURCE_LEFT.getTargetingAngle()
-                        || TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == Targets.SOURCE_RIGHT.getTargetingAngle()))
-        .onTrue(new InstantCommand(() -> funnel.extendAileron()))
-        .onFalse(new InstantCommand(() -> funnel.retractAileron()));
+    // new Trigger(() -> funnel.getMode() == FunnelMode.INTAKE && funnel.isAtTarget())
+    //     .onTrue(new InstantCommand(() -> funnel.retractAileron()))
+    //     .onFalse(new InstantCommand(() -> funnel.extendAileron()));
+    // new Trigger(
+    //         () ->
+    //             targetSource.getAsBoolean()
+    //                 && (TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+    //                         == Targets.SOURCE_LEFT.getTargetingAngle()
+    //                     || TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+    //                         == Targets.SOURCE_RIGHT.getTargetingAngle()))
+    //     .onTrue(new InstantCommand(() -> funnel.extendAileron()))
+    //     .onFalse(new InstantCommand(() -> funnel.retractAileron()));
 
     // Note that X is defined as forward according to WPILib convention,
     // and Y is defined as to the left according to WPILib convention.
@@ -632,9 +646,9 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
@@ -659,9 +673,9 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
@@ -672,14 +686,14 @@ public class RobotContainer {
             new InstantCommand(() -> TargetingComputer.setTargetLevel(TargetingComputer.Levels.L4))
                 .alongWith(new ElevatorToTargetLevel(elevator)))
         // .alongWith(
-        //     claw.NET()
-        //         .onlyIf(
-        //             () ->
-        //                 claw.hasAlgae() && elevator.isClearOfStage1()
-        //                     && TargetingComputer.getSourceTargetingAngle(
-        //                             drivetrain.getPose())
-        //                         == TargetingComputer.Targets.NET.getTargetingAngle()
-        //                     && targetSource.getAsBoolean())))
+        // claw.NET()
+        // .onlyIf(
+        // () ->
+        // claw.hasAlgae() && elevator.isClearOfStage1()
+        // && TargetingComputer.getSourceTargetingAngle(
+        // drivetrain.getPose())
+        // == TargetingComputer.Targets.NET.getTargetingAngle()
+        // && targetSource.getAsBoolean())))
         .onFalse(
             elevator
                 .INTAKE()
@@ -696,22 +710,22 @@ public class RobotContainer {
                                 .getDegrees())
                         < TargetingComputer.alignmentAngleTolerance
                     // && drivetrain
-                    //         .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
-                    //         .getNorm()
-                    //     < TargetingComputer.alignmentTranslationTolerance
+                    // .getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose())
+                    // .getNorm()
+                    // < TargetingComputer.alignmentTranslationTolerance
                     && targetReef.getAsBoolean()
                     && !TargetingComputer.targetingAlgae
                     && !TargetingComputer.targetingControllerOverride)
         .whileTrue(new PlaceCoral(elevator, manipulator, driver));
 
     // placeL4
-    //     .and(
-    //         () ->
-    //             elevator.getMode() == ElevatorPosition.L4
-    //                 && elevator.isClearOfStage1()
-    //                 && claw.hasAlgae()
-    //                 && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
-    //     .onTrue(claw.NET()); // TODO: fix
+    // .and(
+    // () ->
+    // elevator.getMode() == ElevatorPosition.L4
+    // && elevator.isClearOfStage1()
+    // && claw.hasAlgae()
+    // && (!targetReef.getAsBoolean() || TargetingComputer.targetingAlgae))
+    // .onTrue(claw.NET()); // TODO: fix
 
     grabAlgae
         .onFalse(
@@ -826,16 +840,18 @@ public class RobotContainer {
     // AprilTag Alignment
 
     // targetReef // Get the closest reef AprilTag and set it to the target tag
-    //     .onTrue(
-    //     new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target side/AprilTag
-    //         .alongWith( // Log the curent target branch for debugging
-    //             new InstantCommand(
-    //                 () ->
-    //                     Logger.recordOutput(
-    //                         "Overide Target", TargetingComputer.getCurrentTargetBranch())))
-    //         .alongWith( // Makes sure that the target hasn't been set officially (won't instantly
-    //             // move to the set target)
-    //             new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
+    // .onTrue(
+    // new InstantCommand(() -> vision.autoBranchTargeting()) // Set the target
+    // side/AprilTag
+    // .alongWith( // Log the curent target branch for debugging
+    // new InstantCommand(
+    // () ->
+    // Logger.recordOutput(
+    // "Overide Target", TargetingComputer.getCurrentTargetBranch())))
+    // .alongWith( // Makes sure that the target hasn't been set officially (won't
+    // instantly
+    // // move to the set target)
+    // new InstantCommand(() -> TargetingComputer.setTargetSet(false))));
 
     targetReef // Only rotate the robot when the d-pads haven't sent a signal
         .onFalse(
@@ -941,35 +957,23 @@ public class RobotContainer {
                         .withVelocityX(
                             MaxSpeed.times(
                                     ((TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                        - drivetrain.getPose().getX())
-                                                    + (Units.inchesToMeters(2)
-                                                        * driver.getLeftY()
-                                                        * (!Robot.getAlliance() ? -1 : 1)))
+                                                    - drivetrain.getPose().getX()))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                - drivetrain.getPose().getX()
-                                                + (Units.inchesToMeters(2)
-                                                    * driver.getLeftY()
-                                                    * (!Robot.getAlliance() ? -1 : 1)))
+                                                - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
                                     (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                    - drivetrain.getPose().getY()
-                                                    + (Units.inchesToMeters(2)
-                                                        * driver.getLeftX()
-                                                        * (!Robot.getAlliance() ? -1 : 1)))
+                                                    - drivetrain.getPose().getY())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                - drivetrain.getPose().getY()
-                                                + (Units.inchesToMeters(2)
-                                                    * driver.getLeftX()
-                                                    * (!Robot.getAlliance() ? -1 : 1)))
+                                                - drivetrain.getPose().getY())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withRotationalRate(
@@ -1288,9 +1292,9 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
-    mech.start().whileTrue(new ZeroRizz(claw));
+    mech.start().onTrue(new ZeroRizz(claw));
 
-    mech.back().onTrue(new InstantCommand(() -> elevator.zero()));
+    mech.back().onTrue(new NotRizz(elevator)); // new InstantCommand(() -> elevator.zero()));
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral

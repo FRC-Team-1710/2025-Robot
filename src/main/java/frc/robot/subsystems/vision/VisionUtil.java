@@ -49,7 +49,7 @@ public class VisionUtil {
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
-  private static final double MA_VISION_STD_DEV_THETA = 5.0; // Base theta standard deviation
+  private static final double MA_VISION_STD_DEV_THETA = 0.8; // Base theta standard deviation
   public static final double MA_AMBIGUITY =
       0.3; // Maximum allowed ambiguity for single-tag measurements
 
@@ -98,8 +98,8 @@ public class VisionUtil {
       public VisionMeasurement getVisionMeasurement(PoseEstimate mt) {
         double xyStdDev = calculateStdDev(mt, MA_VISION_STD_DEV_XY);
         // MT2 measurements don't provide reliable rotation data
-        double thetaStdDev =
-            mt.isMegaTag2() ? Double.MAX_VALUE : calculateStdDev(mt, MA_VISION_STD_DEV_THETA);
+        double thetaStdDev = Double.MAX_VALUE;
+        // mt.isMegaTag2() ? Double.MAX_VALUE : calculateStdDev(mt, MA_VISION_STD_DEV_THETA);
         return new VisionMeasurement(mt, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
       }
 

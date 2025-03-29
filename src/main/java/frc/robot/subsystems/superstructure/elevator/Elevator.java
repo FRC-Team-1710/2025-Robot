@@ -88,6 +88,10 @@ public class Elevator extends SubsystemBase {
     io.zero();
   }
 
+  public double getElevatorCurrent() {
+    return inputs.leaderStatorCurrent.baseUnitMagnitude();
+  }
+
   /**
    * Returns the current distance of the elevator.
    *

@@ -10,7 +10,7 @@ import frc.robot.subsystems.superstructure.climber.Climber;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class StartClimb extends Command {
   Climber climber;
-  double targetRotations = 3.4;
+  double targetRotations = 2.7;
 
   /** Creates a new Climb. */
   public StartClimb(Climber climber) {

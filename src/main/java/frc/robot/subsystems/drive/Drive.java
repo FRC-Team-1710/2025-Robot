@@ -289,31 +289,31 @@ public class Drive extends SubsystemBase {
                             .times(
                                 (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                                 - getPose().getX())
-                                            * .8
+                                            * 1.2
                                         > TargetingComputer.maxAlignSpeed
                                     ? TargetingComputer.maxAlignSpeed
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                             - getPose().getX())
-                                        * .8)
+                                        * 1.2)
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withVelocityY(
                         TunerConstants.kSpeedAt12Volts
                             .times(
                                 (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                                 - getPose().getY())
-                                            * .8
+                                            * 1.2
                                         > TargetingComputer.maxAlignSpeed
                                     ? TargetingComputer.maxAlignSpeed
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                             - getPose().getY())
-                                        * .8)
+                                        * 1.2)
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
                                     .minus(getPose().getRotation())
                                     .getRadians())
-                                * 0.4))))
+                                * 0.5))))
         .until(
             () ->
                 getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
@@ -762,12 +762,12 @@ public class Drive extends SubsystemBase {
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
+    Logger.recordOutput(
+        "Odom minus Vision",
+        this.getRotation().getRadians()
+            - visionMeasurement.poseEstimate().pose().getRotation().getZ());
     this.addVisionMeasurement(
-        new Pose2d(
-            new Translation2d(
-                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
-                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-            this.getRotation()),
+        visionMeasurement.poseEstimate().robotPose(),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }
