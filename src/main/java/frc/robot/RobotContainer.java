@@ -1405,6 +1405,7 @@ public class RobotContainer {
 
     // Temp elevator tuning :)
 
+    testing.back().onTrue(new NotRizz(elevator));
     testing.a().onTrue(elevator.INTAKE());
     testing.b().onTrue(elevator.L2());
     testing.x().onTrue(elevator.L3());
