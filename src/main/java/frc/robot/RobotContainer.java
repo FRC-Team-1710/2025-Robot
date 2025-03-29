@@ -486,9 +486,9 @@ public class RobotContainer {
         "intake position",
         elevator
             .INTAKE()
-            .alongWith(drivetrain.stop(robotCentric))
+            .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.goingToTarget()))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-            .until(() -> elevator.goingToTarget()));
+            .until(() -> elevator.isAtTarget()));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
