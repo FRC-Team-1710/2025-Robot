@@ -303,6 +303,18 @@ public class TargetingComputer {
     }
   }
 
+  public static boolean isTargetingSource(Pose2d pose) {
+    return isRedAlliance
+        ? pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance
+        : pose.getX() <= sourceCutoffDistance;
+  }
+
+  public static boolean isRightSource(Pose2d pose) {
+    return isRedAlliance
+        ? pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2
+        : pose.getY() < FieldConstants.fieldWidth.in(Meters) / 2;
+  }
+
   public static void setTargetSet(boolean isTargetSet) {
     targetSet = isTargetSet;
   }

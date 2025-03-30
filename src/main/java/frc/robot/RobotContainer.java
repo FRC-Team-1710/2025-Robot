@@ -1065,7 +1065,14 @@ public class RobotContainer {
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
         .whileTrue(
-            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
+            new IntakeCoral(
+                    manipulator,
+                    funnel,
+                    driver,
+                    mech.leftBumper(),
+                    () -> drivetrain.getPose().getX(),
+                    () -> drivetrain.getPose().getY(),
+                    () -> drivetrain.getPose().getRotation().getDegrees())
                 .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
@@ -1311,7 +1318,15 @@ public class RobotContainer {
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
+        .whileTrue(
+            new IntakeCoral(
+                manipulator,
+                funnel,
+                driver,
+                mech.leftBumper(),
+                () -> drivetrain.getPose().getX(),
+                () -> drivetrain.getPose().getY(),
+                () -> drivetrain.getPose().getRotation().getDegrees()))
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     overrideTargetingController.onTrue(
