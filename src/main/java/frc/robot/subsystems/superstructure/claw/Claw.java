@@ -71,11 +71,11 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    if (hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 2) {
-      hasAlgae = false;
+    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 2) {
+      inputs.hasAlgae = false;
     }
 
-    Logger.recordOutput("Claw/hasAlgae", hasAlgae);
+    Logger.recordOutput("Claw/hasAlgae", inputs.hasAlgae);
     Logger.recordOutput("Claw/Mode", getMode().toString());
     Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
 
@@ -100,11 +100,11 @@ public class Claw extends SubsystemBase {
   }
 
   public void setAlgaeStatus(boolean status) {
-    hasAlgae = status;
+    inputs.hasAlgae = status;
   }
 
   public void toggleAlgaeStatus() {
-    hasAlgae = !hasAlgae;
+    inputs.hasAlgae = !inputs.hasAlgae;
   }
 
   public double getRollerCurrent() {
@@ -133,16 +133,21 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean hasAlgae() {
-    return hasAlgae;
+    return inputs.hasAlgae;
   }
 
   public void setRollerPositionWhenAlgaeGrabbed(double position) {
     rollerPositionWhenAlgaeGrabbed = position;
   }
 
+  public void toggleKillSwich() {
+    inputs.killSwich = inputs.killSwich ? false : true;
+  }
+
   /** Zeros wrist */
   public void zero() {
     io.zero();
+    io.setAngle(ClawPosition.IDLE.targetAngle);
   }
 
   public void lockRoller() {
@@ -165,7 +170,7 @@ public class Claw extends SubsystemBase {
     IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(35), Degrees.of(2.5)), // Position for scoring in net
+    NET(Degrees.of(0), Degrees.of(2.5)), // Position for scoring in net
     FLOOR(Degrees.of(143), Degrees.of(2.5)),
     PROCESSOR(Degrees.of(100));
 
@@ -197,7 +202,7 @@ public class Claw extends SubsystemBase {
    * @param mode The desired ClawPosition
    */
   private void setClawPosition(ClawPosition mode) {
-    if (mode == ClawPosition.IDLE) mode = hasAlgae ? ClawPosition.HOLD : ClawPosition.IDLE;
+    if (mode == ClawPosition.IDLE) mode = inputs.hasAlgae ? ClawPosition.HOLD : ClawPosition.IDLE;
     if (currentMode != mode) {
       currentCommand.cancel();
       currentMode = mode;

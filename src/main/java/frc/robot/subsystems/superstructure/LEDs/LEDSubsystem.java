@@ -45,10 +45,11 @@ public class LEDSubsystem extends SubsystemBase {
     this.climber = climber;
     this.elevator = elevator;
     this.drivetrain = drivetrain;
-    uart = new SerialPort(115200, SerialPort.Port.kMXP); // Set baud rate
+    uart = new SerialPort(38400, SerialPort.Port.kMXP); // Set baud rate
   }
 
   private Integer commandValue = 0;
+  private Integer iterate = 0;
 
   public Boolean[] inputBooleans = {
     false, false, false, false, false, false, false, false, false, false, false, false
@@ -67,15 +68,20 @@ public class LEDSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    set(); // Getting condition of robot
-    encoder(); // Setting the command value
-    sendData(commandValue); // Send Phase
+    if (iterate > 4) {
+      set(); // Getting condition of robot
+      encoder(); // Setting the command value
+      sendData(commandValue); // Send Phase
+      iterate = 0;
+    } else {
+      iterate++;
+    }
   }
 
   /** Sets the input booleans based on the current state of the robot */
   private void set() { // Decimal phase
 
-    if (DriverStation.getMatchTime() <= 25 && DriverStation.getMatchTime() > 20) {
+    if (DriverStation.getMatchTime() < 25 && DriverStation.getMatchTime() > 20) {
       inputBooleans[0] = true;
     } else {
       inputBooleans[0] = false;
@@ -165,11 +171,14 @@ public class LEDSubsystem extends SubsystemBase {
     }
   }
 
-  public void sendData(int value) { // Sending data (duh)
-    byte[] data = new byte[1]; // Create a byte array of length 1
+  public void sendData(int value) {
+    byte[] data = new byte[2]; // Create a byte array of length 1
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
+    byte checksum = (byte) (data[0] + 0); // Create a byte array of length 1
+    data[1] = checksum; // Store value as byte in the array, and mask to ensure unsigned byte
     uart.write(data, data.length); // Write the byte array to the serial port
-    // System.out.println("Sending Data: " + value); // Print the data
+    // System.out.println( // gavin is a bum
+    //     "Sending Data: " + value + " with checksum " + checksum); // Print the data that we sent
   }
 }

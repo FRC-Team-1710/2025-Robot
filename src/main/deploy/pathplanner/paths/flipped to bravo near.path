@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.794,
-        "y": 7.29125
+        "x": 1.9779713114754096,
+        "y": 6.758196721311475
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9519306414097324,
-        "y": 7.699214007354385
+        "x": 2.135901952885142,
+        "y": 7.166160728665861
       },
       "isLocked": false,
       "linkedName": "flipped source"
@@ -36,7 +36,7 @@
     "maxVelocity": 5.0,
     "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

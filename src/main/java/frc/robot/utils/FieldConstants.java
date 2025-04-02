@@ -31,6 +31,7 @@ public class FieldConstants {
   public static final Distance fieldWidth = Inches.of(317);
   public static final Distance startingLineX =
       Inches.of(299.438); // Measured from the inside of starting line
+
   /**
    * Diameter of the algae game element in meters. Used for game piece manipulation and scoring
    * calculations.
@@ -75,6 +76,7 @@ public class FieldConstants {
     // order
     public static final List<Map<ReefHeight, Pose3d>> branchPositions =
         new ArrayList<>(); // Starting at the right
+
     // branch facing the
     // driver station in
     // clockwise

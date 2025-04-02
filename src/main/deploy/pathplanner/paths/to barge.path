@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7948863636363637,
-        "y": 1.1980539772727274
+        "x": 7.2735,
+        "y": 5.6313524590163935
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.470902483144682,
-        "y": 1.5844672634121009
+        "x": 7.622800687018798,
+        "y": 5.635892124707323
       },
       "isLocked": false,
-      "linkedName": "source"
+      "linkedName": "far barge start"
     },
     {
       "anchor": {
-        "x": 5.622233606557376,
-        "y": 2.5025614754098364
+        "x": 7.9365000000000006,
+        "y": 5.6313524590163935
       },
       "prevControl": {
-        "x": 4.766800191894165,
-        "y": 1.9345758703202454
+        "x": 7.672489437841356,
+        "y": 5.629685116079169
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "foxtrot"
+      "linkedName": "end barge"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 123.34070734647696
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": -90.70404243378847
   },
   "useDefaultConstraints": true
 }

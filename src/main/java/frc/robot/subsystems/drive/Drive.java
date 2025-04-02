@@ -51,6 +51,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
 import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.vision.Vision;
@@ -251,6 +252,11 @@ public class Drive extends SubsystemBase {
     return yes;
   }
 
+  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
+  public ChassisSpeeds getChassisSpeeds() {
+    return inputs.speeds;
+  }
+
   /**
    * Guys I can add comments to this
    *
@@ -264,43 +270,50 @@ public class Drive extends SubsystemBase {
    * @param elevator
    * @return
    */
-  public Command Alignment(
-      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
+  public Command Alignment(Targets target, Vision vision, Elevator elevator) {
     TargetingComputer.setTargetBranch(target);
+
+    SwerveSetpointGen setpointGenAuto =
+        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
+            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     return run(() ->
             io.setControl(
-                requestSupplier
+                setpointGenAuto
+                    .withOperatorForwardDirection(getOperatorForwardDirection())
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(
                         TunerConstants.kSpeedAt12Volts
                             .times(
                                 (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                                 - getPose().getX())
-                                            * .8
+                                            * 1.2
                                         > TargetingComputer.maxAlignSpeed
                                     ? TargetingComputer.maxAlignSpeed
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                             - getPose().getX())
-                                        * .8)
+                                        * 1.2)
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withVelocityY(
                         TunerConstants.kSpeedAt12Volts
                             .times(
                                 (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                                 - getPose().getY())
-                                            * .8
+                                            * 1.2
                                         > TargetingComputer.maxAlignSpeed
                                     ? TargetingComputer.maxAlignSpeed
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                             - getPose().getY())
-                                        * .8)
+                                        * 1.2)
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
                                     .minus(getPose().getRotation())
                                     .getRadians())
-                                * 0.4))))
+                                * 0.5))))
         .until(
             () ->
                 getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
@@ -493,9 +506,65 @@ public class Drive extends SubsystemBase {
   }
 
   @AutoLogOutput
+  public Targets getAlignmentZone(boolean aligning) {
+    Pose2d currentPose = getPose();
+    double angle =
+        Robot.getAlliance()
+            ? new Translation2d(
+                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees()
+            : FieldConstants.Reef.center
+                .minus(currentPose.getTranslation())
+                .unaryMinus()
+                .getAngle()
+                .getDegrees();
+    Targets zone = Targets.ALPHA;
+
+    Logger.recordOutput("angle", angle);
+
+    if (angle >= 0 && angle < 30) {
+      zone = Robot.getAlliance() ? Targets.BRAVO : Targets.HOTEL;
+    } else if (angle >= 30 && angle < 60) {
+      zone = Robot.getAlliance() ? Targets.CHARLIE : Targets.INDIA;
+    } else if (angle >= 60 && angle < 90) {
+      zone = Robot.getAlliance() ? Targets.DELTA : Targets.JULIET;
+    } else if (angle >= 90 && angle < 120) {
+      zone = Robot.getAlliance() ? Targets.ECHO : Targets.KILO;
+    } else if (angle >= 120 && angle < 150) {
+      zone = Robot.getAlliance() ? Targets.FOXTROT : Targets.LIMA;
+    } else if (angle >= 150 && angle <= 180) {
+      zone = Robot.getAlliance() ? Targets.GOLF : Targets.ALPHA;
+    } else if (angle > -180 && angle < -150) {
+      zone = Robot.getAlliance() ? Targets.HOTEL : Targets.BRAVO;
+    } else if (angle >= -150 && angle < -120) {
+      zone = Robot.getAlliance() ? Targets.INDIA : Targets.CHARLIE;
+    } else if (angle >= -120 && angle < -90) {
+      zone = Robot.getAlliance() ? Targets.JULIET : Targets.DELTA;
+    } else if (angle >= -90 && angle < -60) {
+      zone = Robot.getAlliance() ? Targets.KILO : Targets.ECHO;
+    } else if (angle >= -60 && angle < -30) {
+      zone = Robot.getAlliance() ? Targets.LIMA : Targets.FOXTROT;
+    } else if (angle >= -30 && angle < 0) {
+      zone = Robot.getAlliance() ? Targets.ALPHA : Targets.GOLF;
+    }
+
+    if (TargetingComputer.targetingControllerOverride
+        && TargetingComputer.currentTargetBranch != zone
+        && !aligning) {
+      TargetingComputer.setTargetBranch(zone);
+    }
+
+    return zone;
+  }
+
+  @AutoLogOutput
   public boolean isInAlignmentZone() {
     Pose2d currentPose = getPose();
-    double zoneRadius = TargetingComputer.alignmentRange;
+    double zoneRadius =
+        TargetingComputer.targetingControllerOverride ? 2 : TargetingComputer.alignmentRange;
     double angle =
         Robot.getAlliance()
             ? new Translation2d(
@@ -592,12 +661,19 @@ public class Drive extends SubsystemBase {
         .minus(FieldConstants.Processor.centerFace.getTranslation());
     Pose2d processor =
         Robot.getAlliance()
-            ? new Pose2d(
-                new Translation2d(
-                        FieldConstants.fieldLength.magnitude(),
-                        FieldConstants.fieldWidth.magnitude())
-                    .minus(FieldConstants.Processor.centerFace.getTranslation()),
-                FieldConstants.Processor.centerFace.getRotation().minus(new Rotation2d(Math.PI)))
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
+            : FieldConstants.Processor.centerFace;
+
+    return getDistanceToPose(processor).getNorm() < 1.5;
+  }
+
+  @AutoLogOutput
+  public boolean isNearFarProcessor() {
+    new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
+        .minus(FieldConstants.Processor.centerFace.getTranslation());
+    Pose2d processor =
+        !Robot.getAlliance()
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
             : FieldConstants.Processor.centerFace;
 
     return getDistanceToPose(processor).getNorm() < 1.5;
@@ -640,11 +716,6 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the measured chassis speeds of the robot. */
-  @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  public ChassisSpeeds getChassisSpeeds() {
-    return inputs.speeds;
-  }
-
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured/velocity")
   public double getChassisVelocity() {
 
@@ -691,12 +762,17 @@ public class Drive extends SubsystemBase {
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
+    Logger.recordOutput(
+        "Odom minus Vision",
+        this.getRotation().getRadians()
+            - visionMeasurement.poseEstimate().pose().getRotation().getZ());
     this.addVisionMeasurement(
         new Pose2d(
             new Translation2d(
                 visionMeasurement.poseEstimate().pose().toPose2d().getX(),
                 visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-            this.getRotation()),
+            // this.getRotation()),
+            visionMeasurement.poseEstimate().pose().toPose2d().getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }

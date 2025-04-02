@@ -41,6 +41,7 @@ public class SysIdSwerveSteerGains_Torque implements SwerveRequest {
     TorqueCurrentToApply = current;
     return this;
   }
+
   /**
    * Sets the torque current to apply to the drive wheels.
    *

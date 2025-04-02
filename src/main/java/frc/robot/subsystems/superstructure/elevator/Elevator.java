@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.Conversions;
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -52,6 +53,9 @@ public class Elevator extends SubsystemBase {
     // Update motor connection status alerts
     leaderMotorAlert.set(!inputs.leaderConnected);
     followerMotorAlert.set(!inputs.followerConnected);
+    Logger.recordOutput(
+        "motor encoder dist",
+        Conversions.rotationsToDistance(inputs.leaderRotorPosition, 6, Inches.of(1.105)));
   }
 
   /**
@@ -84,6 +88,10 @@ public class Elevator extends SubsystemBase {
     io.zero();
   }
 
+  public double getElevatorCurrent() {
+    return inputs.leaderStatorCurrent.baseUnitMagnitude();
+  }
+
   /**
    * Returns the current distance of the elevator.
    *
@@ -98,7 +106,7 @@ public class Elevator extends SubsystemBase {
   public enum ElevatorPosition {
     STOP(Inches.of(0)), // Stop the elevator
     INTAKE(Inches.of(0), Inches.of(1.25)), // Elevator tucked in
-    L1(Inches.of(0)), // Position for scoring in L1
+    L1(Inches.of(0), Inches.of(1)), // Position for scoring in L1
     L2(Inches.of(15.75)), // Position for scoring in L2
     L3(Inches.of(32.25)), // Position for scoring in L3
     L4(Inches.of(54.5)), // Position for scoring in L4
@@ -192,6 +200,22 @@ public class Elevator extends SubsystemBase {
     return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
   }
 
+  public boolean goingToTarget() {
+
+    return getPosition().isNear(Inches.of(43), currentMode.angleTolerance);
+  }
+
+  /** Only allows manual inputs because it wants to break itself */
+  @AutoLogOutput
+  public void toggleKillSwich() {
+    inputs.killSwich = inputs.killSwich ? false : true;
+  }
+
+  @AutoLogOutput
+  public boolean isClearOfStage1() {
+    return inputs.elevatorDistance.in(Inches) > 30;
+  }
+
   /**
    * Logs target angle for given mode.
    *
@@ -247,21 +271,21 @@ public class Elevator extends SubsystemBase {
   /**
    * @return Command to move the arm to the low algae distance
    */
-  public final Command AlgaeLow() {
+  public final Command ALGAE_LOW() {
     return setPositionCommand(ElevatorPosition.ALGAE_LOW);
   }
 
   /**
    * @return Command to move the arm to the high algae distance
    */
-  public final Command AlgaeHigh() {
+  public final Command ALGAE_HIGH() {
     return setPositionCommand(ElevatorPosition.ALGAE_HIGH);
   }
 
   /**
    * @return Command to intake the arm
    */
-  public final Command intake() {
+  public final Command INTAKE() {
     return setPositionCommand(ElevatorPosition.INTAKE)
         .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }

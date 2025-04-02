@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ElevatorToTargetLevel extends Command {
   Elevator elevator;
+
   /** Creates a new ElevatorToTargetLevel. */
   public ElevatorToTargetLevel(Elevator elevator) {
     this.elevator = elevator;
@@ -38,16 +39,16 @@ public class ElevatorToTargetLevel extends Command {
         elevator.L4().schedule();
         break;
       case ALGAE_LOW:
-        elevator.AlgaeLow().schedule();
+        elevator.ALGAE_LOW().schedule();
         break;
       case ALGAE_HIGH:
-        elevator.AlgaeHigh().schedule();
+        elevator.ALGAE_HIGH().schedule();
         break;
       case INTAKE:
-        elevator.intake().schedule();
+        elevator.INTAKE().schedule();
         break;
       default:
-        elevator.intake().schedule();
+        elevator.INTAKE().schedule();
         break;
     }
   }

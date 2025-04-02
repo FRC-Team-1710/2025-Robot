@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.FunnelConstants;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
@@ -42,13 +43,13 @@ public class EndIntake extends Command {
         timer.reset();
         timer.stop();
         manipulator.runPercent(ManipulatorConstants.insideSpeed);
-        funnel.setRollerPower(.2);
+        funnel.setRollerPower(FunnelConstants.FUNNEL_SLOW);
       } else if (!manipulator.beam1Broken() && !manipulator.beam2Broken()) {
         if (!timer.isRunning()) {
           timer.start();
         }
         manipulator.runPercent(ManipulatorConstants.insideSpeed);
-        funnel.setRollerPower(.2);
+        funnel.setRollerPower(FunnelConstants.FUNNEL_SLOW);
       }
     }
   }

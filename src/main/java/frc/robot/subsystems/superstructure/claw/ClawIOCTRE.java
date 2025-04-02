@@ -46,7 +46,7 @@ public class ClawIOCTRE implements ClawIO {
   private double kG = 0.0;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kacel = 600;
+  private double kacel = 900;
   private double kvel = 300;
 
   private double RollerkP = 3;
@@ -133,6 +133,8 @@ public class ClawIOCTRE implements ClawIO {
     inputs.intakeVelocity =
         DegreesPerSecond.of(intakeVelocity.getValue().magnitude() * 360 / GEAR_RATIO);
 
+    inputs.locked = locked;
+
     inputs.wristAppliedVoltage = wristAppliedVolts.getValue();
     inputs.wristStatorCurrent = wristStatorCurrent.getValue();
     inputs.wristSupplyCurrent = wristSupplyCurrent.getValue();
@@ -151,9 +153,13 @@ public class ClawIOCTRE implements ClawIO {
     tempPIDTuning();
 
     if (locked) {
-      wrist.setVoltage(
-          wristPID.calculate(inputs.angle.magnitude())
-              + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
+      if (inputs.killSwich) {
+        wrist.stopMotor();
+      } else {
+        wrist.setVoltage(
+            wristPID.calculate(inputs.angle.magnitude())
+                + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
+      }
     }
 
     if (rollerLocked) {
@@ -173,6 +179,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void zero() {
     wrist.setPosition(0);
+    wristPID.reset(0);
   }
 
   @Override
@@ -198,7 +205,7 @@ public class ClawIOCTRE implements ClawIO {
   public void wristManual(double power) {
     locked = false;
     wristManual = power;
-    wrist.set(wristManual);
+    wrist.setVoltage(wristManual);
   }
 
   @Override

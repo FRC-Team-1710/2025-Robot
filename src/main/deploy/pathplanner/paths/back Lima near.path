@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.154078514174527,
-        "y": 6.914361643974976
+        "x": 2.511825509037528,
+        "y": 6.300854319534331
       },
       "isLocked": false,
       "linkedName": "Lima"
     },
     {
       "anchor": {
-        "x": 1.794,
-        "y": 7.29125
+        "x": 1.9779713114754096,
+        "y": 6.758196721311475
       },
       "prevControl": {
-        "x": 2.1489147799597963,
-        "y": 6.90680215948475
+        "x": 2.17193499368431,
+        "y": 6.600468822752075
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     "maxVelocity": 5.0,
     "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
