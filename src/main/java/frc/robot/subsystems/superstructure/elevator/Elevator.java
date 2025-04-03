@@ -201,10 +201,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean goingToTarget() {
-    
-    return getPosition().isNear(Inches.of(36), currentMode.angleTolerance);
+
+    return getPosition()
+        .isNear(
+            ElevatorPosition.ALGAE_HIGH.targetDistance, ElevatorPosition.ALGAE_HIGH.angleTolerance);
   }
-  
 
   /** Only allows manual inputs because it wants to break itself */
   @AutoLogOutput

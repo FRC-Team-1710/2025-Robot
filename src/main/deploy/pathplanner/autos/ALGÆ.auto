@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to hotel start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Hotel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from G&H Algae to barge"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from barge to I&J algae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from I&J algae to barge"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

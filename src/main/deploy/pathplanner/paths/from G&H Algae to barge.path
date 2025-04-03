@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.215,
-        "y": 1.92875
+        "x": 6.064500000000001,
+        "y": 3.9957499999999997
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.208351989679921,
-        "y": 2.0843571971893007
+        "x": 6.233394239351503,
+        "y": 4.809045816828893
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "G&H Algae"
     },
     {
       "anchor": {
-        "x": 5.0895,
-        "y": 2.669749999999999
+        "x": 7.04925,
+        "y": 4.50275
       },
       "prevControl": {
-        "x": 5.338832624769292,
-        "y": 2.6514950766735326
+        "x": 6.809007504640538,
+        "y": 4.378922472796871
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "echo"
+      "linkedName": "barge"
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 123.18821951757045
+    "rotation": 52.253194612725274
   },
   "reversed": false,
-  "folder": "To",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
