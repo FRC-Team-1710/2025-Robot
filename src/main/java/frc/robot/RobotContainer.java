@@ -786,7 +786,11 @@ public class RobotContainer {
     grabAlgae
         .onFalse(
             claw.IDLE()
-                .unless(() -> drivetrain.isNearProcessor() || drivetrain.isNearFarProcessor()))
+                .unless(
+                    () ->
+                        drivetrain.isNearProcessor()
+                            || drivetrain.isNearFarProcessor()
+                            || targetReef.getAsBoolean()))
         .and(
             () ->
                 claw.hasAlgae()
@@ -797,7 +801,7 @@ public class RobotContainer {
 
     shootAlgae
         .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
-        .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
@@ -1007,7 +1011,7 @@ public class RobotContainer {
                             || grabAlgae.getAsBoolean()
                             || targetReef.getAsBoolean()
                             || targetAlgae.getAsBoolean())
-                .alongWith(claw.IDLE())
+                .alongWith(claw.IDLE().unless(() -> grabAlgae.getAsBoolean()))
                 .alongWith(new InstantCommand(() -> driver.setRumble(RumbleType.kBothRumble, 0))))
         .onTrue(new ElevatorToTargetLevel(elevator))
         .and(
@@ -1061,7 +1065,14 @@ public class RobotContainer {
                     || TargetingComputer.stillInRangeOfSources(drivetrain.getPose())
                     || !TargetingComputer.goForClimb)
         .whileTrue(
-            new IntakeCoral(manipulator, funnel, driver, mech.leftBumper())
+            new IntakeCoral(
+                    manipulator,
+                    funnel,
+                    driver,
+                    mech.leftBumper(),
+                    () -> drivetrain.getPose().getX(),
+                    () -> drivetrain.getPose().getY(),
+                    () -> drivetrain.getPose().getRotation().getDegrees())
                 .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
@@ -1190,15 +1201,15 @@ public class RobotContainer {
                             MaxSpeed.times(
                                     ((Robot.getAlliance()
                                                         ? FieldConstants.fieldLength.in(Meters)
-                                                            - 7.4
-                                                        : 7.4)
+                                                            - 7.26
+                                                        : 7.26)
                                                     - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
                                         ? TargetingComputer.maxAlignSpeed
                                         : ((Robot.getAlliance()
-                                                    ? FieldConstants.fieldLength.in(Meters) - 7.4
-                                                    : 7.4)
+                                                    ? FieldConstants.fieldLength.in(Meters) - 7.26
+                                                    : 7.26)
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
@@ -1247,6 +1258,15 @@ public class RobotContainer {
     sysID.leftBumper().and(sysID.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // reset the field-centric heading on left bumper press
+    // resetGyro.onTrue(
+    //     drivetrain.runOnce(
+    //         () ->
+    //             drivetrain.resetPose(
+    //                 new Pose2d(
+    //                     drivetrain.getPose().getX(),
+    //                     drivetrain.getPose().getY(),
+    //                     new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
+
     resetGyro.onTrue(
         drivetrain.runOnce(
             () ->
@@ -1254,7 +1274,7 @@ public class RobotContainer {
                     new Pose2d(
                         drivetrain.getPose().getX(),
                         drivetrain.getPose().getY(),
-                        new Rotation2d(Robot.getAlliance() ? Math.PI : 0)))));
+                        TargetingComputer.getCurrentTargetBranchPose().getRotation()))));
 
     // driver.a().onTrue(Commands.runOnce(() ->
     // drivetrain.resetPose(Pose2d.kZero)));
@@ -1298,7 +1318,15 @@ public class RobotContainer {
 
     outtakeCoral.whileTrue(new OuttakeCoral(manipulator));
     intakeCoral
-        .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
+        .whileTrue(
+            new IntakeCoral(
+                manipulator,
+                funnel,
+                driver,
+                mech.leftBumper(),
+                () -> drivetrain.getPose().getX(),
+                () -> drivetrain.getPose().getY(),
+                () -> drivetrain.getPose().getRotation().getDegrees()))
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
 
     overrideTargetingController.onTrue(
@@ -1392,6 +1420,7 @@ public class RobotContainer {
 
     // Temp elevator tuning :)
 
+    testing.back().onTrue(new NotRizz(elevator));
     testing.a().onTrue(elevator.INTAKE());
     testing.b().onTrue(elevator.L2());
     testing.x().onTrue(elevator.L3());

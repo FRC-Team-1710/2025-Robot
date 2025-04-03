@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
+import frc.robot.subsystems.superstructure.manipulator.SimCoral;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TunableController;
 
@@ -46,6 +47,7 @@ public class PlaceCoral extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    SimCoral.placeCoral();
     manipulator.runPercent(0);
     controller.setRumble(RumbleType.kBothRumble, 0);
   }

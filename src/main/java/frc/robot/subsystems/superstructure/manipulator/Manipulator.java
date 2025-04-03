@@ -18,6 +18,13 @@ public class Manipulator extends SubsystemBase {
 
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io) {
+    SmartDashboard.putNumber("Coral/x", 0);
+    SmartDashboard.putNumber("Coral/y", 0);
+    SmartDashboard.putNumber("Coral/z", 0);
+    SmartDashboard.putNumber("Coral/roll", 0);
+    SmartDashboard.putNumber("Coral/pitch", 0);
+    SmartDashboard.putNumber("Coral/yaw", 0);
+    SimCoral.start();
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
     hasCoral = beam2Broken() && !beam1Broken();
