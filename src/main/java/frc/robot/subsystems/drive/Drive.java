@@ -767,7 +767,12 @@ public class Drive extends SubsystemBase {
         this.getRotation().getRadians()
             - visionMeasurement.poseEstimate().pose().getRotation().getZ());
     this.addVisionMeasurement(
-        visionMeasurement.poseEstimate().robotPose(),
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            // this.getRotation()),
+            visionMeasurement.poseEstimate().pose().toPose2d().getRotation()),
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
   }
