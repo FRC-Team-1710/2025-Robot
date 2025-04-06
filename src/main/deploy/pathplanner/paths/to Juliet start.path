@@ -12,7 +12,7 @@
         "y": 5.640168833724629
       },
       "isLocked": false,
-      "linkedName": "far barge start"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -59,7 +59,7 @@
     "rotation": -119.16761337957774
   },
   "reversed": false,
-  "folder": null,
+  "folder": "To",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -90.70404243378847

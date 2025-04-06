@@ -170,6 +170,22 @@ public class DriveIOCTRE extends TunerSwerveDrivetrain implements DriveIO {
     inputs.successfulDaqs = state.SuccessfulDaqs;
     inputs.failedDaqs = state.FailedDaqs;
 
+    inputs.roll = getPigeon2().getRoll().getValue();
+    inputs.pitch = getPigeon2().getPitch().getValue();
+    inputs.yaw = getPigeon2().getYaw().getValue();
+
+    inputs.acelx = getPigeon2().getAccelerationX().getValue();
+    inputs.acely = getPigeon2().getAccelerationY().getValue();
+    inputs.acelz = getPigeon2().getAccelerationZ().getValue();
+
+    inputs.accumX = getPigeon2().getAccumGyroX().getValue();
+    inputs.accumY = getPigeon2().getAccumGyroY().getValue();
+    inputs.accumZ = getPigeon2().getAccumGyroZ().getValue();
+
+    inputs.rotation3d = getPigeon2().getRotation3d();
+    inputs.supplyVoltage = getPigeon2().getSupplyVoltage().getValue();
+    inputs.temperatureC = getPigeon2().getTemperature().getValueAsDouble();
+
     // Update sensor inputs
     inputs.gyroRate = getPigeon2().getAngularVelocityZWorld().getValue();
     inputs.gyroConnected = super.getPigeon2().isConnected();

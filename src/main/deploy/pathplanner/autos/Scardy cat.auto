@@ -7,79 +7,67 @@
         {
           "type": "path",
           "data": {
-            "pathName": "to Charlie from start"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back charlie far"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to bravo far"
+            "pathName": "to hotel start"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Bravo"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back bravo far"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to bravo far"
+            "name": "Align to Hotel"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Lima"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back bravo far"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to alpha far"
+            "name": "L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Alpha"
+            "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "back alpha far"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "to alpha far"
+            "pathName": "Hotel to Source curve"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Align to Alpha"
+            "name": "Align to Source Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source to Golf curve"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Golf"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         }
       ]
