@@ -30,13 +30,16 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
   final PhotonCamera camera;
-  private final Transform3d robotToCamera;
+  private Transform3d robotToCamera;
   final Supplier<VisionParameters> visionParams;
   List<PhotonPipelineResult> cameraResults;
   PhotonPipelineResult latestResult;
   List<PhotonTrackedTarget> cameraTargets;
   PhotonTrackedTarget target;
 
+  public Pose3d lastAcceptedPose = new Pose3d();
+  public boolean flagged =
+      false; // Tells if tag is sus (not giving readings that match the expected)
   boolean rejectTagsFromDistance = false;
   double tagRejectionDistance = 3.5; // METERS
   List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
@@ -81,6 +84,7 @@ public class VisionIOPhotonVision implements VisionIO {
         Transform3d fieldToRobot =
             multitagResult.get().estimatedPose.best.plus(robotToCamera.inverse());
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        this.lastAcceptedPose = robotPose;
         return buildPoseObservation(latestResult, robotPose);
       }
       var target = latestResult.targets.get(0);
@@ -93,6 +97,7 @@ public class VisionIOPhotonVision implements VisionIO {
         Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+        this.lastAcceptedPose = robotPose;
         return buildPoseObservation(latestResult, robotPose);
       }
     }
@@ -138,6 +143,10 @@ public class VisionIOPhotonVision implements VisionIO {
    */
   public Transform3d getStdDev() {
     return robotToCamera;
+  }
+
+  public void setStdDev(Transform3d standardDeviation) {
+    this.robotToCamera = standardDeviation;
   }
 
   /**
@@ -217,6 +226,17 @@ public class VisionIOPhotonVision implements VisionIO {
     return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
   }
 
+  public Transform3d getCameraToTag(int id) {
+    if (latestResult.hasTargets()) {
+      for (var target : latestResult.getTargets()) {
+        if (target.fiducialId == id) {
+          return target.bestCameraToTarget;
+        }
+      }
+    }
+    return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
+  }
+
   /**
    * Checks to make sure that the camera has AprilTag results/targets
    *
@@ -262,6 +282,10 @@ public class VisionIOPhotonVision implements VisionIO {
   public void useRejectionDistance(double rejectionDistance) {
     this.tagRejectionDistance = rejectionDistance;
     this.rejectTagsFromDistance = true;
+  }
+
+  public void flag(boolean flagged) {
+    this.flagged = flagged;
   }
 
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {

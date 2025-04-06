@@ -201,10 +201,9 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean goingToTarget() {
-    
+
     return getPosition().isNear(Inches.of(43), currentMode.angleTolerance);
   }
-  
 
   /** Only allows manual inputs because it wants to break itself */
   @AutoLogOutput

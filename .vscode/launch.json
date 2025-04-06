@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "frc.robot.Main",
+      "projectName": "2025-Robot"
+    },
+    {
+      "type": "java",
       "name": "Flywheel",
       "request": "launch",
       "mainClass": "frc.robot.flywheel.Flywheel",
