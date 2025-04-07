@@ -64,6 +64,7 @@ import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.superstructure.manipulator.SimCoral;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -554,7 +555,15 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> claw.toggleAlgaeStatus()));
     flipL1
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
+        .onTrue(
+            new InstantCommand(() -> manipulator.toggleCoralStatus())
+                .alongWith(
+                    new InstantCommand(
+                        () ->
+                            SimCoral.placeCoral(
+                                () -> drivetrain.getPose().getX(),
+                                () -> drivetrain.getPose().getY(),
+                                () -> drivetrain.getPose().getRotation().getRadians()))));
 
     dumpL1.onTrue(funnel.L1()).onFalse(funnel.intake());
     flipL1
