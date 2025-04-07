@@ -46,7 +46,7 @@ public class ZeroRizz extends Command {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
       return true;
     }
-    if (timer.get() > .25 && claw.getWristCurrent() > 40 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25 && claw.getWristCurrent() > 45 && Constants.currentMode != Mode.SIM) {
       claw.wristManual(0);
       claw.zero();
       return true;

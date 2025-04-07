@@ -35,11 +35,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.Logger;
 
 public class ClawIOCTRE implements ClawIO {
-  public static final double GEAR_RATIO = 24;
+  public static final double GEAR_RATIO = 19.048951048951048951048951048951;
   private boolean locked = true;
   private boolean rollerLocked = false;
 
-  private double kP = 0.05;
+  private double kP = 0.075;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
@@ -151,6 +151,10 @@ public class ClawIOCTRE implements ClawIO {
     inputs.angle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
 
     tempPIDTuning();
+
+    SmartDashboard.putNumber("Claw/PIDSetpoint", wristPID.getSetpoint().position);
+    SmartDashboard.putNumber("Claw/PIDGoal", wristPID.getGoal().position);
+    SmartDashboard.putNumber("Claw/PIDPosition", inputs.angle.magnitude());
 
     if (locked) {
       if (inputs.killSwich) {
