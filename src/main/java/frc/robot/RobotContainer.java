@@ -222,6 +222,11 @@ public class RobotContainer {
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
 
+  /** Testing Button */
+  private final Trigger testButton1 = new Trigger(testing.a());
+
+  private final Trigger testButton2 = new Trigger(testing.b());
+
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
 
   private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
@@ -634,6 +639,13 @@ public class RobotContainer {
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
     // mech.getLeftY()));
+    /* Testcontroller Bindings */
+    testButton1.whileTrue(
+        new InstantCommand(
+            () ->
+                vision.recalibrateFrontCamera(
+                    true, TargetingComputer.getCurrentTargetBranch().getApriltag())));
+    testButton2.onTrue(new InstantCommand(() -> vision.getCamera(0).setStdDev(Transform3d.kZero)));
 
     /* Driver Bindings */
     placeL2
@@ -810,7 +822,7 @@ public class RobotContainer {
 
     shootAlgae
         .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
-        .onTrue(new InstantCommand(() -> claw.setRollers(-.5)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
