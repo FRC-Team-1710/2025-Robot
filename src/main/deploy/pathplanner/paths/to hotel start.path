@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 6.077766393442623,
-        "y": 4.372643442622951
+        "x": 6.305532786885245,
+        "y": 4.180840163934427
       },
       "prevControl": {
-        "x": 6.327718676781523,
-        "y": 4.367759176693463
+        "x": 6.555485070224146,
+        "y": 4.175955898004939
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "hotel"
     }
   ],
   "rotationTargets": [],
@@ -41,7 +41,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 2.5,
     "rotation": 180.0
   },
   "reversed": false,

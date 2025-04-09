@@ -274,6 +274,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to move the arm to the low algae distance
    */
   public final Command ALGAE_LOW() {
+    Logger.recordOutput("Command", "Algae Low");
+
     return setPositionCommand(ElevatorPosition.ALGAE_LOW);
   }
 
@@ -288,6 +290,7 @@ public class Elevator extends SubsystemBase {
    * @return Command to intake the arm
    */
   public final Command INTAKE() {
+    Logger.recordOutput("Command", "Intake");
     return setPositionCommand(ElevatorPosition.INTAKE)
         .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }

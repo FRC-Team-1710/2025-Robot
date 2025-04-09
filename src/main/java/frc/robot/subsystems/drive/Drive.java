@@ -258,11 +258,7 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Guys I can add comments to this
-   *
-   * <p>I'm gonna be as unhelpful as possible
-   *
-   * <p>Enjoy!
+   * Aligns the robot to the set target, uses setpointgen
    *
    * @param requestSupplier
    * @param target
@@ -271,7 +267,10 @@ public class Drive extends SubsystemBase {
    * @return
    */
   public Command Alignment(Targets target, Vision vision, Elevator elevator) {
+
     TargetingComputer.setTargetBranch(target);
+
+    Logger.recordOutput("Command", "Alignment");
 
     SwerveSetpointGen setpointGenAuto =
         new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())

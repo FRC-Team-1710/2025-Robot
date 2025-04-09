@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.5282786885245905,
-        "y": 5.523463114754098
+        "x": 12.129000000000001,
+        "y": 5.555750000000001
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.462450355622952,
-        "y": 6.146913238769411
+        "x": 10.466555062437719,
+        "y": 4.894192309869902
       },
       "isLocked": false,
-      "linkedName": "barge"
+      "linkedName": "thief"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 5.523463114754098
       },
       "prevControl": {
-        "x": 6.102544592275098,
-        "y": 5.704869435252161
+        "x": 6.317675192375445,
+        "y": 5.431131959735126
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 52.253194612725274
+    "rotation": -57.264773727892
   },
   "useDefaultConstraints": true
 }

@@ -61,37 +61,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "from barge to I&J algae"
+            "pathName": "STEALLLL"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "high algae position"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "align to i&j algae"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "from I&J algae to barge"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot barge"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake position"
+            "name": "align to f&e algae"
           }
         }
       ]

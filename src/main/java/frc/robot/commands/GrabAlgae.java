@@ -6,8 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.claw.Claw;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -46,11 +44,14 @@ public class GrabAlgae extends Command {
     //   claw.setAlgaeStatus(true);
     //   return true;
     // }
-    if (timer.get() > .25 && claw.getRollerCurrent() < -60 && Constants.currentMode != Mode.SIM) {
-      claw.setAlgaeStatus(true);
-      claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
-      return true;
-    }
+    // if (timer.get() > .25 && claw.getRollerCurrent() < -60 && Constants.currentMode != Mode.SIM)
+    // {
+    //   claw.setAlgaeStatus(true);
+    //   claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
+    //   return true;
+    // } else if (Constants.currentMode == Mode.SIM) {
+    //   return true;
+    // }
     return false;
   }
 }
