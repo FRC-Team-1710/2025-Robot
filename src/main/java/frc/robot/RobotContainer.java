@@ -1333,7 +1333,7 @@ public class RobotContainer {
         .onFalse(new EndIntake(manipulator, funnel, mech.leftBumper()));
     // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1));
 
-    mech.start().onTrue(new ZeroRizz(claw));
+    mech.start().onTrue(new ZeroRizz(claw, () -> mech.getRightY()));
 
     mech.back().onTrue(new NotRizz(elevator)); // new InstantCommand(() -> elevator.zero()));
 
@@ -1441,11 +1441,25 @@ public class RobotContainer {
 
     // Temp elevator tuning :)
 
-    testing.back().onTrue(new NotRizz(elevator));
-    testing.a().onTrue(elevator.INTAKE());
-    testing.b().onTrue(elevator.L2());
-    testing.x().onTrue(elevator.L3());
-    testing.y().onTrue(elevator.L4());
+    // testing.back().onTrue(new NotRizz(elevator));
+    // testing.a().onTrue(elevator.INTAKE());
+    // testing.b().onTrue(elevator.L2());
+    // testing.x().onTrue(elevator.L3());
+    // testing.y().onTrue(elevator.L4());
+
+    testing
+        .rightBumper()
+        .whileTrue(new GrabAlgae(claw).alongWith(claw.FLOOR()))
+        .onFalse(claw.HOLD());
+    testing
+        .leftBumper()
+        .whileTrue(new InstantCommand(() -> claw.setRollers(-0.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)));
+    testing.back().onTrue(new ZeroRizz(claw, () -> testing.getRightY()));
+    testing.a().onTrue(claw.FLOOR());
+    testing.b().onTrue(claw.GRAB());
+    testing.x().onTrue(claw.HOLD());
+    testing.y().onTrue(claw.IDLE());
   }
 
   public Command getAutonomousCommand() {

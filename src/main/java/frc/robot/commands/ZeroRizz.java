@@ -4,21 +4,26 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.claw.Claw;
+import java.util.function.DoubleSupplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ZeroRizz extends Command {
   Claw claw;
   Timer timer = new Timer();
+  DoubleSupplier mechrs;
 
   /** Creates a new GrabAlgae. */
-  public ZeroRizz(Claw claw) {
+  public ZeroRizz(Claw claw, DoubleSupplier mechrs) {
     this.claw = claw;
+    this.mechrs = mechrs;
+    addRequirements(claw);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -26,7 +31,7 @@ public class ZeroRizz extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putBoolean("zero?", false);
-    claw.wristManual(-1); // Volts
+    claw.wristManual(-0.5); // Volts
     timer.restart();
   }
 
@@ -46,7 +51,10 @@ public class ZeroRizz extends Command {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
       return true;
     }
-    if (timer.get() > .25 && claw.getWristCurrent() > 45 && Constants.currentMode != Mode.SIM) {
+    if (Math.abs(MathUtil.applyDeadband(mechrs.getAsDouble(), Constants.stickDeadband)) > 0) {
+      return true;
+    }
+    if ((timer.get() > .25 && claw.getWristCurrent() > 18 && Constants.currentMode != Mode.SIM)) {
       claw.wristManual(0);
       claw.zero();
       return true;

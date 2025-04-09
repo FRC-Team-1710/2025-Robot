@@ -27,7 +27,7 @@ public class WristManual extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.IDLE().schedule();
+    // claw.IDLE().schedule();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -36,7 +36,7 @@ public class WristManual extends Command {
     double Power = axis.getAsDouble();
     Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
     if (Math.abs(Power) > 0) {
-      claw.wristManual(Power);
+      claw.wristManual(Power * 2);
       locked = false;
     } else {
       if (!locked) {

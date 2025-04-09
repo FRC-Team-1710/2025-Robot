@@ -71,7 +71,7 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 2) {
+    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1.6) {
       inputs.hasAlgae = false;
     }
 
@@ -167,12 +167,12 @@ public class Claw extends SubsystemBase {
   /** Enumeration of available claw angles with their corresponding target angles. */
   public enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
-    IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
-    GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae
-    HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(0), Degrees.of(2.5)), // Position for scoring in net
-    FLOOR(Degrees.of(143), Degrees.of(2.5)),
-    PROCESSOR(Degrees.of(100));
+    IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
+    GRAB(Degrees.of(80), Degrees.of(2.5)), // Position for grabing algae
+    HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
+    NET(Degrees.of(2), Degrees.of(2.5)), // Position for scoring in net
+    FLOOR(Degrees.of(102), Degrees.of(2.5)),
+    PROCESSOR(Degrees.of(80));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
