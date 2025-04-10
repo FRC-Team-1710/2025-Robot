@@ -111,7 +111,7 @@ public class Elevator extends SubsystemBase {
     L3(Inches.of(32.25)), // Position for scoring in L3
     L4(Inches.of(54.5)), // Position for scoring in L4
     ALGAE_LOW(Inches.of(19), Inches.of(1.5)), // Position for grabbing low algae
-    ALGAE_HIGH(Inches.of(25.5), Inches.of(1.5)); // Position for grabbing high algae
+    ALGAE_HIGH(Inches.of(35.5), Inches.of(1.5)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
