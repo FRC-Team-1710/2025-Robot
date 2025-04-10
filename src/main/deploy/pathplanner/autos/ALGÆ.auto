@@ -43,6 +43,12 @@
         {
           "type": "path",
           "data": {
+            "pathName": "back"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
             "pathName": "from G&H Algae to barge"
           }
         },
@@ -74,6 +80,12 @@
           "type": "named",
           "data": {
             "name": "align to i&j algae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "New Path"
           }
         },
         {

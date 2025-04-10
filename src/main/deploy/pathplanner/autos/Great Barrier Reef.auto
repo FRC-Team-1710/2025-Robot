@@ -43,6 +43,12 @@
         {
           "type": "path",
           "data": {
+            "pathName": "back"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
             "pathName": "from G&H Algae to barge"
           }
         },
@@ -67,7 +73,37 @@
         {
           "type": "named",
           "data": {
+            "name": "high algae position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "align to f&e algae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back flipped"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from foxtrot to barge flip"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         }
       ]

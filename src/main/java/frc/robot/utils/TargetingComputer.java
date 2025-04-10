@@ -24,6 +24,8 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
 
+  public static boolean switchAuto = false;
+
   /** should set the alignment target to the secondary grabbing pose */
   public static boolean readyToGrabAlgae = false;
 

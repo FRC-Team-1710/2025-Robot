@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.318,
-        "y": 4.015249999999999
+        "x": 12.392249999999999,
+        "y": 5.253499999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.442216285453856,
-        "y": 4.607226249153957
+        "x": 12.245211958514135,
+        "y": 5.494631156933621
       },
       "isLocked": false,
-      "linkedName": "hotel"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.5282786885245905,
-        "y": 5.523463114754098
+        "x": 12.031500000000001,
+        "y": 5.8385
       },
       "prevControl": {
-        "x": 7.290024650455617,
-        "y": 5.447733243871942
+        "x": 12.267356991952019,
+        "y": 5.462518476107074
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "barge"
+      "linkedName": "thief"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 52.253194612725274
+    "rotation": -57.264773727892
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -60.461217740441995
   },
   "useDefaultConstraints": true
 }

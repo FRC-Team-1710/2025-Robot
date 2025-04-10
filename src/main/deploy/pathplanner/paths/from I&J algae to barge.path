@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.499,
-        "y": 5.523463114754098
+        "x": 5.5672500000000005,
+        "y": 5.711749999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.547754498011172,
-        "y": 4.98348355223311
+        "x": 6.616004498011173,
+        "y": 5.171770437479011
       },
       "isLocked": false,
       "linkedName": "I&J algae"
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -128.6034147885278
+    "rotation": -119.74488129694218
   },
   "useDefaultConstraints": true
 }

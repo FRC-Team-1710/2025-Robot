@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.318,
-        "y": 4.015249999999999
+        "x": 5.21625,
+        "y": 5.16575
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.442216285453856,
-        "y": 4.607226249153957
+        "x": 5.4947098783727615,
+        "y": 5.601659913375723
       },
       "isLocked": false,
-      "linkedName": "hotel"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.5282786885245905,
-        "y": 5.523463114754098
+        "x": 5.5672500000000005,
+        "y": 5.711749999999999
       },
       "prevControl": {
-        "x": 7.290024650455617,
-        "y": 5.447733243871942
+        "x": 5.427078818490584,
+        "y": 5.50474265743879
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "barge"
+      "linkedName": "I&J algae"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 52.253194612725274
+    "rotation": -119.74488129694218
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -121.50426671920427
   },
   "useDefaultConstraints": true
 }

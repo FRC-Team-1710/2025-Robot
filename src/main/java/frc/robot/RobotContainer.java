@@ -510,6 +510,13 @@ public class RobotContainer {
             .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.isAtTarget()))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "high algae position",
+        elevator
+            .ALGAE_HIGH()
+            .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.isAtTarget()))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
+            .until(() -> elevator.isAtTarget()));
 
     NamedCommands.registerCommand(
         "align to g&h algae",
@@ -521,15 +528,15 @@ public class RobotContainer {
             .until(() -> claw.isAtTarget()));
     NamedCommands.registerCommand(
         "align to f&e algae",
-        // new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
-        //     .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
-        //     .andThen(
-        new InstantCommand(() -> TargetingComputer.setTargetByTag(22, false))
+        new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
+            .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(
-                drivetrain.Alignment(TargetingComputer.getCurrentTargetBranch(), vision, elevator))
-            .alongWith(new GrabAlgae(claw))
-            .alongWith(claw.GRAB())
-            .until(() -> claw.isAtTarget()));
+                new InstantCommand(() -> TargetingComputer.setAlliance(true))
+                    .andThen(drivetrain.Alignment(Targets.FOXTROT, vision, elevator))
+                    .alongWith(new GrabAlgae(claw))
+                    .alongWith(claw.GRAB())
+                    .until(() -> claw.isAtTarget()))
+            .andThen(() -> TargetingComputer.setAlliance(false)));
     NamedCommands.registerCommand(
         "align to i&j algae",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
@@ -538,19 +545,6 @@ public class RobotContainer {
             .alongWith(new GrabAlgae(claw))
             .alongWith(claw.GRAB())
             .until(() -> claw.isAtTarget()));
-
-    // .until(() -> claw.hasAlgae()));
-    //     // .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-    // .until(() -> elevator.isAtTarget()));
-    // .until(() -> elevator.isAtTarget()));
-    NamedCommands.registerCommand(
-        "high algae position",
-        elevator
-            .ALGAE_LOW()
-            .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.isAtTarget()))
-            .alongWith(new GrabAlgae(claw))
-            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-            .until(() -> elevator.isAtTarget()));
 
     NamedCommands.registerCommand(
         "shoot barge",
