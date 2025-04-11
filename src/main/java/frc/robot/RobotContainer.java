@@ -65,6 +65,7 @@ import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.superstructure.manipulator.SimCoral;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -221,6 +222,11 @@ public class RobotContainer {
 
   // Owen: "So we're like fourth cousins?" Micah: "It's far enough that you could
   // marry."
+
+  /** Testing Button */
+  private final Trigger testButton1 = new Trigger(testing.a());
+
+  private final Trigger testButton2 = new Trigger(testing.b());
 
   private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
 
@@ -612,7 +618,15 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> claw.toggleAlgaeStatus()));
     flipL1
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .onTrue(new InstantCommand(() -> manipulator.toggleCoralStatus()));
+        .onTrue(
+            new InstantCommand(() -> manipulator.toggleCoralStatus())
+                .alongWith(
+                    new InstantCommand(
+                        () ->
+                            SimCoral.placeCoral(
+                                () -> drivetrain.getPose().getX(),
+                                () -> drivetrain.getPose().getY(),
+                                () -> drivetrain.getPose().getRotation().getRadians()))));
 
     dumpL1.onTrue(funnel.L1()).onFalse(funnel.intake());
     flipL1
@@ -683,6 +697,13 @@ public class RobotContainer {
 
     // elevator.setDefaultCommand(new ElevationManual(elevator, () ->
     // mech.getLeftY()));
+    /* Testcontroller Bindings */
+    testButton1.whileTrue(
+        new InstantCommand(
+            () ->
+                vision.recalibrateFrontCamera(
+                    true, TargetingComputer.getCurrentTargetBranch().getApriltag())));
+    testButton2.onTrue(new InstantCommand(() -> vision.getCamera(0).setStdDev(Transform3d.kZero)));
 
     /* Driver Bindings */
     placeL2
