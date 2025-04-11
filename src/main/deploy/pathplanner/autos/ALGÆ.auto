@@ -89,6 +89,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "from I&J algae to barge"
