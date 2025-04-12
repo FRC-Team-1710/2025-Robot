@@ -834,7 +834,7 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    grabAlgaeFromFloor.onTrue(claw.PROCESSOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
+    grabAlgaeFromFloor.onTrue(claw.FLOOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
 
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
