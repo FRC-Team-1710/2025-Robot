@@ -46,7 +46,7 @@ public class GrabAlgae extends Command {
     //   claw.setAlgaeStatus(true);
     //   return true;
     // }
-    if (timer.get() > .25 && claw.getRollerCurrent() < -60 && Constants.currentMode != Mode.SIM) {
+    if (timer.get() > .25 && claw.getRollerCurrent() > 105 && Constants.currentMode != Mode.SIM) {
       claw.setAlgaeStatus(true);
       claw.setRollerPositionWhenAlgaeGrabbed(claw.getRollerPosition());
       return true;

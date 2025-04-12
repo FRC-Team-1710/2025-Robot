@@ -92,9 +92,9 @@ public class Funnel extends SubsystemBase {
 
   /** Enumeration of available arm positions with their corresponding target angles. */
   public enum FunnelMode {
-    CLIMB(Degrees.of(105), Degrees.of(2.5)), // Arm fully raised
+    CLIMB(Degrees.of(100), Degrees.of(2.5)), // Arm fully raised
     INTAKE(Degrees.of(0), Degrees.of(2.5)), // Arm tucked in
-    L1(Degrees.of(85), Degrees.of(2.5)); // Position for scoring in L1
+    L1(Degrees.of(50), Degrees.of(2.5)); // Position for scoring in L1
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
