@@ -1323,7 +1323,11 @@ public class RobotContainer {
 
     killWrist.onTrue(new InstantCommand(() -> claw.toggleKillSwich()));
 
-    mech.pov(0).onTrue(new StartClimb(climber));
+    mech.pov(0)
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setGoForClimb(true))
+                .alongWith(funnel.CLIMB())
+                .alongWith(new StartClimb(climber)));
     mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral
