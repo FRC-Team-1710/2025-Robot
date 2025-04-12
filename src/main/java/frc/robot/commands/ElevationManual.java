@@ -32,7 +32,7 @@ public class ElevationManual extends Command {
     double Power = axis.getAsDouble();
     Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
     if (Math.abs(Power) > 0) {
-      m_elevatorSubsystem.setManual(Power);
+      m_elevatorSubsystem.setManual(-Power);
       locked = false;
     } else {
       if (!locked) {
