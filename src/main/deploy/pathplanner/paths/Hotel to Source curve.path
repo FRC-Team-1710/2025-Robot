@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7948863636363637,
-        "y": 1.1980539772727274
+        "x": 6.318,
+        "y": 4.015249999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5664302758655015,
-        "y": 1.7579710509693667
+        "x": 6.56175,
+        "y": 8.352249999999998
       },
       "isLocked": false,
-      "linkedName": "source"
+      "linkedName": "hotel"
     },
     {
       "anchor": {
-        "x": 5.976749999999999,
-        "y": 3.8689999999999993
+        "x": 1.906125,
+        "y": 7.344874999999999
       },
       "prevControl": {
-        "x": 6.3375,
-        "y": 2.1237500000000007
+        "x": 3.6075000000000004,
+        "y": 7.257124999999999
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "golf"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -58.09815079471872
   },
   "reversed": false,
-  "folder": "To",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

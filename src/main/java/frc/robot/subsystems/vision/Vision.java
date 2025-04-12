@@ -46,6 +46,11 @@ public class Vision extends SubsystemBase {
     17, 18, 19, 20, 21, 22
   };
 
+  private final double flagAngle =
+      Math.toRadians(
+          2.0); // Pitch and roll of a reading before a camera needs to be flagged. IN RADIANS FOR
+  // GODS SAKE
+
   private boolean[] rejectCamera = {false, false, false, false};
 
   /**
@@ -104,6 +109,20 @@ public class Vision extends SubsystemBase {
     VisionData visionData = processAllCameras();
     logSummary(visionData);
     consumer.accept(sortMeasurements(visionData.measurements()));
+
+    for (int i = 0; i < io.length; i++) {
+      VisionIOPhotonVision currentCamera = getCamera(i);
+      if (currentCamera.hasTargets()) {
+        Rotation3d rotationReading = currentCamera.lastAcceptedPose.getRotation();
+        Logger.recordOutput(
+            "VisionDebugging/Camera " + i + " pose", currentCamera.lastAcceptedPose);
+        boolean flagged =
+            (rotationReading.getX() <= -flagAngle || rotationReading.getX() >= flagAngle)
+                || (rotationReading.getY() <= -flagAngle || rotationReading.getY() >= flagAngle);
+        currentCamera.flag(flagged);
+      }
+      Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
+    }
 
     try {
       Logger.recordOutput(
@@ -256,6 +275,7 @@ public class Vision extends SubsystemBase {
     if (!availableTags.isEmpty()) {
       int targetTagID =
           Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+      Logger.recordOutput("VisionDebugging/Target Tag ID", targetTagID);
       boolean leftSide =
           (getCamera(getCameraIDWithTarget(targetTagID))
                   .getRobotToTargetOffset(targetTagID)
@@ -285,6 +305,39 @@ public class Vision extends SubsystemBase {
       Logger.recordOutput("LeftSide?", leftSide);
       TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
+  }
+
+  /**
+   * //////// WIP //////// TODO change the privacy once done
+   *
+   * @param index
+   */
+  private void recalibrateCamera(int index) {
+    return;
+  }
+
+  /**
+   * Recalibrates either the front left or the right camera based on the parameters given.
+   *
+   * @param leftCamera Boolean to tell whether the camera being calibrated is the left or the right
+   *     camera
+   * @param tagID Reference tag ID that BOTH of the tags can see; if they don't, nothing will happen
+   */
+  public void recalibrateFrontCamera(boolean leftCamera, int tagID) {
+    autoBranchTargeting();
+    if (!(getCamera(0).hasTarget(tagID) && getCamera(1).hasTarget(tagID))) {
+      return;
+    }
+    Transform3d uncalibratedReading = getCamera(leftCamera ? 0 : 1).getCameraToTag(tagID);
+    Transform3d referenceReading = getCamera(leftCamera ? 1 : 0).getCameraToTag(tagID);
+    Logger.recordOutput("VisionDebugging/Uncalibrated Reading Left", uncalibratedReading);
+    Logger.recordOutput("VisionDebugging/Reference Reading", referenceReading);
+    getCamera(leftCamera ? 0 : 1)
+        .setStdDev(
+            getCamera(leftCamera ? 1 : 0)
+                .getStdDev()
+                .plus(referenceReading)
+                .plus(uncalibratedReading.inverse()));
   }
 
   /**

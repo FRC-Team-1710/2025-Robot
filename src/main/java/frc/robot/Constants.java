@@ -12,6 +12,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Kilogram;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -32,6 +33,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generated.TunerConstants;
+import frc.robot.utils.FieldConstants;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -128,6 +130,9 @@ public final class Constants {
               Units.inchesToMeters(-10.87979715),
               Units.inchesToMeters(8.55647482)),
           new Rotation3d(0, Units.degreesToRadians(25.16683805), Units.degreesToRadians(150)));
+
+  public static final Translation2d CenterOfReef =
+      new Translation2d(Units.inchesToMeters(176.75), FieldConstants.fieldWidth.div(2).in(Meters));
 
   public static enum Mode {
     /** Running on a real robot. */
