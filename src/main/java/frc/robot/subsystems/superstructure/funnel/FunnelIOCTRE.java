@@ -56,12 +56,12 @@ public class FunnelIOCTRE implements FunnelIO {
   private final DigitalInput forwardBeamBreak = new DigitalInput(3);
   private final DigitalInput reverseBeamBreak = new DigitalInput(2);
 
-  private double kP = 0.09;
+  private double kP = 0.04;
   private double kI = 0.0;
-  private double kD = 0.0;
-  private double kS = 0.175;
-  private double kG = 0.725;
-  private double kV = 0.006;
+  private double kD = 0.0025;
+  private double kS = 0.0;
+  private double kG = 1.125;
+  private double kV = 0.0;
   private double kA = 0.0;
   private double kVel = 150;
   private double kAcel = 200;
@@ -256,11 +256,11 @@ public class FunnelIOCTRE implements FunnelIO {
 
     SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
     SmartDashboard.putNumber(
-        "CORRECTEDPOSITION",
+        "funnel/CORRECTEDPOSITION",
         Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude()));
-    SmartDashboard.putNumber("POSITION", inputs.funnelAngle);
-    SmartDashboard.putNumber("GOAL", anglePID.getGoal().position);
-    SmartDashboard.putNumber("SETPOINT", anglePID.getSetpoint().position);
+    SmartDashboard.putNumber("funnel/POSITION", inputs.funnelAngle);
+    SmartDashboard.putNumber("funnel/GOAL", anglePID.getGoal().position);
+    SmartDashboard.putNumber("funnel/SETPOINT", anglePID.getSetpoint().position);
     SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
     Logger.recordOutput("Funnel/Aileron Pos", aileron.getAngle());
   }

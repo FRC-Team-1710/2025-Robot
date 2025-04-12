@@ -71,7 +71,7 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 2) {
+    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1.6) {
       inputs.hasAlgae = false;
     }
 
@@ -89,6 +89,10 @@ public class Claw extends SubsystemBase {
    */
   private void setAngle(Angle angle) {
     io.setAngle(angle);
+  }
+
+  public boolean hasZeroed() {
+    return inputs.hasZeroed;
   }
 
   public void setBrake(boolean lock) {
@@ -279,7 +283,30 @@ public class Claw extends SubsystemBase {
         .withName("SetElevatorPosition(" + angle.toString() + ")");
   }
 
+  private void zeroPIDToAngle() {
+    io.zeroPIDToAngle();
+  }
+
+  /**
+   * Creates a command to set the claw to a specific angle.
+   *
+   * @param angle The desired claw angle
+   * @return Command to set the angle
+   */
+  private Command idleCommand(ClawPosition angle) {
+    return Commands.runOnce(() -> zeroPIDToAngle())
+        .andThen(() -> setClawPosition(angle))
+        .withName("SetElevatorPosition(" + angle.toString() + ")");
+  }
+
   /** Factory methods for common angle commands */
+
+  /**
+   * @return Command to move the claw to idling angle
+   */
+  public final Command GOTOIDLE() {
+    return idleCommand(ClawPosition.IDLE);
+  }
 
   /**
    * @return Command to move the claw to idling angle

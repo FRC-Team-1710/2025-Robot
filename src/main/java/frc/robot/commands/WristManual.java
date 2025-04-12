@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.superstructure.claw.Claw;
@@ -15,6 +16,7 @@ public class WristManual extends Command {
   private Claw claw;
   private DoubleSupplier axis;
   boolean locked = true;
+  private boolean enabled = false;
 
   /** Creates a new WristManual. */
   public WristManual(Claw claw, DoubleSupplier power) {
@@ -27,7 +29,16 @@ public class WristManual extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.IDLE().schedule();
+    if (enabled != DriverStation.isEnabled()) {
+      enabled = DriverStation.isEnabled();
+      if (enabled) {
+        if (claw.hasZeroed()) {
+          claw.GOTOIDLE().schedule();
+        } else {
+          (new ZeroRizz(claw, axis)).schedule();
+        }
+      }
+    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -36,7 +47,7 @@ public class WristManual extends Command {
     double Power = axis.getAsDouble();
     Power = MathUtil.applyDeadband(Power, Constants.stickDeadband);
     if (Math.abs(Power) > 0) {
-      claw.wristManual(Power);
+      claw.wristManual(Power * 2);
       locked = false;
     } else {
       if (!locked) {
@@ -49,7 +60,9 @@ public class WristManual extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    enabled = DriverStation.isEnabled();
+  }
 
   // Returns true when the command should end.
   @Override
