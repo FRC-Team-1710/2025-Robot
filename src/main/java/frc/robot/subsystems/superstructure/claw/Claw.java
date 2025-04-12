@@ -180,7 +180,7 @@ public class Claw extends SubsystemBase {
     IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(80), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(2), Degrees.of(2.5)), // Position for scoring in net
+    NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
     FLOOR(Degrees.of(110), Degrees.of(2.5)),
     TOSS(Degrees.of(45)),
     RELEASE(Degrees.of(2)),

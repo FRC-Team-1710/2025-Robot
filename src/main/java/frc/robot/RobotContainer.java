@@ -39,7 +39,6 @@ import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.StartClimb;
-import frc.robot.commands.TossAlgae;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -885,30 +884,28 @@ public class RobotContainer {
         .onTrue(claw.PROCESSOR());
 
     shootAlgae
-        .and(
-            (() ->
-                claw.getMode() != Claw.ClawPosition.PROCESSOR
-                    && !(targetSource.getAsBoolean()
-                        && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                            == Targets.NET.getTargetingAngle()
-                        && elevator.isClearOfStage1())))
-        .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
+        // && !(claw.hasAlgae()
+        //     && targetSource.getAsBoolean()
+        //     && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+        //         == Targets.NET.getTargetingAngle()
+        //     && elevator.isClearOfStage1())))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.1710)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    shootAlgae
-        .and(
-            (() ->
-                claw.getMode() != Claw.ClawPosition.PROCESSOR
-                    && targetSource.getAsBoolean()
-                    && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
-                        == Targets.NET.getTargetingAngle()
-                    && elevator.isClearOfStage1()))
-        .onTrue(new TossAlgae(claw))
-        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
-        .and(() -> Constants.currentMode == Mode.SIM)
-        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+    // shootAlgae
+    //     .and(
+    //         (() ->
+    //             claw.getMode() != Claw.ClawPosition.PROCESSOR
+    //                 && claw.hasAlgae()
+    //                 && targetSource.getAsBoolean()
+    //                 && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+    //                     == Targets.NET.getTargetingAngle()
+    //                 && elevator.isClearOfStage1()))
+    //     .whileTrue(new TossAlgae(claw))
+    //     .onFalse(new InstantCommand(() -> claw.setRollers(0)));
 
     shootAlgae
         .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
@@ -1064,22 +1061,32 @@ public class RobotContainer {
                         // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
-                                    ((TargetingComputer.getCurrentTargetBranchPose().getX()
-                                                    - drivetrain.getPose().getX()))
+                                    (Math.abs(
+                                                    TargetingComputer.getCurrentTargetBranchPose()
+                                                            .getX()
+                                                        - drivetrain.getPose().getX()))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
-                                        ? TargetingComputer.maxAlignSpeed
+                                        ? Math.copySign(
+                                            TargetingComputer.maxAlignSpeed,
+                                            (TargetingComputer.getCurrentTargetBranchPose().getX()
+                                                - drivetrain.getPose().getX()))
                                         : (TargetingComputer.getCurrentTargetBranchPose().getX()
                                                 - drivetrain.getPose().getX())
                                             * alignP)
                                 .times(Robot.getAlliance() ? -1 : 1))
                         .withVelocityY(
                             MaxSpeed.times(
-                                    (TargetingComputer.getCurrentTargetBranchPose().getY()
-                                                    - drivetrain.getPose().getY())
+                                    (Math.abs(
+                                                    TargetingComputer.getCurrentTargetBranchPose()
+                                                            .getY()
+                                                        - drivetrain.getPose().getY()))
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
-                                        ? TargetingComputer.maxAlignSpeed
+                                        ? Math.copySign(
+                                            TargetingComputer.maxAlignSpeed,
+                                            (TargetingComputer.getCurrentTargetBranchPose().getY()
+                                                - drivetrain.getPose().getY()))
                                         : (TargetingComputer.getCurrentTargetBranchPose().getY()
                                                 - drivetrain.getPose().getY())
                                             * alignP)
@@ -1177,7 +1184,7 @@ public class RobotContainer {
                     () -> drivetrain.getPose().getX(),
                     () -> drivetrain.getPose().getY(),
                     () -> drivetrain.getPose().getRotation().getDegrees())
-                .unless(() -> TargetingComputer.goForClimb))
+                .unless(() -> TargetingComputer.goForClimb ))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
             new EndIntake(manipulator, funnel, mech.leftBumper())
@@ -1199,14 +1206,20 @@ public class RobotContainer {
                         // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
-                                    ((Robot.getAlliance()
-                                                        ? FieldConstants.fieldLength.in(Meters)
-                                                            - 5.99
-                                                        : 5.99)
-                                                    - drivetrain.getPose().getX())
+                                    Math.abs(
+                                                    (Robot.getAlliance()
+                                                            ? FieldConstants.fieldLength.in(Meters)
+                                                                - 5.99
+                                                            : 5.99)
+                                                        - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
-                                        ? TargetingComputer.maxAlignSpeed
+                                        ? Math.copySign(
+                                            TargetingComputer.maxAlignSpeed,
+                                            ((Robot.getAlliance()
+                                                    ? FieldConstants.fieldLength.in(Meters) - 5.99
+                                                    : 5.99)
+                                                - drivetrain.getPose().getX()))
                                         : ((Robot.getAlliance()
                                                     ? FieldConstants.fieldLength.in(Meters) - 5.99
                                                     : 5.99)
@@ -1250,14 +1263,20 @@ public class RobotContainer {
                         // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
-                                    ((!Robot.getAlliance()
-                                                        ? FieldConstants.fieldLength.in(Meters)
-                                                            - 5.99
-                                                        : 5.99)
-                                                    - drivetrain.getPose().getX())
+                                    Math.abs(
+                                                    (!Robot.getAlliance()
+                                                            ? FieldConstants.fieldLength.in(Meters)
+                                                                - 5.99
+                                                            : 5.99)
+                                                        - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
-                                        ? TargetingComputer.maxAlignSpeed
+                                        ? Math.copySign(
+                                            TargetingComputer.maxAlignSpeed,
+                                            ((!Robot.getAlliance()
+                                                    ? FieldConstants.fieldLength.in(Meters) - 5.99
+                                                    : 5.99)
+                                                - drivetrain.getPose().getX()))
                                         : ((!Robot.getAlliance()
                                                     ? FieldConstants.fieldLength.in(Meters) - 5.99
                                                     : 5.99)
@@ -1303,14 +1322,20 @@ public class RobotContainer {
                         // .withOperatorForwardDirection(drivetrain.getOperatorForwardDirection())
                         .withVelocityX(
                             MaxSpeed.times(
-                                    ((Robot.getAlliance()
-                                                        ? FieldConstants.fieldLength.in(Meters)
-                                                            - 7.26
-                                                        : 7.26)
-                                                    - drivetrain.getPose().getX())
+                                    Math.abs(
+                                                    (Robot.getAlliance()
+                                                            ? FieldConstants.fieldLength.in(Meters)
+                                                                - 7.26
+                                                            : 7.26)
+                                                        - drivetrain.getPose().getX())
                                                 * alignP
                                             > TargetingComputer.maxAlignSpeed
-                                        ? TargetingComputer.maxAlignSpeed
+                                        ? Math.copySign(
+                                            TargetingComputer.maxAlignSpeed,
+                                            ((Robot.getAlliance()
+                                                    ? FieldConstants.fieldLength.in(Meters) - 7.26
+                                                    : 7.26)
+                                                - drivetrain.getPose().getX()))
                                         : ((Robot.getAlliance()
                                                     ? FieldConstants.fieldLength.in(Meters) - 7.26
                                                     : 7.26)

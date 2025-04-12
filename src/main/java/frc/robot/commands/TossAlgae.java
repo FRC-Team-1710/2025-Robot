@@ -6,13 +6,15 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.Claw.ClawPosition;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class TossAlgae extends Command {
   Claw claw;
-  Timer timer;
+  Timer timer = new Timer();
 
   /** Creates a new TossAlgae. */
   public TossAlgae(Claw claw) {
@@ -35,8 +37,9 @@ public class TossAlgae extends Command {
       claw.RELEASE().schedule();
       timer.restart();
     }
-    if (timer.get() > .2) {
-      claw.setRollers(.2);
+    if (timer.get() > .3) {
+      claw.setRollers(-.2);
+      if (Constants.simMode == Mode.SIM) claw.setAlgaeStatus(false);
     }
   }
 
@@ -49,6 +52,6 @@ public class TossAlgae extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return !claw.hasAlgae();
+    return false;
   }
 }
