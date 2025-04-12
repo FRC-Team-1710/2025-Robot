@@ -35,6 +35,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "back"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "align to g&h algae"

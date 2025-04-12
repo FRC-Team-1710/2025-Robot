@@ -513,9 +513,10 @@ public class RobotContainer {
         "low algae position",
         elevator
             .ALGAE_LOW()
+            .alongWith(claw.GRAB())
             .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-            .until(() -> elevator.isAtTarget()));
+            .until(() -> elevator.isAtTarget() && claw.isAtTarget()));
     NamedCommands.registerCommand(
         "high algae position",
         elevator
@@ -524,14 +525,19 @@ public class RobotContainer {
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
 
+    // NamedCommands.registerCommand(
+    //     "claw position",
+    //     claw.GRAB()
+    //         .until(() -> claw.isAtTarget()));
+
     NamedCommands.registerCommand(
         "align to g&h algae",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.GOLF, vision, elevator))
             .alongWith(new GrabAlgae(claw))
-            .alongWith(claw.GRAB())
             .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
+
     NamedCommands.registerCommand(
         "align to f&e algae",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
@@ -560,8 +566,8 @@ public class RobotContainer {
             .alongWith(elevator.L4())
             .until(() -> elevator.isAtTarget() && claw.isAtTarget())
             .andThen(new InstantCommand(() -> claw.setRollers(-.25)))
-     .until(
-        () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 10));
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 10));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
