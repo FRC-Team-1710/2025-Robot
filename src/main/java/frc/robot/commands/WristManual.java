@@ -29,13 +29,15 @@ public class WristManual extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    if (enabled != DriverStation.isEnabled()) {
-      enabled = DriverStation.isEnabled();
-      if (enabled) {
-        if (claw.hasZeroed()) {
-          claw.GOTOIDLE().schedule();
-        } else {
-          (new ZeroRizz(claw, axis)).schedule();
+    if (Constants.simMode != Constants.Mode.SIM) {
+      if (enabled != DriverStation.isEnabled()) {
+        enabled = DriverStation.isEnabled();
+        if (enabled) {
+          if (claw.hasZeroed()) {
+            claw.GOTOIDLE().schedule();
+          } else {
+            (new ZeroRizz(claw, axis)).schedule();
+          }
         }
       }
     }

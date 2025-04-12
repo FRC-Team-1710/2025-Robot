@@ -38,7 +38,7 @@ public class TossAlgae extends Command {
       timer.restart();
     }
     if (timer.get() > .3) {
-      claw.setRollers(.2);
+      claw.setRollers(-.2);
       if (Constants.simMode == Mode.SIM) claw.setAlgaeStatus(false);
     }
   }
@@ -52,6 +52,6 @@ public class TossAlgae extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return !claw.hasAlgae();
+    return false;
   }
 }
