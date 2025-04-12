@@ -56,7 +56,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private double kG = 0.3375; // 0.3375 // 0.375;
   private double kV = 0; // 0.0 // 0.075;
   private double kA = 0; // 0.0 // 0.0;
-  private double kAcel = 250;
+  private double kAcel = 250; // 200
   private double kVel = 250;
 
   private boolean locked = false;

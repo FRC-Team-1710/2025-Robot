@@ -39,6 +39,7 @@ import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.StartClimb;
+import frc.robot.commands.TossAlgae;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -885,8 +886,27 @@ public class RobotContainer {
         .onTrue(claw.PROCESSOR());
 
     shootAlgae
-        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
+        .and(
+            (() ->
+                claw.getMode() != Claw.ClawPosition.PROCESSOR
+                    && !(targetSource.getAsBoolean()
+                        && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                            == Targets.NET.getTargetingAngle()
+                        && elevator.isClearOfStage1())))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    shootAlgae
+        .and(
+            (() ->
+                claw.getMode() != Claw.ClawPosition.PROCESSOR
+                    && targetSource.getAsBoolean()
+                    && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                        == Targets.NET.getTargetingAngle()
+                    && elevator.isClearOfStage1()))
+        .onTrue(new TossAlgae(claw))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
@@ -1387,7 +1407,11 @@ public class RobotContainer {
 
     killWrist.onTrue(new InstantCommand(() -> claw.toggleKillSwich()));
 
-    mech.pov(0).onTrue(new StartClimb(climber));
+    mech.pov(0)
+        .onTrue(
+            new InstantCommand(() -> TargetingComputer.setGoForClimb(true))
+                .alongWith(funnel.CLIMB())
+                .alongWith(new StartClimb(climber)));
     mech.pov(180).onTrue(new Climb(climber));
 
     bumpCoral
@@ -1511,24 +1535,24 @@ public class RobotContainer {
     // testing.x().onTrue(elevator.L3());
     // testing.y().onTrue(elevator.L4());
 
-    testing.back().onTrue(new InstantCommand(() -> funnel.zero()));
-    testing.a().onTrue(funnel.intake());
-    testing.x().onTrue(funnel.L1());
-    testing.y().onTrue(funnel.CLIMB());
+    // testing.back().onTrue(new InstantCommand(() -> funnel.zero()));
+    // testing.a().onTrue(funnel.intake());
+    // testing.x().onTrue(funnel.L1());
+    // testing.y().onTrue(funnel.CLIMB());
 
-    // testing
-    //     .rightBumper()
-    //     .whileTrue(new GrabAlgae(claw).alongWith(claw.FLOOR()))
-    //     .onFalse(claw.HOLD());
-    // testing
-    //     .leftBumper()
-    //     .whileTrue(new InstantCommand(() -> claw.setRollers(-0.25)))
-    //     .onFalse(new InstantCommand(() -> claw.setRollers(0)));
-    // testing.back().onTrue(new ZeroRizz(claw, () -> testing.getRightY()));
-    // testing.a().onTrue(claw.FLOOR());
-    // testing.b().onTrue(claw.GRAB());
-    // testing.x().onTrue(claw.HOLD());
-    // testing.y().onTrue(claw.IDLE());
+    testing
+        .rightBumper()
+        .whileTrue(new GrabAlgae(claw).alongWith(claw.FLOOR()))
+        .onFalse(claw.HOLD());
+    testing
+        .leftBumper()
+        .whileTrue(new InstantCommand(() -> claw.setRollers(-0.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)));
+    testing.back().onTrue(new ZeroRizz(claw, () -> testing.getRightY()));
+    testing.a().onTrue(claw.FLOOR());
+    testing.b().onTrue(claw.GRAB());
+    testing.x().onTrue(claw.HOLD());
+    testing.y().onTrue(claw.IDLE());
   }
 
   public Command getAutonomousCommand() {

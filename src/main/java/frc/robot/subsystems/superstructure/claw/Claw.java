@@ -177,12 +177,14 @@ public class Claw extends SubsystemBase {
   /** Enumeration of available claw angles with their corresponding target angles. */
   public enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
-    IDLE(Degrees.of(0), Degrees.of(2.5)), // Wrist tucked in
-    GRAB(Degrees.of(85), Degrees.of(2.5)), // Position for grabing algae
-    HOLD(Degrees.of(35), Degrees.of(2.5)), // Position for holding algae
-    NET(Degrees.of(35), Degrees.of(2.5)), // Position for scoring in net
-    FLOOR(Degrees.of(143), Degrees.of(2.5)),
-    PROCESSOR(Degrees.of(100));
+    IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
+    GRAB(Degrees.of(80), Degrees.of(2.5)), // Position for grabing algae
+    HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
+    NET(Degrees.of(2), Degrees.of(2.5)), // Position for scoring in net
+    FLOOR(Degrees.of(110), Degrees.of(2.5)),
+    TOSS(Degrees.of(45)),
+    RELEASE(Degrees.of(2)),
+    PROCESSOR(Degrees.of(80));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
@@ -193,7 +195,7 @@ public class Claw extends SubsystemBase {
     }
 
     ClawPosition(Angle targetAngle) {
-      this(targetAngle, Degrees.of(2)); // 2 degree default tolerance
+      this(targetAngle, Degrees.of(2.5)); // 2 degree default tolerance
     }
   }
 
@@ -236,6 +238,10 @@ public class Claw extends SubsystemBase {
               createPositionCommand(ClawPosition.NET),
               ClawPosition.PROCESSOR,
               createPositionCommand(ClawPosition.PROCESSOR),
+              ClawPosition.TOSS,
+              createPositionCommand(ClawPosition.TOSS),
+              ClawPosition.RELEASE,
+              createPositionCommand(ClawPosition.RELEASE),
               ClawPosition.FLOOR,
               createPositionCommand(ClawPosition.FLOOR)),
           this::getMode);
@@ -348,6 +354,20 @@ public class Claw extends SubsystemBase {
    */
   public final Command FLOOR() {
     return setPositionCommand(ClawPosition.FLOOR);
+  }
+
+  /**
+   * @return Command to move the claw to toss angle
+   */
+  public final Command TOSS() {
+    return setPositionCommand(ClawPosition.TOSS);
+  }
+
+  /**
+   * @return Command to move the claw to release angle
+   */
+  public final Command RELEASE() {
+    return setPositionCommand(ClawPosition.RELEASE);
   }
 
   /**
