@@ -561,7 +561,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "shoot barge",
-        drivetrain.Alignment(Targets.NET, vision, elevator)
+        drivetrain.bargeAlignment(vision, elevator)
             .alongWith(claw.NET())
             .alongWith(elevator.L4())
             .until(() -> elevator.isAtTarget() && claw.isAtTarget())
@@ -615,7 +615,7 @@ public class RobotContainer {
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
-    // .rightBumper()
+    // .rightBumper()   
     // .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
     // .onFalse(new EndIntake(manipulator, funnel));
 

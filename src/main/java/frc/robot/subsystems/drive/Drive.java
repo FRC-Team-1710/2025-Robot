@@ -60,6 +60,8 @@ import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
+
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -319,6 +321,42 @@ public class Drive extends SubsystemBase {
                     < TargetingComputer.alignmentTranslationTolerance);
   }
 
+  public Command bargeAlignment(Vision vision, Elevator elevator) {
+
+    Transform2d yes 
+
+    Pose2d selectedPos =
+    new Pose2d(
+     (FieldConstants.fieldWidth.in(Meters) - 7.26), FieldConstants.fieldLength.in(Meters), new Rotation2d(TargetingComputer.getAngleForTarget(Targets.NET)));
+
+            
+    SwerveSetpointGen setpointGenAuto =
+        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
+            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    return run(() ->
+            io.setControl(
+                setpointGenAuto
+                    .withOperatorForwardDirection(getOperatorForwardDirection())
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(
+                                getPose().getX() - selectedPos.getX() * 1.2
+                                        )
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(getPose().getY() - selectedPos.getY() * 1.2)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            getPose().getRotation().minus(selectedPos.getRotation()).getRadians() * 0.45))))
+        .until(
+            ()-> getPose().getX() == selectedPos.getX());
+  }
   /**
    * Guys I can add comments to this
    *
