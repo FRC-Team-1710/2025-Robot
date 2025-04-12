@@ -59,6 +59,6 @@ public class Conversions {
   }
 
   public static Angle funnelAngleToFFRads(double angleDegrees) {
-    return Radians.of(Units.degreesToRadians((angleDegrees * -1 + 15)) * -1);
+    return Radians.of(Units.degreesToRadians((angleDegrees * -1 + 21)) * -1);
   }
 }
