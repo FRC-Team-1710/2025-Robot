@@ -38,6 +38,7 @@ import frc.robot.commands.OutakeForAuto;
 import frc.robot.commands.OuttakeCoral;
 import frc.robot.commands.PlaceCoral;
 import frc.robot.commands.StartClimb;
+import frc.robot.commands.TossAlgae;
 import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
@@ -821,8 +822,27 @@ public class RobotContainer {
         .onTrue(claw.PROCESSOR());
 
     shootAlgae
-        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
+        .and(
+            (() ->
+                claw.getMode() != Claw.ClawPosition.PROCESSOR
+                    && !(targetSource.getAsBoolean()
+                        && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                            == Targets.NET.getTargetingAngle()
+                        && elevator.isClearOfStage1())))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.25)))
+        .onFalse(new InstantCommand(() -> claw.setRollers(0)))
+        .and(() -> Constants.currentMode == Mode.SIM)
+        .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
+
+    shootAlgae
+        .and(
+            (() ->
+                claw.getMode() != Claw.ClawPosition.PROCESSOR
+                    && targetSource.getAsBoolean()
+                    && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
+                        == Targets.NET.getTargetingAngle()
+                    && elevator.isClearOfStage1()))
+        .onTrue(new TossAlgae(claw))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
