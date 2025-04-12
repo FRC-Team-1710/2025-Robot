@@ -91,6 +91,10 @@ public class Claw extends SubsystemBase {
     io.setAngle(angle);
   }
 
+  public boolean hasZeroed() {
+    return inputs.hasZeroed;
+  }
+
   public void setBrake(boolean lock) {
     io.setBrake(lock);
   }
@@ -273,7 +277,30 @@ public class Claw extends SubsystemBase {
         .withName("SetElevatorPosition(" + angle.toString() + ")");
   }
 
+  private void zeroPIDToAngle() {
+    io.zeroPIDToAngle();
+  }
+
+  /**
+   * Creates a command to set the claw to a specific angle.
+   *
+   * @param angle The desired claw angle
+   * @return Command to set the angle
+   */
+  private Command idleCommand(ClawPosition angle) {
+    return Commands.runOnce(() -> zeroPIDToAngle())
+        .andThen(() -> setClawPosition(angle))
+        .withName("SetElevatorPosition(" + angle.toString() + ")");
+  }
+
   /** Factory methods for common angle commands */
+
+  /**
+   * @return Command to move the claw to idling angle
+   */
+  public final Command GOTOIDLE() {
+    return idleCommand(ClawPosition.IDLE);
+  }
 
   /**
    * @return Command to move the claw to idling angle

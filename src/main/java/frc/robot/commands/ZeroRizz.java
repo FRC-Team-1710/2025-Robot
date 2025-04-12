@@ -49,6 +49,7 @@ public class ZeroRizz extends Command {
   @Override
   public boolean isFinished() {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
+      claw.zero();
       return true;
     }
     if (Math.abs(MathUtil.applyDeadband(mechrs.getAsDouble(), Constants.stickDeadband)) > 0) {
