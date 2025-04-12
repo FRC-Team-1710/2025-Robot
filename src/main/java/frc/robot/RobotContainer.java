@@ -548,7 +548,7 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
         .onFalse(new InstantCommand(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
 
-    claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
+    claw.setDefaultCommand(new WristManual(claw, () -> testing.getRightY())); // mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
     // .rightBumper()
@@ -1441,25 +1441,25 @@ public class RobotContainer {
 
     // Temp elevator tuning :)
 
-    // testing.back().onTrue(new NotRizz(elevator));
-    // testing.a().onTrue(elevator.INTAKE());
-    // testing.b().onTrue(elevator.L2());
-    // testing.x().onTrue(elevator.L3());
-    // testing.y().onTrue(elevator.L4());
+    testing.back().onTrue(new NotRizz(elevator));
+    testing.a().onTrue(elevator.INTAKE());
+    testing.b().onTrue(elevator.L2());
+    testing.x().onTrue(elevator.L3());
+    testing.y().onTrue(elevator.L4());
 
-    testing
-        .rightBumper()
-        .whileTrue(new GrabAlgae(claw).alongWith(claw.FLOOR()))
-        .onFalse(claw.HOLD());
-    testing
-        .leftBumper()
-        .whileTrue(new InstantCommand(() -> claw.setRollers(-0.25)))
-        .onFalse(new InstantCommand(() -> claw.setRollers(0)));
-    testing.back().onTrue(new ZeroRizz(claw, () -> testing.getRightY()));
-    testing.a().onTrue(claw.FLOOR());
-    testing.b().onTrue(claw.GRAB());
-    testing.x().onTrue(claw.HOLD());
-    testing.y().onTrue(claw.IDLE());
+    // testing
+    //     .rightBumper()
+    //     .whileTrue(new GrabAlgae(claw).alongWith(claw.FLOOR()))
+    //     .onFalse(claw.HOLD());
+    // testing
+    //     .leftBumper()
+    //     .whileTrue(new InstantCommand(() -> claw.setRollers(-0.25)))
+    //     .onFalse(new InstantCommand(() -> claw.setRollers(0)));
+    // testing.back().onTrue(new ZeroRizz(claw, () -> testing.getRightY()));
+    // testing.a().onTrue(claw.FLOOR());
+    // testing.b().onTrue(claw.GRAB());
+    // testing.x().onTrue(claw.HOLD());
+    // testing.y().onTrue(claw.IDLE());
   }
 
   public Command getAutonomousCommand() {
