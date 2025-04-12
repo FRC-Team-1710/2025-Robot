@@ -43,6 +43,12 @@
         {
           "type": "named",
           "data": {
+            "name": "claw position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "align to g&h algae"
           }
         },

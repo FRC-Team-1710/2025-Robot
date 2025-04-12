@@ -514,10 +514,10 @@ public class RobotContainer {
         "low algae position",
         elevator
             .ALGAE_LOW()
-            .alongWith(claw.GRAB())
             .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
-            .until(() -> elevator.isAtTarget() && claw.isAtTarget()));
+            .until(() -> elevator.isAtTarget()));
+
     NamedCommands.registerCommand(
         "high algae position",
         elevator
@@ -526,10 +526,9 @@ public class RobotContainer {
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
 
-    // NamedCommands.registerCommand(
-    //     "claw position",
-    //     claw.GRAB()
-    //         .until(() -> claw.isAtTarget()));
+    NamedCommands.registerCommand(
+        "claw position",
+        claw.GRAB().alongWith(drivetrain.stop(robotCentric)).until(() -> claw.isAtTarget()));
 
     NamedCommands.registerCommand(
         "align to g&h algae",
