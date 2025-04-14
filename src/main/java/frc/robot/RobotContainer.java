@@ -1121,7 +1121,7 @@ public class RobotContainer {
                     () -> drivetrain.getPose().getX(),
                     () -> drivetrain.getPose().getY(),
                     () -> drivetrain.getPose().getRotation().getDegrees())
-                .unless(() -> TargetingComputer.goForClimb ))
+                .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
             new EndIntake(manipulator, funnel, mech.leftBumper())
