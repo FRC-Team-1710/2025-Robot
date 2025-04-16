@@ -119,12 +119,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "elevator no stop"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "from I&J algae to barge"

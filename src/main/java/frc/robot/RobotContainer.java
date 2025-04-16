@@ -501,8 +501,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "elevator no stop", elevator.L4().until(() -> elevator.isAtTarget()));
-    NamedCommands.registerCommand(
-        "elevator no stop", elevator.ALGAE_LOW().until(() -> elevator.isAtTarget()));
+    // NamedCommands.registerCommand(
+    //     "elevator no stop", elevator.ALGAE_LOW().until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "L4",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
