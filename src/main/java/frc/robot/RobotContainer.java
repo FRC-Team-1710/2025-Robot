@@ -485,7 +485,8 @@ public class RobotContainer {
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
             .alongWith(elevator.INTAKE().alongWith(drivetrain.stop(robotCentric)))
-            .until(() -> elevator.isAtTarget()));
+            .alongWith(claw.IDLE())
+            .until(() -> elevator.isAtTarget() && claw.isAtTarget()));
     NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -497,6 +498,11 @@ public class RobotContainer {
             .alongWith(drivetrain.stop(robotCentric))
             .until(() -> elevator.isAtTarget())
             .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+
+    NamedCommands.registerCommand(
+        "elevator no stop", elevator.L4().until(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "elevator no stop", elevator.ALGAE_LOW().until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "L4",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
@@ -513,7 +519,7 @@ public class RobotContainer {
         "low algae position",
         elevator
             .ALGAE_LOW()
-            .alongWith(drivetrain.stop(robotCentric))
+            // .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
 
@@ -521,7 +527,7 @@ public class RobotContainer {
         "high algae position",
         elevator
             .ALGAE_HIGH()
-            .alongWith(drivetrain.stop(robotCentric))
+            // .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
 
@@ -554,19 +560,19 @@ public class RobotContainer {
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.INDIA, vision, elevator))
-            .andThen(new GrabAlgae(claw))
-            .alongWith(claw.GRAB())
+            .alongWith(new GrabAlgae(claw))
             .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
 
+    NamedCommands.registerCommand("claw move", claw.GRAB().until(() -> claw.isAtTarget()));
+
     NamedCommands.registerCommand(
-        "shoot barge",
-        drivetrain.bargeAlignment(vision, elevator)
-            .alongWith(claw.NET())
-            .alongWith(elevator.L4())
-            .until(() -> elevator.isAtTarget() && claw.isAtTarget())
-            .andThen(new InstantCommand(() -> claw.setRollers(-.25)))
+        "shoot barge", drivetrain.Alignment(Targets.NET, vision, elevator));
+
+    NamedCommands.registerCommand(
+        "score",
+        new InstantCommand(() -> claw.setRollers(-.25))
             .until(
-                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 10));
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -614,7 +620,7 @@ public class RobotContainer {
     claw.setDefaultCommand(new WristManual(claw, () -> mech.getRightY()));
     elevator.setDefaultCommand(new ElevationManual(elevator, () -> mech.getLeftY()));
     // driver
-    // .rightBumper()   
+    // .rightBumper()
     // .whileTrue(new IntakeCoral(manipulator, funnel, driver, mech.leftBumper()))
     // .onFalse(new EndIntake(manipulator, funnel));
 
@@ -1184,7 +1190,7 @@ public class RobotContainer {
                     () -> drivetrain.getPose().getX(),
                     () -> drivetrain.getPose().getY(),
                     () -> drivetrain.getPose().getRotation().getDegrees())
-                .unless(() -> TargetingComputer.goForClimb ))
+                .unless(() -> TargetingComputer.goForClimb))
         // .unless(() -> TargetingComputer.currentTargetLevel == Levels.L1))
         .onFalse(
             new EndIntake(manipulator, funnel, mech.leftBumper())

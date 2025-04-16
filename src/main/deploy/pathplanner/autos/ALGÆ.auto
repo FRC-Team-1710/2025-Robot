@@ -53,9 +53,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "back"
+            "name": "elevator no stop"
           }
         },
         {
@@ -68,6 +68,12 @@
           "type": "named",
           "data": {
             "name": "shoot barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score"
           }
         },
         {
@@ -91,6 +97,12 @@
         {
           "type": "named",
           "data": {
+            "name": "claw position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "align to i&j algae"
           }
         },
@@ -107,21 +119,15 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "elevator no stop"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "from I&J algae to barge"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot barge"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake position"
           }
         }
       ]

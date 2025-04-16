@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -25,6 +26,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -58,8 +60,6 @@ import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Targets;
-
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -291,9 +291,9 @@ public class Drive extends SubsystemBase {
                                                         .getX()
                                                     - getPose().getX())
                                             * 1.2
-                                        > TargetingComputer.maxAlignSpeed
+                                        > TargetingComputer.maxAlignSpeed - .1
                                     ? Math.copySign(
-                                        TargetingComputer.maxAlignSpeed,
+                                        TargetingComputer.maxAlignSpeed - .1,
                                         (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                             - getPose().getX()))
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getX()
@@ -308,9 +308,9 @@ public class Drive extends SubsystemBase {
                                                         .getY()
                                                     - getPose().getY())
                                             * 1.2
-                                        > TargetingComputer.maxAlignSpeed
+                                        > TargetingComputer.maxAlignSpeed - .1
                                     ? Math.copySign(
-                                        TargetingComputer.maxAlignSpeed,
+                                        TargetingComputer.maxAlignSpeed - .1,
                                         (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                             - getPose().getY()))
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getY()
@@ -331,13 +331,12 @@ public class Drive extends SubsystemBase {
 
   public Command bargeAlignment(Vision vision, Elevator elevator) {
 
-    Transform2d yes 
-
     Pose2d selectedPos =
-    new Pose2d(
-     (FieldConstants.fieldWidth.in(Meters) - 7.26), FieldConstants.fieldLength.in(Meters), new Rotation2d(TargetingComputer.getAngleForTarget(Targets.NET)));
+        new Pose2d(
+            (FieldConstants.fieldWidth.in(Meters) - 7.26),
+            FieldConstants.fieldLength.in(Meters),
+            new Rotation2d(TargetingComputer.getAngleForTarget(Targets.NET)));
 
-            
     SwerveSetpointGen setpointGenAuto =
         new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
             .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
@@ -351,9 +350,7 @@ public class Drive extends SubsystemBase {
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(
                         TunerConstants.kSpeedAt12Volts
-                            .times(
-                                getPose().getX() - selectedPos.getX() * 1.2
-                                        )
+                            .times(getPose().getX() - selectedPos.getX() * 1.2)
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withVelocityY(
                         TunerConstants.kSpeedAt12Volts
@@ -361,10 +358,11 @@ public class Drive extends SubsystemBase {
                             .times(Robot.getAlliance() ? -1 : 1))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
-                            getPose().getRotation().minus(selectedPos.getRotation()).getRadians() * 0.45))))
-        .until(
-            ()-> getPose().getX() == selectedPos.getX());
+                            getPose().getRotation().minus(selectedPos.getRotation()).getRadians()
+                                * 0.45))))
+        .until(() -> getPose().getX() == selectedPos.getX());
   }
+
   /**
    * Guys I can add comments to this
    *

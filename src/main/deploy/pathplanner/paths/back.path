@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 6.318,
+        "x": 6.1017418032786885,
         "y": 4.015249999999999
       },
       "prevControl": {
-        "x": 6.068255925450617,
+        "x": 5.851997728729306,
         "y": 4.003940834360026
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "hotel"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -33,9 +33,9 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 1.5,
     "maxAcceleration": 1.0,
-    "maxAngularVelocity": 540.0,
+    "maxAngularVelocity": 290.0,
     "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
