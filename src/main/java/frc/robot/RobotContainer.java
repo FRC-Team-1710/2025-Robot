@@ -561,14 +561,14 @@ public class RobotContainer {
             .alongWith(new GrabAlgae(claw))
             .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
 
-    NamedCommands.registerCommand("claw move", claw.GRAB().until(() -> claw.isAtTarget()));
+    NamedCommands.registerCommand("claw net", claw.NET().until(() -> claw.isAtTarget()));
 
     NamedCommands.registerCommand(
         "shoot barge", drivetrain.Alignment(Targets.NET, vision, elevator));
 
     NamedCommands.registerCommand(
         "score",
-        new InstantCommand(() -> claw.setRollers(-.25))
+        new InstantCommand(() -> claw.setRollers(-.4))
             .until(
                 () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
