@@ -541,7 +541,7 @@ public class RobotContainer {
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.GOLF, vision, elevator))
             .alongWith(new GrabAlgae(claw))
-            .until(() -> claw.isAtTarget())); // && claw.getRollerCurrent() < -15));
+            .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
 
     NamedCommands.registerCommand(
         "align to f&e algae",
@@ -553,7 +553,7 @@ public class RobotContainer {
                     .andThen(drivetrain.Alignment(Targets.FOXTROT, vision, elevator))
                     .alongWith(new GrabAlgae(claw))
                     .alongWith(claw.GRAB())
-                    .until(() -> claw.isAtTarget())) // && claw.getRollerCurrent() < -15))
+                    .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15))
             .andThen(() -> TargetingComputer.setAlliance(Robot.getAlliance() ? true : false)));
     NamedCommands.registerCommand(
         "align to i&j algae",
@@ -561,7 +561,7 @@ public class RobotContainer {
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.INDIA, vision, elevator))
             .alongWith(new GrabAlgae(claw))
-            .until(() -> claw.isAtTarget())); // && claw.getRollerCurrent() < -15));
+            .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
 
     NamedCommands.registerCommand("claw move", claw.GRAB().until(() -> claw.isAtTarget()));
 
