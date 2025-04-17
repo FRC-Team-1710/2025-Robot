@@ -17,7 +17,9 @@ public class VisionIOAlgae {
 
   public void updateResults() {
     this.cameraResults = camera.getAllUnreadResults();
-    this.currentResult = cameraResults.get(cameraResults.size() - 1);
+    if (cameraResults == null || !cameraResults.isEmpty()) {
+      this.currentResult = cameraResults.get(cameraResults.size() - 1);
+    }
   }
 
   // LEFT BUMBPER
