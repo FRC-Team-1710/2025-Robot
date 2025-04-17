@@ -31,7 +31,9 @@ public class ZeroRizz extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putBoolean("zero?", false);
-    claw.wristManual(-0.5); // Volts
+    if (Constants.currentMode != Mode.SIM) {
+      claw.wristManual(-0.5); // Volts
+    }
     timer.restart();
   }
 
@@ -49,7 +51,7 @@ public class ZeroRizz extends Command {
   @Override
   public boolean isFinished() {
     if (Constants.currentMode == Mode.SIM && timer.get() > .25) {
-      claw.zero();
+      claw.IDLE().schedule();
       return true;
     }
     if (Math.abs(MathUtil.applyDeadband(mechrs.getAsDouble(), Constants.stickDeadband)) > 0) {
