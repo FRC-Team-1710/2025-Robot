@@ -137,13 +137,9 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean hasAlgae() {
-    // if (Constants.currentMode != Mode.SIM) {
-    //   return inputs.hasAlgae;
-    // } else {
-    //   return true;
-    // }
+    return inputs.hasAlgae;
 
-    return false;
+    // return false; cami troll
   }
 
   public void setRollerPositionWhenAlgaeGrabbed(double position) {
@@ -178,7 +174,7 @@ public class Claw extends SubsystemBase {
   public enum ClawPosition {
     STOP(Degrees.of(0)), // Stop the wrist
     IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
-    GRAB(Degrees.of(80), Degrees.of(2.5)), // Position for grabing algae
+    GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
     FLOOR(Degrees.of(110), Degrees.of(2.5)),
