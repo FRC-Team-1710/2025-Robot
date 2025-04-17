@@ -62,6 +62,6 @@ public class OutakeForAuto extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return ((!manipulator.beam1Broken() && !manipulator.beam2Broken()) || timer.get() > 3);
+    return ((!manipulator.beam1Broken() && !manipulator.beam2Broken()));
   }
 }
