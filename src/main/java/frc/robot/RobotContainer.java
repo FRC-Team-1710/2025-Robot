@@ -506,8 +506,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "L4",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
-            .alongWith(drivetrain.stop(robotCentric))
-            .until(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken()));
+            .alongWith(drivetrain.stop(robotCentric)));
     NamedCommands.registerCommand(
         "intake position",
         elevator

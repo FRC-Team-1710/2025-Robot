@@ -67,12 +67,6 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot barge"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "score"
           }
         },
