@@ -21,8 +21,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -139,11 +137,7 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean hasAlgae() {
-    if (Constants.currentMode != Mode.SIM) {
-      return inputs.hasAlgae;
-    } else {
-      return true;
-    }
+    return inputs.hasAlgae;
 
     // return false; cami troll
   }
