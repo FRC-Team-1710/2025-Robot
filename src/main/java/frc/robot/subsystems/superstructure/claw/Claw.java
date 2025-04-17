@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-
 import java.util.Map;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -146,7 +145,7 @@ public class Claw extends SubsystemBase {
       return true;
     }
 
-    //return false; cami troll
+    // return false; cami troll
   }
 
   public void setRollerPositionWhenAlgaeGrabbed(double position) {
