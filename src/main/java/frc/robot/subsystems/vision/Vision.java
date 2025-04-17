@@ -107,6 +107,10 @@ public class Vision extends SubsystemBase {
       Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
     algaeCamera.updateResults();
+    double algaeYaw = algaeCamera.getAlgaeYaw();
+    if (algaeYaw != 0.0) {
+      Logger.recordOutput("Algae Yaw", algaeYaw);
+    }
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
