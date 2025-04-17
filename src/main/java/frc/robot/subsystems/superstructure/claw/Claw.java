@@ -180,7 +180,7 @@ public class Claw extends SubsystemBase {
     FLOOR(Degrees.of(110), Degrees.of(2.5)),
     TOSS(Degrees.of(45)),
     RELEASE(Degrees.of(2)),
-    PROCESSOR(Degrees.of(80));
+    PROCESSOR(Degrees.of(90));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
