@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Meters;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -480,6 +481,13 @@ public class RobotContainer {
             .andThen(new IntakeForAuto(manipulator, funnel)));
     // .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
+        "initiate",
+        new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
+            .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
+            .alongWith(elevator.INTAKE().alongWith(drivetrain.stop(robotCentric)))
+            .alongWith(claw.IDLE())
+            .until(() -> elevator.isAtTarget() && claw.isAtTarget()));
+    NamedCommands.registerCommand(
         "outtake coral",
         new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
             .alongWith(drivetrain.stop(robotCentric)));
@@ -490,13 +498,16 @@ public class RobotContainer {
             .alongWith(drivetrain.stop(robotCentric))
             .until(() -> elevator.isAtTarget())
             .andThen(new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)));
+
+    NamedCommands.registerCommand(
+        "elevator no stop", elevator.L4().until(() -> elevator.isAtTarget()));
+    // NamedCommands.registerCommand(
+    //     "elevator no stop", elevator.ALGAE_LOW().until(() -> elevator.isAtTarget()));
     NamedCommands.registerCommand(
         "L4",
-        // elevator
-        // .L4()
-        // .alongWith(drivetrain.stop(robotCentric))
-        // .until(() -> elevator.isAtTarget())
-        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric));
+        new OutakeForAuto(elevator, manipulator, drivetrain, robotCentric)
+            .alongWith(drivetrain.stop(robotCentric))
+            .until(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken()));
     NamedCommands.registerCommand(
         "intake position",
         elevator
@@ -504,6 +515,64 @@ public class RobotContainer {
             .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.goingToTarget()))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
+    NamedCommands.registerCommand(
+        "low algae position",
+        elevator
+            .ALGAE_LOW()
+            // .alongWith(drivetrain.stop(robotCentric))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
+            .until(() -> elevator.isAtTarget()));
+
+    NamedCommands.registerCommand(
+        "high algae position",
+        elevator
+            .ALGAE_HIGH()
+            // .alongWith(drivetrain.stop(robotCentric))
+            .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
+            .until(() -> elevator.isAtTarget()));
+
+    NamedCommands.registerCommand(
+        "claw position",
+        claw.GRAB().alongWith(drivetrain.stop(robotCentric)).until(() -> claw.isAtTarget()));
+
+    NamedCommands.registerCommand(
+        "align to g&h algae",
+        new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
+            .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
+            .andThen(drivetrain.Alignment(Targets.GOLF, vision, elevator))
+            .alongWith(new GrabAlgae(claw))
+            .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
+
+    NamedCommands.registerCommand(
+        "align to f&e algae",
+        new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
+            .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
+            .andThen(
+                new InstantCommand(
+                        () -> TargetingComputer.setAlliance(Robot.getAlliance() ? false : true))
+                    .andThen(drivetrain.Alignment(Targets.FOXTROT, vision, elevator))
+                    .alongWith(new GrabAlgae(claw))
+                    .alongWith(claw.GRAB())
+                    .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15))
+            .andThen(() -> TargetingComputer.setAlliance(Robot.getAlliance() ? true : false)));
+    NamedCommands.registerCommand(
+        "align to i&j algae",
+        new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
+            .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
+            .andThen(drivetrain.Alignment(Targets.INDIA, vision, elevator))
+            .alongWith(new GrabAlgae(claw))
+            .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
+
+    NamedCommands.registerCommand("claw move", claw.GRAB().until(() -> claw.isAtTarget()));
+
+    NamedCommands.registerCommand(
+        "shoot barge", drivetrain.Alignment(Targets.NET, vision, elevator));
+
+    NamedCommands.registerCommand(
+        "score",
+        new InstantCommand(() -> claw.setRollers(-.25))
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

@@ -49,13 +49,13 @@ public class ElevatorIOCTRE implements ElevatorIO {
   /** The encoder that can be swiched with one variable */
   private final ElevatorEncoder encoder = new ElevatorEncoder(encoderType, leader);
 
-  private double kP = 1.125; // 0.1 // 0.75;
-  private double kI = 0; // 0.0 // 0.0;
-  private double kD = 0.005; // 0.0 // 0.0;
-  private double kS = 0.0; // 0.0 // 0.1;
-  private double kG = 0.3375; // 0.3375 // 0.375;
-  private double kV = 0; // 0.0 // 0.075;
-  private double kA = 0; // 0.0 // 0.0;
+  private double kP = 1.125; // 0.1 // 0.75
+  private double kI = 0; // 0.0 // 0.0
+  private double kD = 0.005; // 0.0 // 0.0
+  private double kS = 0.0; // 0.0 // 0.1
+  private double kG = 0.3375; // 0.3375 // 0.375
+  private double kV = 0; // 0.0 // 0.075
+  private double kA = 0; // 0.0 // 0.0
   private double kAcel = 250; // 200
   private double kVel = 250;
 

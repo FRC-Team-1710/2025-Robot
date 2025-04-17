@@ -35,27 +35,15 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "back"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "claw position"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "align to g&h algae"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "elevator no stop"
+            "pathName": "back"
           }
         },
         {
@@ -73,19 +61,13 @@
         {
           "type": "named",
           "data": {
-            "name": "score"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "intake position"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "from barge to I&J algae"
+            "pathName": "STEALLLL"
           }
         },
         {
@@ -97,19 +79,13 @@
         {
           "type": "named",
           "data": {
-            "name": "claw position"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "align to i&j algae"
+            "name": "align to f&e algae"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "back i&j"
+            "pathName": "back flipped"
           }
         },
         {
@@ -121,7 +97,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "from I&J algae to barge"
+            "pathName": "from foxtrot to barge flip"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
           }
         }
       ]

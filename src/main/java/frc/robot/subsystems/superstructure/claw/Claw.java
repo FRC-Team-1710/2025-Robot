@@ -137,7 +137,13 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean hasAlgae() {
-    return inputs.hasAlgae;
+    // if (Constants.currentMode != Mode.SIM) {
+    //   return inputs.hasAlgae;
+    // } else {
+    //   return true;
+    // }
+
+    return false;
   }
 
   public void setRollerPositionWhenAlgaeGrabbed(double position) {

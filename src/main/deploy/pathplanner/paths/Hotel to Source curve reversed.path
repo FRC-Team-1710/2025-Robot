@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.473360655737705,
-        "y": 4.132889344262295
+        "x": 6.318,
+        "y": 4.015249999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.717110655737704,
-        "y": 8.469889344262292
+        "x": 6.225374999999747,
+        "y": 0.4564999999942301
       },
       "isLocked": false,
-      "linkedName": "hotel"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.906125,
-        "y": 7.344874999999999
+        "x": 1.759875,
+        "y": 0.6319999999999993
       },
       "prevControl": {
-        "x": 3.6075000000000004,
-        "y": 7.257124999999999
+        "x": 5.864625000003278,
+        "y": 0.7977499999912459
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -58.09815079471872
+    "rotation": -127.79394299905431
   },
   "reversed": false,
   "folder": null,
