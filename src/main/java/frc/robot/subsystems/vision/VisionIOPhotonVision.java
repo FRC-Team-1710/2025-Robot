@@ -275,7 +275,7 @@ public class VisionIOPhotonVision implements VisionIO {
 
   /**
    * Sets the camera's rejection distance and allows the camera to reject the tags further than this
-   * distance.4
+   * distance.
    *
    * @param rejectionDistance Preferred camera range in meters
    */
@@ -333,6 +333,12 @@ public class VisionIOPhotonVision implements VisionIO {
     }
   }
 
+  /**
+   * This should remove a tag from the camera's results if it does not follow the standards for the
+   * AprilTag readings.
+   *
+   * @param index The index in the list of the tag to remove
+   */
   private void removeTag(int index) {
     cameraTargets.remove(index);
   }
