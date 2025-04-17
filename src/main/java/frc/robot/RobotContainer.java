@@ -573,22 +573,22 @@ public class RobotContainer {
                 () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     NamedCommands.registerCommand(
-                    "score2",
-                    new InstantCommand(() -> claw.setRollers(-.3))
-                        .until(
-                            () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
-                            
-    NamedCommands.registerCommand(
-                                "score1",
-                                new InstantCommand(() -> claw.setRollers(-.2))
-                                    .until(
-                                        () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
+        "score2",
+        new InstantCommand(() -> claw.setRollers(-.3))
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     NamedCommands.registerCommand(
-                                            "score4",
-                                            new InstantCommand(() -> claw.setRollers(-.5))
-                                                .until(
-                                                    () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
+        "score1",
+        new InstantCommand(() -> claw.setRollers(-.2))
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
+
+    NamedCommands.registerCommand(
+        "score4",
+        new InstantCommand(() -> claw.setRollers(-.5))
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
