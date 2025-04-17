@@ -45,8 +45,10 @@ public class OutakeForAuto extends Command {
     // Logger.recordOutput("Command", "Outtake");
     if (elevator.isAtTarget()) {
       manipulator.runPercent(ManipulatorConstants.outtakeSpeed);
+      drivetrain.stop(requestsupplier);
     } else {
       elevator.setElevatorPosition(elevator.getMode());
+      drivetrain.stop(requestsupplier);
     }
   }
 
@@ -54,6 +56,7 @@ public class OutakeForAuto extends Command {
   @Override
   public void end(boolean interrupted) {
     manipulator.runPercent(0);
+    drivetrain.stop(requestsupplier);
   }
 
   // Returns true when the command should end.
