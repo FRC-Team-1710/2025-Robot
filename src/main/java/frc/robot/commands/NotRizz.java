@@ -16,7 +16,7 @@ public class NotRizz extends Command {
   Elevator elevator;
   Timer timer = new Timer();
 
-  /** Creates a new GrabAlgae. */
+  /** Creates a new GrabAlgae. trust */
   public NotRizz(Elevator elevator) {
     this.elevator = elevator;
     // Use addRequirements() here to declare subsystem dependencies.

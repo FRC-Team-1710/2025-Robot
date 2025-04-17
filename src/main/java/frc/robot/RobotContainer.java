@@ -478,14 +478,15 @@ public class RobotContainer {
         "intake coral",
         new InstantCommand(() -> funnel.extendAileron())
             .andThen(new NotRizz(elevator))
-            .andThen(new IntakeForAuto(manipulator, funnel)));
+            .alongWith(new IntakeForAuto(manipulator, funnel)));
     // .andThen(new InstantCommand(() -> funnel.retractAileron())));
     NamedCommands.registerCommand(
         "initiate",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(false))
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(false)))
             .alongWith(elevator.INTAKE().alongWith(drivetrain.stop(robotCentric)))
-            .alongWith(claw.IDLE())
+            .alongWith(new ZeroRizz(claw, () -> 0))
+            .andThen(claw.IDLE())
             .until(() -> elevator.isAtTarget() && claw.isAtTarget()));
     NamedCommands.registerCommand(
         "outtake coral",
