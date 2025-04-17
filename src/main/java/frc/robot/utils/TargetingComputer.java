@@ -274,7 +274,7 @@ public class TargetingComputer {
 
   /** Degrees */
   public static double getSourceTargetingAngle(Pose2d pose) {
-    if (goForClimb) return -Targets.PROCESSOR.getTargetingAngle();
+    if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
 
     if (isRedAlliance) {
       if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close
