@@ -921,7 +921,7 @@ public class RobotContainer {
         //     && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
         //         == Targets.NET.getTargetingAngle()
         //     && elevator.isClearOfStage1())))
-        .onTrue(new InstantCommand(() -> claw.setRollers(-.1710)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.2)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
