@@ -341,6 +341,7 @@ public class VisionUtil {
         || robotPose.getMeasureY().gt(FieldConstants.fieldWidth.plus(FIELD_MARGIN))
         || robotPose.getMeasureZ().lt(Z_MARGIN.unaryMinus())
         || robotPose.getMeasureZ().gt(Z_MARGIN);
+    // || !robotPose.getRotation().getMeasureY().isNear(Rotations.of(0), Rotations.of(3))
   }
 
   /**
