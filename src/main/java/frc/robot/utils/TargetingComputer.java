@@ -143,7 +143,7 @@ public class TargetingComputer {
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
       case FAR_PROCESSOR -> isRedAlliance ? 270 : 90;
-      case NET -> isRedAlliance ? 220 : 40;
+      case NET -> isRedAlliance ? 210 : 30; // TODO: TEST
     };
   }
 
