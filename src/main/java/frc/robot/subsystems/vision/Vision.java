@@ -38,6 +38,7 @@ public class Vision extends SubsystemBase {
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
+  private final VisionIOAlgae algaeCamera;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
@@ -72,10 +73,11 @@ public class Vision extends SubsystemBase {
    * @param consumer Callback interface for processed vision measurements
    * @param io Array of VisionIO interfaces for each camera
    */
-  public Vision(VisionConsumer consumer, VisionIO... io) {
+  public Vision(VisionConsumer consumer, VisionIOAlgae algaeCamera, VisionIO... io) {
     System.out.println("[Init] Creating Vision");
     this.consumer = consumer;
     this.io = io;
+    this.algaeCamera = algaeCamera;
 
     // Initialize input arrays for each camera
     inputs = new VisionIOInputsAutoLogged[io.length];
@@ -104,6 +106,11 @@ public class Vision extends SubsystemBase {
       disconnectedAlerts[i].set(!inputs[i].connected);
       Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
+    algaeCamera.updateResults();
+    double algaeYaw = algaeCamera.getAlgaeYaw();
+    if (algaeYaw != 0.0) {
+      Logger.recordOutput("Algae Yaw", algaeYaw);
+    }
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
@@ -111,15 +118,19 @@ public class Vision extends SubsystemBase {
     consumer.accept(sortMeasurements(visionData.measurements()));
 
     for (int i = 0; i < io.length; i++) {
-      VisionIOPhotonVision currentCamera = getCamera(i);
+      VisionIOPhotonVision currentCamera = getCamera(i); // Grabs current camera
       if (currentCamera.hasTargets()) {
-        Rotation3d rotationReading = currentCamera.lastAcceptedPose.getRotation();
+        Rotation3d rotationReading =
+            currentCamera.lastAcceptedPose.getRotation(); // Grab rotation from reading for skew
         Logger.recordOutput(
-            "VisionDebugging/Camera " + i + " pose", currentCamera.lastAcceptedPose);
+            "VisionDebugging/Camera " + i + " pose",
+            currentCamera.lastAcceptedPose); // Log entire pose from camera
         boolean flagged =
             (rotationReading.getX() <= -flagAngle || rotationReading.getX() >= flagAngle)
-                || (rotationReading.getY() <= -flagAngle || rotationReading.getY() >= flagAngle);
-        currentCamera.flag(flagged);
+                || (rotationReading.getY() <= -flagAngle
+                    || rotationReading.getY() >= flagAngle); // Logic to flag camera
+        rejectCamera[i] = flagged; // Here is where the camera is rejected if skewed
+        currentCamera.flag(flagged); // This flags the camera in the camera class
       }
       Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
     }
@@ -354,6 +365,10 @@ public class Vision extends SubsystemBase {
       }
     }
     return 0;
+  }
+
+  public double getAlgaeYaw() {
+    return algaeCamera.getAlgaeYaw();
   }
 
   /**

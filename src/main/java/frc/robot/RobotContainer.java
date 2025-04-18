@@ -68,6 +68,7 @@ import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.superstructure.manipulator.SimCoral;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOAlgae;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.FieldConstants;
@@ -112,6 +113,7 @@ public class RobotContainer {
   public final Climber climber;
   public final Claw claw;
   public final LEDSubsystem ledsubsystem;
+  public final VisionIOAlgae algaeCam;
 
   // CTRE Default Drive Request
   private final SwerveRequest.FieldCentric drive =
@@ -258,6 +260,7 @@ public class RobotContainer {
         claw = new Claw(new ClawIOCTRE());
         funnel = new Funnel(new FunnelIOCTRE());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
+        algaeCam = new VisionIOAlgae("AlgaeCam");
 
         /*
          * Vision Class for referencing.
@@ -267,6 +270,7 @@ public class RobotContainer {
         vision =
             new Vision(
                 drivetrain::addVisionData,
+                new VisionIOAlgae("AlgaeCam"),
                 new VisionIOPhotonVision(
                     "FrontLeft",
                     new Transform3d(
@@ -321,6 +325,7 @@ public class RobotContainer {
                     drivetrain::getVisionParameters));
         vision.getCamera(0).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Left
         vision.getCamera(1).useRejectionDistance(Constants.kCameraRejectionDistance); // Front Right
+
         break;
 
       case SIM:
@@ -332,10 +337,12 @@ public class RobotContainer {
         claw = new Claw(new ClawIOSIM(iosim));
         funnel = new Funnel(new FunnelIOSIM());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
+        algaeCam = new VisionIOAlgae("AlgaeCam");
 
         vision =
             new Vision(
                 drivetrain::addVisionData,
+                new VisionIOAlgae("AlgaeCam"),
                 new VisionIOPhotonVisionSIM(
                     "FrontLeft",
                     new Transform3d(
@@ -399,10 +406,12 @@ public class RobotContainer {
         claw = new Claw(new ClawIO() {});
         funnel = new Funnel(new FunnelIO() {});
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
+        algaeCam = new VisionIOAlgae("AlgaeCam");
 
         vision =
             new Vision(
                 drivetrain::addVisionData,
+                new VisionIOAlgae("AlgaeCam"),
                 new VisionIO() {},
                 new VisionIO() {},
                 new VisionIO() {},
@@ -567,10 +576,10 @@ public class RobotContainer {
         "shoot barge", drivetrain.Alignment(Targets.NET, vision, elevator));
 
     NamedCommands.registerCommand(
-                                            "score4",
-                                            new InstantCommand(() -> claw.setRollers(-.5))
-                                                .until(
-                                                    () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
+        "score4",
+        new InstantCommand(() -> claw.setRollers(-.5))
+            .until(
+                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -894,7 +903,7 @@ public class RobotContainer {
         //     && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
         //         == Targets.NET.getTargetingAngle()
         //     && elevator.isClearOfStage1())))
-        .onTrue(new InstantCommand(() -> claw.setRollers(-.1710)))
+        .onTrue(new InstantCommand(() -> claw.setRollers(-.2)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
@@ -918,7 +927,24 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    grabAlgaeFromFloor.onTrue(claw.FLOOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
+    grabAlgaeFromFloor
+        .onTrue(claw.FLOOR())
+        .whileTrue(
+            new GrabAlgae(claw)
+                .alongWith(
+                    drivetrain.applyRequest(
+                        () ->
+                            drive
+                                .withRotationalRate(
+                                    Constants.MaxAngularRate.times(
+                                        -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4))
+                                .withVelocityX(
+                                    MaxSpeed.times(
+                                        -driver
+                                            .customLeft()
+                                            .getY())) // Drive forward with negative Y (forward)
+                                .withVelocityY(MaxSpeed.times(-driver.customLeft().getX())))))
+        .onFalse(claw.IDLE());
 
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
