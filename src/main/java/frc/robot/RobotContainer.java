@@ -939,9 +939,10 @@ public class RobotContainer {
                 .applyRequest(
                     () ->
                         drive
-                            .withRotationalRate(
-                                Constants.MaxAngularRate.times(
-                                    -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4))
+                            // .withRotationalRate(
+                            //     Constants.MaxAngularRate.times(
+                            //         -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4)) //
+                            // TODO: uncomment
                             .withVelocityX(
                                 MaxSpeed.times(
                                     -driver
