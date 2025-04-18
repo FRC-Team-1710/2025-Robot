@@ -556,7 +556,6 @@ public class RobotContainer {
             .alongWith(new GrabAlgae(claw))
             .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
 
-
     NamedCommands.registerCommand(
         "align to f&e algae",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
@@ -944,20 +943,19 @@ public class RobotContainer {
         .onFalse(claw.IDLE())
         .and(driver.rightStick())
         .whileTrue(
-            drivetrain
-                .applyRequest(
-                    () ->
-                        drive
-                            .withRotationalRate(
-                                Constants.MaxAngularRate.times(
-                                    -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4))
-                            .withVelocityX(
-                                MaxSpeed.times(
-                                    -driver
-                                        .customLeft()
-                                        .getY())) // Drive forward with negative Y (forward)
-                            .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
-        
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withRotationalRate(
+                            Constants.MaxAngularRate.times(
+                                -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4))
+                        .withVelocityX(
+                            MaxSpeed.times(
+                                -driver
+                                    .customLeft()
+                                    .getY())) // Drive forward with negative Y (forward)
+                        .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))));
+
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
         .onTrue(
