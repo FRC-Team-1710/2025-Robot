@@ -554,10 +554,7 @@ public class RobotContainer {
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.GOLF, vision, elevator))
             .alongWith(new GrabAlgae(claw))
-            .until(
-                () ->
-                    claw.isAtTarget()
-                        && (claw.getRollerCurrent() < -15 || Constants.simMode == Mode.SIM)));
+            .until(() -> claw.isAtTarget() && (claw.hasAlgae() || Constants.simMode == Mode.SIM)));
 
     NamedCommands.registerCommand(
         "align to f&e algae",
