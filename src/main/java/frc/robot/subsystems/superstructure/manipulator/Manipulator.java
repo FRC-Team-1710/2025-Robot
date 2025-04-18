@@ -44,7 +44,7 @@ public class Manipulator extends SubsystemBase {
 
   @AutoLogOutput
   public boolean hasCoral() {
-    if (Constants.currentMode == Constants.Mode.SIM) return hasCoral;
+    if (Constants.currentMode == Constants.Mode.SIM) return true;
     else return beam2Broken() && !beam1Broken();
   }
 
