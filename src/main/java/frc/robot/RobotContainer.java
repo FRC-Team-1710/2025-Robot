@@ -576,24 +576,6 @@ public class RobotContainer {
         "shoot barge", drivetrain.Alignment(Targets.NET, vision, elevator));
 
     NamedCommands.registerCommand(
-        "score3",
-        new InstantCommand(() -> claw.setRollers(-.4))
-            .until(
-                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
-
-    NamedCommands.registerCommand(
-        "score2",
-        new InstantCommand(() -> claw.setRollers(-.3))
-            .until(
-                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
-
-    NamedCommands.registerCommand(
-        "score1",
-        new InstantCommand(() -> claw.setRollers(-.2))
-            .until(
-                () -> elevator.isAtTarget() && claw.isAtTarget() && claw.getRollerCurrent() > 30));
-
-    NamedCommands.registerCommand(
         "score4",
         new InstantCommand(() -> claw.setRollers(-.5))
             .until(
