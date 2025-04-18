@@ -510,6 +510,7 @@ public class RobotContainer {
         "intake position",
         elevator
             .INTAKE()
+            .alongWith(claw.IDLE())
             .alongWith(drivetrain.stop(robotCentric).until(() -> elevator.goingToTarget()))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
@@ -525,6 +526,7 @@ public class RobotContainer {
         "high algae position",
         elevator
             .ALGAE_HIGH()
+            .alongWith(claw.GRAB())
             .alongWith(drivetrain.stop(robotCentric))
             .onlyIf(() -> !manipulator.beam1Broken() && !manipulator.beam2Broken())
             .until(() -> elevator.isAtTarget()));
@@ -534,12 +536,19 @@ public class RobotContainer {
         claw.GRAB().alongWith(drivetrain.stop(robotCentric)).until(() -> claw.isAtTarget()));
 
     NamedCommands.registerCommand(
+        "claw intake",
+        claw.IDLE().alongWith(drivetrain.stop(robotCentric)).until(() -> claw.isAtTarget()));
+
+    NamedCommands.registerCommand(
         "align to g&h algae",
         new InstantCommand(() -> TargetingComputer.setAligningWithAlgae(true))
             .alongWith(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)))
             .andThen(drivetrain.Alignment(Targets.GOLF, vision, elevator))
             .alongWith(new GrabAlgae(claw))
-            .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15));
+            .until(
+                () ->
+                    claw.isAtTarget()
+                        && (claw.getRollerCurrent() < -15 || Constants.simMode == Mode.SIM)));
 
     NamedCommands.registerCommand(
         "align to f&e algae",
@@ -551,7 +560,11 @@ public class RobotContainer {
                     .andThen(drivetrain.Alignment(Targets.FOXTROT, vision, elevator))
                     .alongWith(new GrabAlgae(claw))
                     .alongWith(claw.GRAB())
-                    .until(() -> claw.isAtTarget() && claw.getRollerCurrent() < -15))
+                    .until(
+                        () ->
+                            claw.isAtTarget()
+                                && (claw.getRollerCurrent() < -15
+                                    || Constants.simMode == Mode.SIM)))
             .andThen(() -> TargetingComputer.setAlliance(Robot.getAlliance() ? true : false)));
     NamedCommands.registerCommand(
         "align to i&j algae",

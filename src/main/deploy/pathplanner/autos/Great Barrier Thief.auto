@@ -59,6 +59,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "claw net"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "from G&H Algae to barge"
@@ -110,6 +116,12 @@
           "type": "named",
           "data": {
             "name": "intake position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "claw net"
           }
         },
         {
