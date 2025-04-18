@@ -931,7 +931,26 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Mode.SIM)
         .onTrue(new InstantCommand(() -> claw.setAlgaeStatus(false)));
 
-    grabAlgaeFromFloor.onTrue(claw.FLOOR()).whileTrue(new GrabAlgae(claw)).onFalse(claw.IDLE());
+    grabAlgaeFromFloor
+        .onTrue(claw.FLOOR())
+        .whileTrue(new GrabAlgae(claw))
+        .onFalse(claw.IDLE())
+        .and(driver.rightStick())
+        .whileTrue(
+            drivetrain
+                .applyRequest(
+                    () ->
+                        drive
+                            .withRotationalRate(
+                                Constants.MaxAngularRate.times(
+                                    -Units.degreesToRadians(vision.getAlgaeYaw()) * 0.4))
+                            .withVelocityX(
+                                MaxSpeed.times(
+                                    -driver
+                                        .customLeft()
+                                        .getY())) // Drive forward with negative Y (forward)
+                            .withVelocityY(MaxSpeed.times(-driver.customLeft().getX())))
+                .onlyWhile(driver.rightStick()));
 
     previousTarget
         .and(() -> TargetingComputer.targetingControllerOverride ? targetReef.getAsBoolean() : true)
