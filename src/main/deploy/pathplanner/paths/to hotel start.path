@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.3125,
-        "y": 4.372643442622951
+        "x": 7.300512295081968,
+        "y": 4.132889344262295
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.062535624801539,
-        "y": 4.376863766264915
+        "x": 7.019371915073223,
+        "y": 4.122028575489495
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.077766393442623,
-        "y": 4.372643442622951
+        "x": 6.473360655737705,
+        "y": 4.132889344262295
       },
       "prevControl": {
-        "x": 6.327718676781523,
-        "y": 4.367759176693463
+        "x": 6.831032823914249,
+        "y": 4.14117040676266
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "hotel"
     }
   ],
   "rotationTargets": [],
@@ -33,22 +33,22 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.0,
-    "maxAcceleration": 7.0,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 1090.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 1.0,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "To",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -177.48863673283688
+    "rotation": -179.67590611795939
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

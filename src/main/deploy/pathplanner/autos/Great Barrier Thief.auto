@@ -1,0 +1,139 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "initiate"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to hotel start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Hotel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "low algae position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "claw position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "align to g&h algae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "elevator no stop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "claw net"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from G&H Algae to barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "STEALLLL"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "claw position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "high algae position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "align to f&e algae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "back flipped"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "claw net"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "from foxtrot to barge flip"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -42,7 +42,9 @@ public class ClawIOSIM extends ClawIOCTRE {
   private double maxvel = 200.0;
 
   private final LoggedMechanismLigament2d m_wrist;
+  private final LoggedMechanismLigament2d m_wrist2;
   private final LoggedMechanismLigament2d m_wristEXTENSION;
+  private final LoggedMechanismLigament2d m_wristEXTENSION2;
   private final LoggedMechanismLigament2d[] m_Algae;
   private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
   private final ProfiledPIDController m_bottomController =
@@ -68,10 +70,17 @@ public class ClawIOSIM extends ClawIOCTRE {
     m_wristEXTENSION =
         elevator.m_secondStage2d.append(
             new LoggedMechanismLigament2d("Extension", Units.inchesToMeters(9.643), 230));
-    m_wrist =
+    m_wristEXTENSION2 =
         m_wristEXTENSION.append(
+            new LoggedMechanismLigament2d("Extension2", Units.inchesToMeters(8.25), -90));
+    m_wrist =
+        m_wristEXTENSION2.append(
             new LoggedMechanismLigament2d(
-                "Wrist", Units.inchesToMeters(14), 0, 4.8, new Color8Bit(Color.kPurple)));
+                "Wrist", Units.inchesToMeters(8.729), 0, 4.8, new Color8Bit(Color.kPurple)));
+    m_wrist2 =
+        m_wrist.append(
+            new LoggedMechanismLigament2d(
+                "Wrist2", Units.inchesToMeters(12.625), 26.6, 4.8, new Color8Bit(Color.kPurple)));
     m_Algae = new LoggedMechanismLigament2d[15];
     // for (int i = 0; i < 15; i++) {
     //   m_Algae[i] =
@@ -119,7 +128,7 @@ public class ClawIOSIM extends ClawIOCTRE {
     }
     m_arm_topSim.setInput(pwmTalonFX.get() * RobotController.getBatteryVoltage());
 
-    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()) + 40);
+    m_wrist.setAngle(Units.radiansToDegrees(m_arm_topSim.getAngleRads()) + 40 + 90 - 26.6);
 
     Logger.recordOutput(
         "Claw angle por favor",
@@ -173,9 +182,9 @@ public class ClawIOSIM extends ClawIOCTRE {
     }
 
     if (inputs.hasAlgae) {
-      m_wrist.setColor(new Color8Bit(Color.kAquamarine));
+      m_wrist2.setColor(new Color8Bit(Color.kAquamarine));
     } else {
-      m_wrist.setColor(new Color8Bit(Color.kPurple));
+      m_wrist2.setColor(new Color8Bit(Color.kPurple));
     }
   }
 }

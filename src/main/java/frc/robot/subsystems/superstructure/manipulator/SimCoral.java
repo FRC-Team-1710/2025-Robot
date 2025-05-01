@@ -4,11 +4,14 @@
 
 package frc.robot.subsystems.superstructure.manipulator;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.utils.TargetingComputer;
 import frc.robot.utils.TargetingComputer.Levels;
 import frc.robot.utils.TargetingComputer.Targets;
@@ -30,6 +33,21 @@ public class SimCoral {
   }
 
   public static void placeCoral() {
+    Pose2d pose = new Pose2d();
+    spots spot =
+        getSpot(
+            TargetingComputer.getCurrentTargetBranch(), TargetingComputer.getCurrentTargetLevel());
+    if (spot != null && spot != spots.Level1) {
+      poses.add(
+          getSpot(
+                  TargetingComputer.getCurrentTargetBranch(),
+                  TargetingComputer.getCurrentTargetLevel())
+              .pose);
+    } else if (spot == spots.Level1) {
+      if (pose.getTranslation().getDistance(Constants.CenterOfReef) <= Units.inchesToMeters(50)) {
+        poses.add(getAngledPose(pose));
+      }
+    }
     poses.add(
         getSpot(
                     TargetingComputer.getCurrentTargetBranch(),
@@ -41,6 +59,80 @@ public class SimCoral {
                 .pose
             : new Pose3d());
     Logger.recordOutput("Coral", poses.toArray(new Pose3d[poses.size()]));
+  }
+
+  public static void placeCoral(DoubleSupplier x, DoubleSupplier y, DoubleSupplier rad) {
+    Pose2d pose = new Pose2d(x.getAsDouble(), y.getAsDouble(), new Rotation2d(rad.getAsDouble()));
+    spots spot = spots.Level1;
+    if (spot != null && spot != spots.Level1) {
+      poses.add(
+          getSpot(
+                  TargetingComputer.getCurrentTargetBranch(),
+                  TargetingComputer.getCurrentTargetLevel())
+              .pose);
+    } else if (spot == spots.Level1) {
+      if (pose.getTranslation().getDistance(Constants.CenterOfReef) <= Units.inchesToMeters(60)) {
+        poses.add(getAngledPose(pose));
+      }
+    }
+    Logger.recordOutput("Coral", poses.toArray(new Pose3d[poses.size()]));
+  }
+
+  public static Pose3d getAngledPose(Pose2d pose) {
+    pose =
+        new Pose2d(
+            pose.getX(),
+            pose.getY(),
+            new Rotation2d(Units.degreesToRadians(-pose.getRotation().getDegrees())));
+    double posex = pose.getX();
+    double posey = pose.getY();
+    double placeDistance = 0.4;
+
+    if (pose.getRotation().getDegrees() > 0 && pose.getRotation().getDegrees() < 90) {
+      posey =
+          pose.getY()
+              + (Math.cos(pose.getRotation().getRadians()) * placeDistance); // Top right of circle
+    } else if (pose.getRotation().getDegrees() < -90 && pose.getRotation().getDegrees() > -180) {
+      posey =
+          pose.getY()
+              + (Math.cos(Units.degreesToRadians(pose.getRotation().getDegrees() + 90))
+                  * placeDistance); // Bottom right of circle
+    } else if (pose.getRotation().getDegrees() > 0 && pose.getRotation().getDegrees() < -90) {
+      posey =
+          pose.getY()
+              - (Math.cos(pose.getRotation().getRadians()) * placeDistance); // Top left of circle
+    } else if (pose.getRotation().getDegrees() > 90 && pose.getRotation().getDegrees() < -180) {
+      posey =
+          pose.getY()
+              - (Math.cos(Units.degreesToRadians(pose.getRotation().getDegrees() - 90))
+                  * placeDistance); // Bottom left of circle
+    }
+
+    if (pose.getRotation().getDegrees() > 0 && pose.getRotation().getDegrees() < 90) {
+      posex =
+          pose.getX()
+              - (Math.sin(pose.getRotation().getRadians()) * placeDistance); // Top right of circle
+    } else if (pose.getRotation().getDegrees() < -90 && pose.getRotation().getDegrees() > -180) {
+      posex =
+          pose.getX()
+              + (Math.sin(Units.degreesToRadians(pose.getRotation().getDegrees() + 90))
+                  * placeDistance); // Bottom right of circle
+    } else if (pose.getRotation().getDegrees() > 0 && pose.getRotation().getDegrees() < -90) {
+      posex =
+          pose.getX()
+              - (Math.sin(pose.getRotation().getRadians()) * placeDistance); // Top left of circle
+    } else if (pose.getRotation().getDegrees() > 90 && pose.getRotation().getDegrees() < -180) {
+      posex =
+          pose.getX()
+              + (Math.sin(Units.degreesToRadians(pose.getRotation().getDegrees() - 90))
+                  * placeDistance); // Bottom left of circle
+    }
+
+    return new Pose3d(
+        posex,
+        posey,
+        0.6,
+        new Rotation3d(0, Units.degreesToRadians(-80), pose.getRotation().getRadians()));
   }
 
   public static void tempCoral() {
@@ -62,6 +154,7 @@ public class SimCoral {
   }
 
   public static enum spots {
+    Level1(),
     A2(
         new Pose3d(
             3.78,
@@ -392,10 +485,17 @@ public class SimCoral {
     spots(Pose3d pose) {
       this.pose = pose;
     }
+
+    spots() {
+      this.pose = new Pose3d();
+    }
   }
 
   public static spots getSpot(Targets target, Levels level) {
     if (target == Targets.ALPHA) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.A2;
       }
@@ -407,6 +507,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.BRAVO) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.B2;
       }
@@ -418,6 +521,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.CHARLIE) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.C2;
       }
@@ -429,6 +535,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.DELTA) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.D2;
       }
@@ -440,6 +549,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.ECHO) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.E2;
       }
@@ -451,6 +563,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.FOXTROT) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.F2;
       }
@@ -462,6 +577,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.GOLF) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.G2;
       }
@@ -473,6 +591,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.HOTEL) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.H2;
       }
@@ -484,6 +605,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.INDIA) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.I2;
       }
@@ -495,6 +619,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.JULIET) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.J2;
       }
@@ -506,6 +633,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.KILO) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.K2;
       }
@@ -517,6 +647,9 @@ public class SimCoral {
       }
     }
     if (target == Targets.LIMA) {
+      if (level == Levels.L1) {
+        return spots.Level1;
+      }
       if (level == Levels.L2) {
         return spots.L2;
       }

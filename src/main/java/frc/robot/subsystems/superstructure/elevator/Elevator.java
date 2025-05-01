@@ -110,8 +110,8 @@ public class Elevator extends SubsystemBase {
     L2(Inches.of(15.75)), // Position for scoring in L2
     L3(Inches.of(32.25)), // Position for scoring in L3
     L4(Inches.of(54.5)), // Position for scoring in L4
-    ALGAE_LOW(Inches.of(10), Inches.of(1.5)), // Position for grabbing low algae
-    ALGAE_HIGH(Inches.of(26.5), Inches.of(1.5)); // Position for grabbing high algae
+    ALGAE_LOW(Inches.of(19), Inches.of(1.5)), // Position for grabbing low algae
+    ALGAE_HIGH(Inches.of(35.5), Inches.of(1.5)); // Position for grabbing high algae
 
     private final Distance targetDistance;
     private final Distance angleTolerance;
@@ -202,7 +202,9 @@ public class Elevator extends SubsystemBase {
 
   public boolean goingToTarget() {
 
-    return getPosition().isNear(Inches.of(43), currentMode.angleTolerance);
+    return getPosition()
+        .isNear(
+            ElevatorPosition.ALGAE_HIGH.targetDistance, ElevatorPosition.ALGAE_HIGH.angleTolerance);
   }
 
   /** Only allows manual inputs because it wants to break itself */
@@ -272,6 +274,8 @@ public class Elevator extends SubsystemBase {
    * @return Command to move the arm to the low algae distance
    */
   public final Command ALGAE_LOW() {
+    Logger.recordOutput("Command", "Algae Low");
+
     return setPositionCommand(ElevatorPosition.ALGAE_LOW);
   }
 
@@ -286,6 +290,7 @@ public class Elevator extends SubsystemBase {
    * @return Command to intake the arm
    */
   public final Command INTAKE() {
+    Logger.recordOutput("Command", "Intake");
     return setPositionCommand(ElevatorPosition.INTAKE)
         .until(() -> ElevatorPosition.L2.targetDistance == getPosition());
   }

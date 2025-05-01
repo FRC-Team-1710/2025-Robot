@@ -38,6 +38,7 @@ public class Vision extends SubsystemBase {
 
   private final VisionConsumer consumer;
   private final VisionIO[] io;
+  private final VisionIOAlgae algaeCamera;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
@@ -45,6 +46,11 @@ public class Vision extends SubsystemBase {
     6, 7, 8, 9, 10, 11,
     17, 18, 19, 20, 21, 22
   };
+
+  private final double flagAngle =
+      Math.toRadians(
+          2.0); // Pitch and roll of a reading before a camera needs to be flagged. IN RADIANS FOR
+  // GODS SAKE
 
   private boolean[] rejectCamera = {false, false, false, false};
 
@@ -67,10 +73,11 @@ public class Vision extends SubsystemBase {
    * @param consumer Callback interface for processed vision measurements
    * @param io Array of VisionIO interfaces for each camera
    */
-  public Vision(VisionConsumer consumer, VisionIO... io) {
+  public Vision(VisionConsumer consumer, VisionIOAlgae algaeCamera, VisionIO... io) {
     System.out.println("[Init] Creating Vision");
     this.consumer = consumer;
     this.io = io;
+    this.algaeCamera = algaeCamera;
 
     // Initialize input arrays for each camera
     inputs = new VisionIOInputsAutoLogged[io.length];
@@ -99,11 +106,34 @@ public class Vision extends SubsystemBase {
       disconnectedAlerts[i].set(!inputs[i].connected);
       Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
+    algaeCamera.updateResults();
+    double algaeYaw = algaeCamera.getAlgaeYaw();
+    if (algaeYaw != 0.0) {
+      Logger.recordOutput("Algae Yaw", algaeYaw);
+    }
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
     logSummary(visionData);
     consumer.accept(sortMeasurements(visionData.measurements()));
+
+    for (int i = 0; i < io.length; i++) {
+      VisionIOPhotonVision currentCamera = getCamera(i); // Grabs current camera
+      if (currentCamera.hasTargets()) {
+        Rotation3d rotationReading =
+            currentCamera.lastAcceptedPose.getRotation(); // Grab rotation from reading for skew
+        Logger.recordOutput(
+            "VisionDebugging/Camera " + i + " pose",
+            currentCamera.lastAcceptedPose); // Log entire pose from camera
+        boolean flagged =
+            (rotationReading.getX() <= -flagAngle || rotationReading.getX() >= flagAngle)
+                || (rotationReading.getY() <= -flagAngle
+                    || rotationReading.getY() >= flagAngle); // Logic to flag camera
+        rejectCamera[i] = flagged; // Here is where the camera is rejected if skewed
+        currentCamera.flag(flagged); // This flags the camera in the camera class
+      }
+      Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
+    }
 
     try {
       Logger.recordOutput(
@@ -256,6 +286,7 @@ public class Vision extends SubsystemBase {
     if (!availableTags.isEmpty()) {
       int targetTagID =
           Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+      Logger.recordOutput("VisionDebugging/Target Tag ID", targetTagID);
       boolean leftSide =
           (getCamera(getCameraIDWithTarget(targetTagID))
                   .getRobotToTargetOffset(targetTagID)
@@ -288,6 +319,39 @@ public class Vision extends SubsystemBase {
   }
 
   /**
+   * //////// WIP //////// TODO change the privacy once done
+   *
+   * @param index
+   */
+  private void recalibrateCamera(int index) {
+    return;
+  }
+
+  /**
+   * Recalibrates either the front left or the right camera based on the parameters given.
+   *
+   * @param leftCamera Boolean to tell whether the camera being calibrated is the left or the right
+   *     camera
+   * @param tagID Reference tag ID that BOTH of the tags can see; if they don't, nothing will happen
+   */
+  public void recalibrateFrontCamera(boolean leftCamera, int tagID) {
+    autoBranchTargeting();
+    if (!(getCamera(0).hasTarget(tagID) && getCamera(1).hasTarget(tagID))) {
+      return;
+    }
+    Transform3d uncalibratedReading = getCamera(leftCamera ? 0 : 1).getCameraToTag(tagID);
+    Transform3d referenceReading = getCamera(leftCamera ? 1 : 0).getCameraToTag(tagID);
+    Logger.recordOutput("VisionDebugging/Uncalibrated Reading Left", uncalibratedReading);
+    Logger.recordOutput("VisionDebugging/Reference Reading", referenceReading);
+    getCamera(leftCamera ? 0 : 1)
+        .setStdDev(
+            getCamera(leftCamera ? 1 : 0)
+                .getStdDev()
+                .plus(referenceReading)
+                .plus(uncalibratedReading.inverse()));
+  }
+
+  /**
    * Only use this method if you are completely sure there is a camera with the target or else it
    * will not work as expected.
    *
@@ -301,6 +365,10 @@ public class Vision extends SubsystemBase {
       }
     }
     return 0;
+  }
+
+  public double getAlgaeYaw() {
+    return algaeCamera.getAlgaeYaw();
   }
 
   /**

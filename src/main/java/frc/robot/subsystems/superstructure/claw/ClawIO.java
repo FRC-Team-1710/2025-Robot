@@ -35,6 +35,8 @@ public interface ClawIO {
     public boolean clawConnected = false;
     public boolean wristConnected = false;
 
+    public boolean hasZeroed = false;
+
     public boolean hasAlgae = false;
     public boolean rollerLocked = false;
 
@@ -68,6 +70,8 @@ public interface ClawIO {
   public default void setRollers(double power) {}
 
   public default void setAlgaeStatus(boolean status) {}
+
+  public default void zeroPIDToAngle() {}
 
   public default void stopHere() {}
 

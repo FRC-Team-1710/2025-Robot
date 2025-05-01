@@ -1,0 +1,79 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "to hotel start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Hotel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hotel to Source curve"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Source Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source to Golf curve"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Align to Golf"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake position"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

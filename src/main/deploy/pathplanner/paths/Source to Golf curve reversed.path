@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.818375,
+        "y": 0.6758749999999998
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.578250000005176,
+        "y": 0.6368749999940337
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.976749999999999,
+        "y": 3.8689999999999993
+      },
+      "prevControl": {
+        "x": 5.854875000005177,
+        "y": 0.15424999999403344
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "golf"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 7.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1090.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "useDefaultConstraints": true
+}

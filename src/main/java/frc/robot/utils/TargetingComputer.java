@@ -24,6 +24,8 @@ public class TargetingComputer {
   public static int branchGameScore = 0;
   public static boolean targetingAlgae = false;
 
+  public static boolean switchAuto = false;
+
   /** should set the alignment target to the secondary grabbing pose */
   public static boolean readyToGrabAlgae = false;
 
@@ -141,7 +143,7 @@ public class TargetingComputer {
       case SOURCE_RIGHT -> isRedAlliance ? 234 : 54;
       case PROCESSOR -> isRedAlliance ? 90 : 270;
       case FAR_PROCESSOR -> isRedAlliance ? 270 : 90;
-      case NET -> isRedAlliance ? 220 : 40;
+      case NET -> isRedAlliance ? 210 : 30; // TODO: TEST
     };
   }
 
@@ -272,7 +274,7 @@ public class TargetingComputer {
 
   /** Degrees */
   public static double getSourceTargetingAngle(Pose2d pose) {
-    if (goForClimb) return -Targets.PROCESSOR.getTargetingAngle();
+    if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
 
     if (isRedAlliance) {
       if (pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance) { // close

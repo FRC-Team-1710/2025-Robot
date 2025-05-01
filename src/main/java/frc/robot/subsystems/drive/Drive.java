@@ -188,7 +188,7 @@ public class Drive extends SubsystemBase {
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineRotation;
 
   // logging
   private Field2d m_field = new Field2d();
@@ -258,11 +258,7 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Guys I can add comments to this
-   *
-   * <p>I'm gonna be as unhelpful as possible
-   *
-   * <p>Enjoy!
+   * Aligns the robot to the set target, uses setpointgen
    *
    * @param requestSupplier
    * @param target
@@ -271,7 +267,10 @@ public class Drive extends SubsystemBase {
    * @return
    */
   public Command Alignment(Targets target, Vision vision, Elevator elevator) {
+
     TargetingComputer.setTargetBranch(target);
+
+    Logger.recordOutput("Command", "Alignment");
 
     SwerveSetpointGen setpointGenAuto =
         new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
@@ -287,11 +286,16 @@ public class Drive extends SubsystemBase {
                     .withVelocityX(
                         TunerConstants.kSpeedAt12Volts
                             .times(
-                                (TargetingComputer.getSelectTargetBranchPose(target).getX()
-                                                - getPose().getX())
+                                Math.abs(
+                                                TargetingComputer.getSelectTargetBranchPose(target)
+                                                        .getX()
+                                                    - getPose().getX())
                                             * 1.2
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
+                                        > TargetingComputer.maxAlignSpeed - .1
+                                    ? Math.copySign(
+                                        TargetingComputer.maxAlignSpeed - .1,
+                                        (TargetingComputer.getSelectTargetBranchPose(target).getX()
+                                            - getPose().getX()))
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getX()
                                             - getPose().getX())
                                         * 1.2)
@@ -299,11 +303,16 @@ public class Drive extends SubsystemBase {
                     .withVelocityY(
                         TunerConstants.kSpeedAt12Volts
                             .times(
-                                (TargetingComputer.getSelectTargetBranchPose(target).getY()
-                                                - getPose().getY())
+                                Math.abs(
+                                                TargetingComputer.getSelectTargetBranchPose(target)
+                                                        .getY()
+                                                    - getPose().getY())
                                             * 1.2
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
+                                        > TargetingComputer.maxAlignSpeed - .1
+                                    ? Math.copySign(
+                                        TargetingComputer.maxAlignSpeed - .1,
+                                        (TargetingComputer.getSelectTargetBranchPose(target).getY()
+                                            - getPose().getY()))
                                     : (TargetingComputer.getSelectTargetBranchPose(target).getY()
                                             - getPose().getY())
                                         * 1.2)
@@ -318,6 +327,40 @@ public class Drive extends SubsystemBase {
             () ->
                 getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
                     < TargetingComputer.alignmentTranslationTolerance);
+  }
+
+  public Command bargeAlignment(Vision vision, Elevator elevator) {
+
+    Pose2d selectedPos =
+        new Pose2d(
+            (FieldConstants.fieldWidth.in(Meters) - 7.26),
+            FieldConstants.fieldLength.in(Meters),
+            new Rotation2d(TargetingComputer.getAngleForTarget(Targets.NET)));
+
+    SwerveSetpointGen setpointGenAuto =
+        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
+            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    return run(() ->
+            io.setControl(
+                setpointGenAuto
+                    .withOperatorForwardDirection(getOperatorForwardDirection())
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(getPose().getX() - selectedPos.getX() * 1.2)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withVelocityY(
+                        TunerConstants.kSpeedAt12Volts
+                            .times(getPose().getY() - selectedPos.getY() * 1.2)
+                            .times(Robot.getAlliance() ? -1 : 1))
+                    .withRotationalRate(
+                        Constants.MaxAngularRate.times(
+                            getPose().getRotation().minus(selectedPos.getRotation()).getRadians()
+                                * 0.45))))
+        .until(() -> getPose().getX() == selectedPos.getX());
   }
 
   /**
@@ -494,6 +537,7 @@ public class Drive extends SubsystemBase {
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
+    // return new Pose2d(new Translation2d(8, 6), inputs.pose.getRotation());
     if (estimatorTrigger.getAsBoolean()) {
       return poseEstimator.getEstimatedPosition();
     }
