@@ -6,6 +6,9 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.pathfinding.LocalADStar;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -81,6 +84,8 @@ public class Robot extends LoggedRobot {
 
     SignalLogger.stop();
 
+    Pathfinding.setPathfinder(new LocalADStar());
+
     // Warmup the PPLib library
     FollowPathCommand.warmupCommand().schedule();
     // PathfindingCommand.warmupCommand().schedule();
@@ -90,6 +95,7 @@ public class Robot extends LoggedRobot {
     // Warmup the PPLib library
 
     FollowPathCommand.warmupCommand().schedule();
+    PathfindingCommand.warmupCommand().schedule();
 
     m_robotContainer = new RobotContainer();
 

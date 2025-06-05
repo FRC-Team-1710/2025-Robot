@@ -21,6 +21,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -121,7 +124,10 @@ public class Drive extends SubsystemBase {
   private final SysIdSwerveTranslation_Torque m_translationTorqueCharacterization =
       new SysIdSwerveTranslation_Torque();
 
-  /* SysId routine for characterizing torque translation. This is used to find PID gains for Torque Current of the drive motors. */
+  /*
+   * SysId routine for characterizing torque translation. This is used to find PID
+   * gains for Torque Current of the drive motors.
+   */
   private final SysIdRoutine m_sysIdRoutineTorqueTranslation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -138,7 +144,10 @@ public class Drive extends SubsystemBase {
               null,
               this));
 
-  /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+  /*
+   * SysId routine for characterizing translation. This is used to find PID gains
+   * for the drive motors.
+   */
   private final SysIdRoutine m_sysIdRoutineTranslation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -150,7 +159,10 @@ public class Drive extends SubsystemBase {
           new SysIdRoutine.Mechanism(
               output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
 
-  /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+  /*
+   * SysId routine for characterizing steer. This is used to find PID gains for
+   * the steer motors.
+   */
   private final SysIdRoutine m_sysIdRoutineSteer =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -164,13 +176,18 @@ public class Drive extends SubsystemBase {
 
   /*
    * SysId routine for characterizing rotation.
-   * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+   * This is used to find PID gains for the FieldCentricFacingAngle
+   * HeadingController.
+   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
+   * importing the log to SysId.
    */
   private final SysIdRoutine m_sysIdRoutineRotation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
-              /* This is in radians per second squared, but SysId only supports "volts per second" */
+              /*
+               * This is in radians per second squared, but SysId only supports
+               * "volts per second"
+               */
               Volts.of(Math.PI / 6).per(Second),
               /* This is in radians per second, but SysId only supports "volts" */
               Volts.of(Math.PI),
@@ -192,6 +209,12 @@ public class Drive extends SubsystemBase {
 
   // logging
   private Field2d m_field = new Field2d();
+
+  PathConstraints constraints =
+      new PathConstraints(4.5, 6.2, Units.degreesToRadians(467), Units.degreesToRadians(1136));
+  GoalEndState end =
+      new GoalEndState(
+          MetersPerSecond.of(0.75), TargetingComputer.getCurrentTargetBranchPose().getRotation());
 
   public Drive(DriveIO io) {
 
@@ -229,7 +252,8 @@ public class Drive extends SubsystemBase {
             // PID constants for rotation
             new PIDConstants(7, 0, 0)),
         Constants.PP_CONFIG,
-        // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+        // Assume the path needs to be flipped for Red vs Blue, this is normally the
+        // case
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this // Subsystem for requirements
         );
@@ -467,10 +491,14 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     /*
      * Periodically try to apply the operator perspective.
-     * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-     * This allows us to correct the perspective in case the robot code restarts mid-match.
-     * Otherwise, only check and apply the operator perspective if the DS is disabled.
-     * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+     * If we haven't applied the operator perspective before, then we should apply
+     * it regardless of DS state.
+     * This allows us to correct the perspective in case the robot code restarts
+     * mid-match.
+     * Otherwise, only check and apply the operator perspective if the DS is
+     * disabled.
+     * This ensures driving behavior doesn't change until an explicit disable event
+     * occurs during testing.
      */
 
     io.updateInputs(inputs);
@@ -505,6 +533,21 @@ public class Drive extends SubsystemBase {
 
     m_field.setRobotPose(getPose());
     SmartDashboard.putData("field", m_field);
+
+    Pathfinding.setStartPosition(AutoBuilder.getCurrentPose().getTranslation());
+
+    end =
+      new GoalEndState(
+          MetersPerSecond.of(0.75), TargetingComputer.getCurrentTargetBranchPose().getRotation());
+
+    Logger.recordOutput(
+        "Pathfinding Path",
+        Pathfinding.getCurrentPath(constraints, end) != null
+            ? Pathfinding.getCurrentPath(constraints, end)
+                .getPathPoses()
+                .toArray(
+                    new Pose2d[Pathfinding.getCurrentPath(constraints, end).getPathPoses().size()])
+            : null);
   }
 
   public void resetPose(Pose2d pose) {
@@ -515,24 +558,27 @@ public class Drive extends SubsystemBase {
   }
 
   /*
-  public Command goToPoint(int x, int y) {
-    Pose2d targetPose = new Pose2d(x, y, Rotation2d.fromDegrees(180));
-    PathConstraints constraints =
-        new PathConstraints(4.0, 5.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    return AutoBuilder.pathfindToPose(targetPose, constraints);
-  }
-  /*
+   * public Command goToPoint(int x, int y) {
+   * Pose2d targetPose = new Pose2d(x, y, Rotation2d.fromDegrees(180));
+   * PathConstraints constraints =
+   * new PathConstraints(4.0, 5.0, Units.degreesToRadians(540),
+   * Units.degreesToRadians(720));
+   * return AutoBuilder.pathfindToPose(targetPose, constraints);
+   * }
+   * /*
    * flips if needed
    */
   /*
-  public Command goToPoint(Pose2d pose) {
-    PathConstraints constraints =
-        new PathConstraints(3.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    return new ConditionalCommand(
-        AutoBuilder.pathfindToPoseFlipped(pose, constraints),
-        AutoBuilder.pathfindToPose(pose, constraints),
-        () -> Robot.getAlliance());
-  }*/
+   * public Command goToPoint(Pose2d pose) {
+   * PathConstraints constraints =
+   * new PathConstraints(3.0, 2.0, Units.degreesToRadians(540),
+   * Units.degreesToRadians(720));
+   * return new ConditionalCommand(
+   * AutoBuilder.pathfindToPoseFlipped(pose, constraints),
+   * AutoBuilder.pathfindToPose(pose, constraints),
+   * () -> Robot.getAlliance());
+   * }
+   */
 
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Odometry/Robot")

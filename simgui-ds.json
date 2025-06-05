@@ -20,21 +20,21 @@
           "keyRate": 0.5
         },
         {
-          "decKey": 49,
-          "decayRate": 0.0,
-          "incKey": 50,
+          "decKey": 81,
+          "decayRate": 1.0,
+          "incKey": 69,
           "keyRate": 0.009999999776482582
         },
         {
-          "decKey": 52,
+          "decKey": 50,
           "decayRate": 0.5,
-          "incKey": 51,
+          "incKey": 49,
           "keyRate": 0.5
         },
         {
-          "decKey": 263,
+          "decKey": 52,
           "decayRate": 0.25,
-          "incKey": 262,
+          "incKey": 51,
           "keyRate": 0.25
         }
       ],
@@ -111,8 +111,7 @@
   ],
   "robotJoysticks": [
     {
-      "guid": "78696e70757401000000000000000000",
-      "useGamepad": true
+      "guid": "Keyboard0"
     },
     {
       "useGamepad": true

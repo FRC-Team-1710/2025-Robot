@@ -2,6 +2,7 @@ package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -153,6 +154,7 @@ public class TargetingComputer {
 
   public static void setTargetBranch(Targets target) {
     currentTargetBranch = target;
+    Pathfinding.setGoalPosition(getCurrentTargetBranchPose().getTranslation());
   }
 
   public static void setTargetBranchByOrientation(Pose2d pose) {
