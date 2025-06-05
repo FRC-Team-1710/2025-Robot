@@ -10,18 +10,20 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utils.TargetingComputer;
+import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class PathFind extends Command {
   PathConstraints constraints =
-      new PathConstraints(4.5, 6.2, Units.degreesToRadians(467), Units.degreesToRadians(1136));
+      new PathConstraints(4.5, 1.5, Units.degreesToRadians(467), Units.degreesToRadians(500));
   GoalEndState end =
       new GoalEndState(
-          MetersPerSecond.of(0.75), TargetingComputer.getCurrentTargetBranchPose().getRotation());
+          MetersPerSecond.of(0.0), TargetingComputer.getCurrentTargetBranchPose().getRotation());
   Command currentcommand;
   boolean nullPath = false;
 
@@ -35,9 +37,15 @@ public class PathFind extends Command {
   public void initialize() {
     nullPath = false;
     end =
-      new GoalEndState(
-          MetersPerSecond.of(0.75), TargetingComputer.getCurrentTargetBranchPose().getRotation());
+        new GoalEndState(
+            MetersPerSecond.of(0.0), TargetingComputer.getCurrentTargetBranchPose().getRotation());
     if (Pathfinding.getCurrentPath(constraints, end) != null) {
+      Logger.recordOutput(
+          "Pathfinding Path",
+          Pathfinding.getCurrentPath(constraints, end)
+              .getPathPoses()
+              .toArray(
+                  new Pose2d[Pathfinding.getCurrentPath(constraints, end).getPathPoses().size()]));
       currentcommand = AutoBuilder.followPath(Pathfinding.getCurrentPath(constraints, end));
       currentcommand.schedule();
     } else {

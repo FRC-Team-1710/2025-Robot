@@ -534,20 +534,7 @@ public class Drive extends SubsystemBase {
     m_field.setRobotPose(getPose());
     SmartDashboard.putData("field", m_field);
 
-    Pathfinding.setStartPosition(AutoBuilder.getCurrentPose().getTranslation());
-
-    end =
-      new GoalEndState(
-          MetersPerSecond.of(0.75), TargetingComputer.getCurrentTargetBranchPose().getRotation());
-
-    Logger.recordOutput(
-        "Pathfinding Path",
-        Pathfinding.getCurrentPath(constraints, end) != null
-            ? Pathfinding.getCurrentPath(constraints, end)
-                .getPathPoses()
-                .toArray(
-                    new Pose2d[Pathfinding.getCurrentPath(constraints, end).getPathPoses().size()])
-            : null);
+    Pathfinding.setStartPosition(getPose().getTranslation());
   }
 
   public void resetPose(Pose2d pose) {

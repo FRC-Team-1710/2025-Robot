@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
 import java.util.Random;
+import org.littletonrobotics.junction.Logger;
 
 public class TargetingComputer {
   public static final boolean homeField = true; // TODO: Change before comp
@@ -49,7 +50,7 @@ public class TargetingComputer {
 
   private static final double xOffset = 17.5;
   private static final double yOffset = 7;
-  private static final double homeYOffset = 1;
+  private static final double homeYOffset = 0.5;
 
   // AprilTag Targeting
   public static boolean targetSet;
@@ -133,7 +134,7 @@ public class TargetingComputer {
   }
 
   public static double getAngleForTarget(Targets target) {
-    return switch (target) { // XOR RAAAHHHHHH!!
+    return switch (target) { // XOR RAAAHHHHHH!! thats not an xor - sam
       case ALPHA, BRAVO -> isRedAlliance ? 180 : 0;
       case CHARLIE, DELTA -> isRedAlliance ? 240 : 60;
       case ECHO, FOXTROT -> isRedAlliance ? 300 : 120;
@@ -154,9 +155,17 @@ public class TargetingComputer {
 
   public static void setTargetBranch(Targets target) {
     currentTargetBranch = target;
-    Pathfinding.setGoalPosition(getCurrentTargetBranchPose().getTranslation());
+
+    Logger.recordOutput(
+        "TEMP", getCurrentTargetBranchPose().plus(new Transform2d(-0.25, 0, new Rotation2d(0))));
+
+    Pathfinding.setGoalPosition(
+        getCurrentTargetBranchPose()
+            .plus(new Transform2d(-0.25, 0, new Rotation2d(0)))
+            .getTranslation());
   }
 
+  // these if statements are so icky - Sam
   public static void setTargetBranchByOrientation(Pose2d pose) {
     if (Math.abs(new Rotation2d(Units.degreesToRadians(0)).minus(pose.getRotation()).getDegrees())
         < 30) {
@@ -274,6 +283,7 @@ public class TargetingComputer {
         : pose.getX() >= FieldConstants.fieldLength.in(Meters) - sourceCutoffDistance;
   }
 
+  // holy mother of ternary statements
   /** Degrees */
   public static double getSourceTargetingAngle(Pose2d pose) {
     if (goForClimb) return Targets.PROCESSOR.getTargetingAngle();
