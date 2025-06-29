@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
+import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorStates;
 import java.util.Random;
 
 public class TargetingComputer {
@@ -559,23 +559,23 @@ public class TargetingComputer {
   }
 
   public static enum Levels {
-    INTAKE(0, ElevatorPosition.INTAKE),
-    L1(1, ElevatorPosition.L1),
-    L2(2, ElevatorPosition.L2),
-    L3(3, ElevatorPosition.L3),
-    L4(4, ElevatorPosition.L4),
-    ALGAE_HIGH(5, ElevatorPosition.ALGAE_HIGH),
-    ALGAE_LOW(6, ElevatorPosition.ALGAE_LOW);
+    INTAKE(0, ElevatorStates.INTAKE),
+    L1(1, ElevatorStates.L1),
+    L2(2, ElevatorStates.L2),
+    L3(3, ElevatorStates.L3),
+    L4(4, ElevatorStates.L4),
+    ALGAE_HIGH(5, ElevatorStates.ALGAE_HIGH),
+    ALGAE_LOW(6, ElevatorStates.ALGAE_LOW);
 
     public final int gameHeight;
-    public final ElevatorPosition elevatorPosition;
+    public final ElevatorStates elevatorPosition;
 
-    Levels(int gameHeight, ElevatorPosition elevatorPosition) {
+    Levels(int gameHeight, ElevatorStates elevatorPosition) {
       this.gameHeight = gameHeight;
       this.elevatorPosition = elevatorPosition;
     }
 
-    public ElevatorPosition getElevatorPosition() {
+    public ElevatorStates getElevatorPosition() {
       return elevatorPosition;
     }
   }

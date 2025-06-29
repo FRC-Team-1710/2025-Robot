@@ -7,7 +7,6 @@
 package frc.robot.subsystems.superstructure.funnel;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,12 +23,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Conversions;
-import java.io.File;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -87,12 +84,9 @@ public class FunnelIOCTRE implements FunnelIO {
 
   // Debouncers for connection status (filters out brief disconnections)
   private final Debouncer leaderDebounce = new Debouncer(0.5);
-  private final Debouncer followerDebounce = new Debouncer(0.5);
   private final Debouncer angleMotorDebounce = new Debouncer(0.5);
 
   public Timer timer = new Timer();
-
-  public Orchestra m_orchestra = new Orchestra();
 
   /**
    * Constructs a new ArmIOCTRE instance and initializes all hardware components. This includes
@@ -119,17 +113,6 @@ public class FunnelIOCTRE implements FunnelIO {
     constraints = new TrapezoidProfile.Constraints(kVel, kAcel);
     anglePID = new ProfiledPIDController(kP, kI, kD, constraints);
     angleFF = new ArmFeedforward(kS, kG, kV, kA);
-
-    var status =
-        m_orchestra.loadMusic(
-            Filesystem.getDeployDirectory()
-                .toPath()
-                .resolve("orchestra" + File.separator + "dangerzone.chrp")
-                .toString());
-
-    m_orchestra.addInstrument(leader, 0);
-    // m_orchestra.addInstrument(follower, 1);
-    m_orchestra.addInstrument(angleMotor, 2);
 
     // Configure update frequencies for all status signals
     BaseStatusSignal.setUpdateFrequencyForAll(
@@ -163,10 +146,6 @@ public class FunnelIOCTRE implements FunnelIO {
     SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
     SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
 
-    // m_orchestra.play();
-    // timer.reset();
-    // timer.start();
-
     angleMotor.setPosition(0);
     aileron.setAngle(FunnelConstants.AILERON_OUT);
   }
@@ -188,15 +167,6 @@ public class FunnelIOCTRE implements FunnelIO {
   @Override
   public void updateInputs(FunnelIOInputs inputs) {
     tempPIDTuning();
-
-    if (timer.get() > 15) {
-      if (m_orchestra.isPlaying()) {
-        m_orchestra.stop();
-      }
-      m_orchestra.close();
-      timer.stop();
-      timer.reset();
-    }
 
     // Refresh all sensor data
     StatusCode leaderStatus =

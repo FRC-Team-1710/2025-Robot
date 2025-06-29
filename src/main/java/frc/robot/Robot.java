@@ -92,6 +92,8 @@ public class Robot extends LoggedRobot {
     FollowPathCommand.warmupCommand().schedule();
 
     m_robotContainer = new RobotContainer();
+    
+    m_robotContainer.setAlliance(redAlliance);
 
     m_gcTimer.start();
   }
@@ -166,6 +168,7 @@ public class Robot extends LoggedRobot {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
+    m_robotContainer.setAlliance(redAlliance);
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -189,6 +192,7 @@ public class Robot extends LoggedRobot {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     TargetingComputer.setAlliance(redAlliance);
+    m_robotContainer.setAlliance(redAlliance);
     if (TargetingComputer.gameMode) {
       TargetingComputer.startBranchGame();
     }

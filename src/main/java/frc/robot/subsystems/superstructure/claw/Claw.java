@@ -17,12 +17,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -34,22 +30,16 @@ import org.littletonrobotics.junction.Logger;
  * control options.
  */
 public class Claw extends SubsystemBase {
-  // Hardware interface and inputs
   private final ClawIO io;
   private final ClawIOInputsAutoLogged inputs;
 
-  // Current claw angle mode
   private ClawStates currentState = ClawStates.IDLE;
 
   private boolean doneZeroing = false;
+  private double rollerPositionWhenAlgaeGrabbed = 0;
 
   private Timer timer = new Timer();
 
-  private static boolean hasAlgae = false;
-  public boolean rollerLocked;
-  private double rollerPositionWhenAlgaeGrabbed = 0;
-
-  // Alerts for motor connection status
   private final Alert wristAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
   private final Alert clawAlert = new Alert("Claw motor isn't connected", AlertType.kError);
 
@@ -62,28 +52,25 @@ public class Claw extends SubsystemBase {
   public Claw(ClawIO io) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
-    SmartDashboard.putData(this);
+    // SmartDashboard.putData(this);
   }
 
   @Override
   public void periodic() {
-    // Update and log inputs from hardware
     io.updateInputs(inputs);
     Logger.processInputs("Claw", inputs);
+    Logger.recordOutput("Claw/State", getState());
 
-    // Update motor connection status alerts
     wristAlert.set(!inputs.wristConnected);
     clawAlert.set(!inputs.clawConnected);
-
-    // hasAlgae = inputs.hasAlgae;
 
     if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - inputs.rollerPosition) > 1.6) {
       inputs.hasAlgae = false;
     }
 
-    Logger.recordOutput("Claw/State", getState());
-
-    rollerLocked = inputs.rollerLocked;
+    if (!inputs.hasAlgae && currentState != ClawStates.GRAB && currentState != ClawStates.FLOOR && currentState != ClawStates.SCORE_NET && currentState != ClawStates.SCORE_PROCESSOR) {
+      io.setRollers(0);
+    }
 
     switch (currentState) {
       case STOP:
@@ -104,26 +91,54 @@ public class Claw extends SubsystemBase {
         io.setAngle(currentState.targetAngle);
         break;
       case GRAB:
+        if (!inputs.hasAlgae) {
+          io.setAngle(currentState.targetAngle);
+          io.setRollers(0.5);
+          inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          if (inputs.hasAlgae) {
+            rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
+            io.lockRoller();
+          }
+        }
+        break;
+      case NET:
+        io.setAngle(currentState.targetAngle);
+        break;
+      case SCORE_NET:
+        io.setAngle(currentState.targetAngle);
+        io.setRollers(-0.2);
+        break;
+      case FLOOR:
         if (inputs.hasAlgae) {
           io.setAngle(ClawStates.HOLD.targetAngle);
         } else {
           io.setAngle(currentState.targetAngle);
           io.setRollers(0.5);
           inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          if (inputs.hasAlgae) {
+            rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
+            io.lockRoller();
+          }
         }
-        break;
-      case NET:
-        io.setAngle(currentState.targetAngle);
-        break;
-      case FLOOR:
-        io.setAngle(currentState.targetAngle);
         break;
       case PROCESSOR:
         io.setAngle(currentState.targetAngle);
         break;
+      case SCORE_PROCESSOR:
+        io.setAngle(currentState.targetAngle);
+        io.setRollers(-0.2);
+        break;
       default:
         break;
     }
+  }
+
+  public boolean hasAlgae() {
+    return inputs.hasAlgae;
+  }
+
+  public boolean isDoneZeroing() {
+    return doneZeroing;
   }
 
   /**
@@ -131,13 +146,12 @@ public class Claw extends SubsystemBase {
    */
   public enum ClawStates {
     STOP(Degrees.of(0)), // Stop the wrist
-    ZERO(Degrees.of(0)),
-    IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
+    ZERO(Degrees.of(0)), IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
-    FLOOR(Degrees.of(110), Degrees.of(2.5)),
-    PROCESSOR(Degrees.of(90));
+    SCORE_NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
+    FLOOR(Degrees.of(110), Degrees.of(2.5)), PROCESSOR(Degrees.of(90)), SCORE_PROCESSOR(Degrees.of(90));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
@@ -152,11 +166,6 @@ public class Claw extends SubsystemBase {
     }
   }
 
-  /**
-   * Gets the current claw angle mode.
-   *
-   * @return The current ClawPosition
-   */
   public ClawStates getState() {
     return currentState;
   }
@@ -169,11 +178,13 @@ public class Claw extends SubsystemBase {
   }
 
   public void setState(ClawStates state) {
-    if(state != ClawStates.ZERO) doneZeroing = false;
+    if (state != ClawStates.ZERO)
+      doneZeroing = false;
     if (state != ClawStates.ZERO && state != ClawStates.GRAB) {
       timer.reset();
     }
-    if (!timer.isRunning()) timer.start();
+    if (!timer.isRunning())
+      timer.start();
     this.currentState = state;
   }
 }

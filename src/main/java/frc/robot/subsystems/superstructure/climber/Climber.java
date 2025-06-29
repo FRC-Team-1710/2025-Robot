@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.superstructure.climber;
 
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -14,7 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
-  private TalonFX climber; // Right
+  private TalonFX climber;
   public boolean goForClimb;
   public boolean safeToRetract = false;
 
@@ -22,7 +21,6 @@ public class Climber extends SubsystemBase {
 
   public Timer timer = new Timer();
 
-  public Orchestra m_orchestra = new Orchestra();
   private double gearRatio = 80;
 
   public Climber() {
@@ -55,15 +53,47 @@ public class Climber extends SubsystemBase {
       safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
     }
     SmartDashboard.putBoolean("safe to retract", safeToRetract);
+
+    switch (currentState) {
+      case STOWED:
+        climber.stopMotor();
+        break;
+      case OUT:
+        if (getPosition() > 2.3) {
+          climber.stopMotor();
+        } else {
+          climber.set(0.8);
+        }
+        break;
+      case CLIMBED:
+        if (getPosition() > 3.9) {
+          climber.stopMotor();
+        } else {
+          climber.set(0.4);
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   public enum ClimberStates {
-    STOWED(),
-    OUT(),
-    CLIMBED()
+    STOWED(), OUT(), CLIMBED(), MANUAL()
   }
 
   public void setState(ClimberStates state) {
-    this.currentState = state;
+    if (state == ClimberStates.MANUAL) {
+      currentState = ClimberStates.MANUAL;
+    } else if (currentState == ClimberStates.STOWED && state == ClimberStates.OUT) {
+      this.currentState = state;
+    } else if (currentState == ClimberStates.OUT && state == ClimberStates.CLIMBED) {
+      this.currentState = state;
+    }
+  }
+
+  public void setState(double power) {
+    if (power >= 0 || safeToRetract) {
+      climber.set(power);
+    }
   }
 }

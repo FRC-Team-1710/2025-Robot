@@ -6,7 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
-import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorPosition;
+import frc.robot.subsystems.superstructure.elevator.Elevator.ElevatorStates;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorConstants;
 
@@ -48,6 +48,6 @@ public class FlipCoralIntoL1 extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return elevator.getMode() == ElevatorPosition.L2 && elevator.isAtTarget();
+    return elevator.getMode() == ElevatorStates.L2 && elevator.isAtTarget();
   }
 }

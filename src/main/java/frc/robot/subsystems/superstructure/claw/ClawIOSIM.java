@@ -45,6 +45,7 @@ public class ClawIOSIM extends ClawIOCTRE {
   private final LoggedMechanismLigament2d m_wrist2;
   private final LoggedMechanismLigament2d m_wristEXTENSION;
   private final LoggedMechanismLigament2d m_wristEXTENSION2;
+  @SuppressWarnings("unused")
   private final LoggedMechanismLigament2d[] m_Algae;
   private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
   private final ProfiledPIDController m_bottomController =
