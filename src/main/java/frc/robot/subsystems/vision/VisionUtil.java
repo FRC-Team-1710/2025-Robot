@@ -49,6 +49,7 @@ public class VisionUtil {
 
   // Vision measurement constants for MA mode
   private static final double MA_VISION_STD_DEV_XY = 0.333; // Base XY standard deviation
+  @SuppressWarnings("unused")
   private static final double MA_VISION_STD_DEV_THETA =
       Double.MAX_VALUE; // Base theta standard deviation
   public static final double MA_AMBIGUITY =

@@ -319,15 +319,6 @@ public class Vision extends SubsystemBase {
   }
 
   /**
-   * //////// WIP //////// TODO change the privacy once done
-   *
-   * @param index
-   */
-  private void recalibrateCamera(int index) {
-    return;
-  }
-
-  /**
    * Recalibrates either the front left or the right camera based on the parameters given.
    *
    * @param leftCamera Boolean to tell whether the camera being calibrated is the left or the right

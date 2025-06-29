@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.AutomationLevel;
 import frc.robot.generated.TunerConstants;
@@ -67,6 +68,7 @@ public class Superstructure extends SubsystemBase {
 
     private ReefFaces targetFace = ReefFaces.ab;
     private ReefSide targetSide = ReefSide.left;
+    private ReefLevel targetLevel = ReefLevel.L4;
     private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
     private AutomationLevel automationLevel = AutomationLevel.AUTO_RELEASE;
@@ -81,6 +83,8 @@ public class Superstructure extends SubsystemBase {
 
     private final double offsetX = 17.5;
     private final double offsetY = 7;
+
+    private final Timer ejectTimer = new Timer();
 
     private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
 
@@ -130,6 +134,10 @@ public class Superstructure extends SubsystemBase {
         isRedAlliance = redAlliance;
     }
 
+    public boolean isWaitingForInput() {
+        return (isCurrentStateFinished());
+    }
+
     @Override
     public void periodic() {
         automationLevel = operatorDashboard.getAutomationLevel();
@@ -138,8 +146,66 @@ public class Superstructure extends SubsystemBase {
         Logger.recordOutput("Superstructure/currentState", currentState);
         Logger.recordOutput("Superstructure/PreviousState", previousState);
 
+        if (!scoreCoralFlag) {
+            ejectTimer.reset();
+        }
+
         currentState = handStateTransitions();
         applyStates();
+    }
+
+    private boolean isCurrentStateFinished() {
+        return switch (currentState) {
+            case ZERO -> false;
+            case INTAKE_CORAL_FROM_STATION -> false;
+            case AUTO_DRIVE_TO_CORAL_STATION -> false;
+            case NO_PIECE_TELEOP -> false;
+            case NO_PIECE_AUTO -> false;
+            case HOLDING_CORAL_AUTO -> false;
+            case HOLDING_CORAL_TELEOP -> false;
+            case HOLDING_ALGAE -> false;
+            case AUTO_DRIVE_TO_REEF -> false;
+            case SCORE_LEFT_TELEOP_L2 -> false;
+            case SCORE_LEFT_TELEOP_L3 -> false;
+            case SCORE_LEFT_TELEOP_L4 -> false;
+            case SCORE_RIGHT_TELEOP_L2 -> false;
+            case SCORE_RIGHT_TELEOP_L3 -> false;
+            case SCORE_RIGHT_TELEOP_L4 -> false;
+            case SCORE_LEFT_AUTO_L2 -> false;
+            case SCORE_LEFT_AUTO_L3 -> false;
+            case SCORE_LEFT_AUTO_L4 -> false;
+            case SCORE_RIGHT_AUTO_L2 -> false;
+            case SCORE_RIGHT_AUTO_L3 -> false;
+            case SCORE_RIGHT_AUTO_L4 -> false;
+            case MANUAL_L4 -> false;
+            case MANUAL_L3 -> false;
+            case MANUAL_L2 -> false;
+            case MANUAL_L1 -> false;
+            case INTAKE_ALGAE_FROM_REEF -> false;
+            case INTAKE_ALGAE_FROM_GROUND -> false;
+            case SCORE_ALGAE_IN_NET -> false;
+            case SCORE_ALGAE_IN_PROCESSOR -> false;
+            case MOVE_ALGAE_TO_NET_POSITION -> false;
+            case MOVE_ALGAE_TO_PROCESSOR_POSITION -> false;
+            case PRE_CLIMB -> false;
+            case CLIMB -> false;
+            case CLIMB_MANUAL -> false;
+            case STOPPED -> false;
+        };
+    }
+
+    private void handleAfterPathfinding() {
+        if (currentState == CurrentState.AUTO_DRIVE_TO_CORAL_STATION) {
+            setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
+        } else if (currentState == CurrentState.AUTO_DRIVE_TO_REEF) {
+            setWantedState(targetSide.isLeft()
+                    ? targetLevel == ReefLevel.L4 ? WantedState.SCORE_LEFT_L4
+                            : targetLevel == ReefLevel.L3 ? WantedState.SCORE_LEFT_L3
+                                    : targetLevel == ReefLevel.L2 ? WantedState.SCORE_LEFT_L2 : WantedState.MANUAL_L1
+                    : targetLevel == ReefLevel.L4 ? WantedState.SCORE_RIGHT_L4
+                            : targetLevel == ReefLevel.L3 ? WantedState.SCORE_RIGHT_L3
+                                    : targetLevel == ReefLevel.L2 ? WantedState.SCORE_RIGHT_L2 : WantedState.MANUAL_L1);
+        }
     }
 
     private CurrentState handStateTransitions() {
@@ -417,7 +483,8 @@ public class Superstructure extends SubsystemBase {
         manipulator.setState(ManipulatorStates.OFF);
         // applyDrive(driver);
         if (!currentPathFindingCommand.isFinished()) {
-            currentPathFindingCommand = AutoBuilder.pathfindToPose(targetSourcePose(drivetrain.getPose()), pathConstraints,
+            currentPathFindingCommand = AutoBuilder.pathfindToPose(targetSourcePose(drivetrain.getPose()),
+                    pathConstraints,
                     MetersPerSecond.of(1));
             currentPathFindingCommand.schedule();
         }
@@ -482,7 +549,10 @@ public class Superstructure extends SubsystemBase {
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
         if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
+            ejectTimer.start();
+            if (ejectTimer.hasElapsed(0.5)) {
+                setWantedState(WantedState.DEFAULT_STATE);
+            }
         }
     }
 
@@ -497,7 +567,10 @@ public class Superstructure extends SubsystemBase {
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
         if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
+            ejectTimer.start();
+            if (ejectTimer.hasElapsed(0.5)) {
+                setWantedState(WantedState.DEFAULT_STATE);
+            }
         }
     }
 
@@ -511,9 +584,6 @@ public class Superstructure extends SubsystemBase {
         manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
-        if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
-        }
     }
 
     private void scoreL2Auto() {
@@ -526,7 +596,10 @@ public class Superstructure extends SubsystemBase {
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
         if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
+            ejectTimer.start();
+            if (ejectTimer.hasElapsed(0.5)) {
+                setWantedState(WantedState.DEFAULT_STATE);
+            }
         }
     }
 
@@ -540,7 +613,10 @@ public class Superstructure extends SubsystemBase {
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
         if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
+            ejectTimer.start();
+            if (ejectTimer.hasElapsed(0.5)) {
+                setWantedState(WantedState.DEFAULT_STATE);
+            }
         }
     }
 
@@ -553,9 +629,6 @@ public class Superstructure extends SubsystemBase {
         manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
         applyDrive(getTargetPose(), driver.customLeft().getX(), driver.customLeft().getY(),
                 driver.customRight().getX());
-        if (!manipulator.detectsCoral()) {
-            setWantedState(WantedState.DEFAULT_STATE);
-        }
     }
 
     private void ejectL1() {
@@ -894,6 +967,10 @@ public class Superstructure extends SubsystemBase {
                                                 new Rotation2d(Math.PI)));
     }
 
+    public enum ReefLevel {
+        L1(), L2(), L3(), L4()
+    }
+
     public int getTagForFace() {
         return switch (targetFace) {
             case ab -> isRedAlliance ? 7 : 18;
@@ -907,6 +984,10 @@ public class Superstructure extends SubsystemBase {
 
     public void setTargetSourceSide(TargetSourceSide side) {
         this.targetSourceSide = side;
+    }
+
+    public void setTargetLevel(ReefLevel level) {
+        this.targetLevel = level;
     }
 
     public enum TargetSourceSide {
