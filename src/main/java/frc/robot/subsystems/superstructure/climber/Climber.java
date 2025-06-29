@@ -77,6 +77,10 @@ public class Climber extends SubsystemBase {
     }
   }
 
+  public boolean hasClimbed() {
+    return getPosition() > 3.9;
+  }
+
   public enum ClimberStates {
     STOWED(), OUT(), CLIMBED(), MANUAL()
   }

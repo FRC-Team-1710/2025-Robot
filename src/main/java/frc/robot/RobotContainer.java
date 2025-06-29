@@ -424,7 +424,7 @@ public class RobotContainer {
         break;
     }
 
-    superstructure = new Superstructure(drivetrain, claw, climber, elevator, funnel, ledsubsystem, manipulator, vision);
+    superstructure = new Superstructure(drivetrain, claw, climber, elevator, funnel, ledsubsystem, manipulator, vision, driver, mech);
 
     // NamedCommands.registerCommand(
     //     "Align to Alpha",
