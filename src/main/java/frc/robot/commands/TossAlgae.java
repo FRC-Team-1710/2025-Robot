@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.claw.Claw;
-import frc.robot.subsystems.superstructure.claw.Claw.ClawPosition;
+import frc.robot.subsystems.superstructure.claw.Claw.ClawStates;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class TossAlgae extends Command {
@@ -33,7 +33,7 @@ public class TossAlgae extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (claw.isAtTarget() && claw.getMode() == ClawPosition.TOSS) {
+    if (claw.isAtTarget() && claw.getMode() == ClawStates.TOSS) {
       claw.RELEASE().schedule();
       timer.restart();
     }

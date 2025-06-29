@@ -18,6 +18,8 @@ public class Climber extends SubsystemBase {
   public boolean goForClimb;
   public boolean safeToRetract = false;
 
+  private ClimberStates currentState = ClimberStates.STOWED;
+
   public Timer timer = new Timer();
 
   public Orchestra m_orchestra = new Orchestra();
@@ -53,5 +55,15 @@ public class Climber extends SubsystemBase {
       safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
     }
     SmartDashboard.putBoolean("safe to retract", safeToRetract);
+  }
+
+  public enum ClimberStates {
+    STOWED(),
+    OUT(),
+    CLIMBED()
+  }
+
+  public void setState(ClimberStates state) {
+    this.currentState = state;
   }
 }

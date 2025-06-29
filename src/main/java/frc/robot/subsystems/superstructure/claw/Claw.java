@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,8 +27,10 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Claw subsystem controls a single-motor claw mechanism for game piece manipulation. It
- * supports multiple angles for different game actions and provides both open-loop and closed-loop
+ * The Claw subsystem controls a single-motor claw mechanism for game piece
+ * manipulation. It
+ * supports multiple angles for different game actions and provides both
+ * open-loop and closed-loop
  * control options.
  */
 public class Claw extends SubsystemBase {
@@ -36,7 +39,11 @@ public class Claw extends SubsystemBase {
   private final ClawIOInputsAutoLogged inputs;
 
   // Current claw angle mode
-  private ClawPosition currentMode = ClawPosition.IDLE;
+  private ClawStates currentState = ClawStates.IDLE;
+
+  private boolean doneZeroing = false;
+
+  private Timer timer = new Timer();
 
   private static boolean hasAlgae = false;
   public boolean rollerLocked;
@@ -49,14 +56,13 @@ public class Claw extends SubsystemBase {
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
-   * @param io The hardware interface implementation for the claw
+   * @param io
+   *          The hardware interface implementation for the claw
    */
   public Claw(ClawIO io) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
     SmartDashboard.putData(this);
-
-    IDLE();
   }
 
   @Override
@@ -71,127 +77,78 @@ public class Claw extends SubsystemBase {
 
     // hasAlgae = inputs.hasAlgae;
 
-    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1.6) {
+    if (inputs.hasAlgae && Math.abs(rollerPositionWhenAlgaeGrabbed - inputs.rollerPosition) > 1.6) {
       inputs.hasAlgae = false;
     }
 
-    Logger.recordOutput("Claw/hasAlgae", inputs.hasAlgae);
-    Logger.recordOutput("Claw/Mode", getMode().toString());
-    Logger.recordOutput("mode", Math.abs(rollerPositionWhenAlgaeGrabbed - getRollerPosition()) > 1);
+    Logger.recordOutput("Claw/State", getState());
 
     rollerLocked = inputs.rollerLocked;
+
+    switch (currentState) {
+      case STOP:
+        io.stopAll();
+        break;
+      case ZERO:
+        if (doneZeroing) {
+          io.setAngle(ClawStates.IDLE.targetAngle);
+        } else {
+          io.wristManual(-0.5);
+          doneZeroing = (timer.hasElapsed(0.25) && inputs.wristStatorCurrent.in(Amps) > 18);
+        }
+        break;
+      case IDLE:
+        io.setAngle(currentState.targetAngle);
+        break;
+      case HOLD:
+        io.setAngle(currentState.targetAngle);
+        break;
+      case GRAB:
+        if (inputs.hasAlgae) {
+          io.setAngle(ClawStates.HOLD.targetAngle);
+        } else {
+          io.setAngle(currentState.targetAngle);
+          io.setRollers(0.5);
+          inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+        }
+        break;
+      case NET:
+        io.setAngle(currentState.targetAngle);
+        break;
+      case FLOOR:
+        io.setAngle(currentState.targetAngle);
+        break;
+      case PROCESSOR:
+        io.setAngle(currentState.targetAngle);
+        break;
+      default:
+        break;
+    }
   }
 
   /**
-   * Runs the claw in closed-loop angle mode to the specified angle.
-   *
-   * @param angle The target angle
+   * Enumeration of available claw angles with their corresponding target angles.
    */
-  private void setAngle(Angle angle) {
-    io.setAngle(angle);
-  }
-
-  public boolean hasZeroed() {
-    return inputs.hasZeroed;
-  }
-
-  public void setBrake(boolean lock) {
-    io.setBrake(lock);
-  }
-
-  public void setRollers(double power) {
-    io.setRollers(power);
-  }
-
-  public void setAlgaeStatus(boolean status) {
-    inputs.hasAlgae = status;
-  }
-
-  public void toggleAlgaeStatus() {
-    inputs.hasAlgae = !inputs.hasAlgae;
-  }
-
-  public double getRollerCurrent() {
-    return inputs.rollerStatorCurrent.baseUnitMagnitude();
-  }
-
-  public double getWristCurrent() {
-    return inputs.wristStatorCurrent.baseUnitMagnitude();
-  }
-
-  public double getRollerPosition() {
-    return inputs.rollerPosition;
-  }
-
-  public void wristManual(double power) {
-    io.wristManual(power);
-  }
-
-  public void stopHere() {
-    io.stopHere();
-  }
-
-  /** Stops all motors. */
-  private void stop() {
-    io.stopAll();
-  }
-
-  public boolean hasAlgae() {
-    return inputs.hasAlgae;
-
-    // return false; cami troll
-  }
-
-  public void setRollerPositionWhenAlgaeGrabbed(double position) {
-    rollerPositionWhenAlgaeGrabbed = position;
-  }
-
-  public void toggleKillSwich() {
-    inputs.killSwich = inputs.killSwich ? false : true;
-  }
-
-  /** Zeros wrist */
-  public void zero() {
-    io.zero();
-    io.setAngle(ClawPosition.IDLE.targetAngle);
-  }
-
-  public void lockRoller() {
-    io.lockRoller();
-  }
-
-  /**
-   * Returns the current angle of the claw.
-   *
-   * @return The current angle
-   */
-  @AutoLogOutput
-  public Angle getAngle() {
-    return inputs.angle;
-  }
-
-  /** Enumeration of available claw angles with their corresponding target angles. */
-  public enum ClawPosition {
+  public enum ClawStates {
     STOP(Degrees.of(0)), // Stop the wrist
+    ZERO(Degrees.of(0)),
     IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
     FLOOR(Degrees.of(110), Degrees.of(2.5)),
-    TOSS(Degrees.of(45)),
-    RELEASE(Degrees.of(2)),
     PROCESSOR(Degrees.of(90));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
 
-    ClawPosition(Angle targetAngle, Angle angleTolerance) {
+    ClawStates(Angle targetAngle, Angle angleTolerance) {
       this.targetAngle = targetAngle;
       this.angleTolerance = angleTolerance;
     }
 
-    ClawPosition(Angle targetAngle) {
-      this(targetAngle, Degrees.of(2.5)); // 2 degree default tolerance
+    ClawStates(Angle targetAngle) {
+      this(targetAngle, Degrees.of(2.5));
     }
   }
 
@@ -200,176 +157,23 @@ public class Claw extends SubsystemBase {
    *
    * @return The current ClawPosition
    */
-  public ClawPosition getMode() {
-    return currentMode;
+  public ClawStates getState() {
+    return currentState;
   }
 
-  /**
-   * Sets a new claw angle and schedules the corresponding command.
-   *
-   * @param mode The desired ClawPosition
-   */
-  private void setClawPosition(ClawPosition mode) {
-    if (mode == ClawPosition.IDLE) mode = inputs.hasAlgae ? ClawPosition.HOLD : ClawPosition.IDLE;
-    if (currentMode != mode) {
-      currentCommand.cancel();
-      currentMode = mode;
-      currentCommand.schedule();
-    }
-  }
-
-  // Command that runs the appropriate routine based on the current angle
-  private final Command currentCommand =
-      new SelectCommand<>(
-          Map.of(
-              ClawPosition.STOP,
-              Commands.runOnce(this::stop).withName("Stop Elevator"),
-              ClawPosition.IDLE,
-              createPositionCommand(ClawPosition.IDLE),
-              ClawPosition.GRAB,
-              createPositionCommand(ClawPosition.GRAB),
-              ClawPosition.HOLD,
-              createPositionCommand(ClawPosition.HOLD),
-              ClawPosition.NET,
-              createPositionCommand(ClawPosition.NET),
-              ClawPosition.PROCESSOR,
-              createPositionCommand(ClawPosition.PROCESSOR),
-              ClawPosition.TOSS,
-              createPositionCommand(ClawPosition.TOSS),
-              ClawPosition.RELEASE,
-              createPositionCommand(ClawPosition.RELEASE),
-              ClawPosition.FLOOR,
-              createPositionCommand(ClawPosition.FLOOR)),
-          this::getMode);
-
-  /**
-   * Creates a command for a specific claw angle that moves the claw and checks the target angle.
-   *
-   * @param position The claw angle to create a command for
-   * @return A command that implements the claw movement
-   */
-  private Command createPositionCommand(ClawPosition position) {
-    return Commands.runOnce(() -> setAngle(position.targetAngle))
-        .withName("Move to " + position.toString());
-  }
-
-  /**
-   * Checks if the claw is at its target angle.
-   *
-   * @return true if at target angle, false otherwise
-   */
   @AutoLogOutput
   public boolean isAtTarget() {
-    if (currentMode == ClawPosition.STOP) return true;
-    return getAngle().isNear(currentMode.targetAngle, currentMode.angleTolerance);
+    if (currentState == ClawStates.STOP)
+      return true;
+    return inputs.angle.isNear(currentState.targetAngle, currentState.angleTolerance);
   }
 
-  /**
-   * Logs target angle for given mode.
-   *
-   * @return The target angle for the current mode
-   */
-  @AutoLogOutput
-  private Angle targetAngle() {
-    return currentMode.targetAngle;
-  }
-
-  /**
-   * Creates a command to set the claw to a specific angle.
-   *
-   * @param angle The desired claw angle
-   * @return Command to set the angle
-   */
-  private Command setPositionCommand(ClawPosition angle) {
-    return Commands.runOnce(() -> setClawPosition(angle))
-        .withName("SetElevatorPosition(" + angle.toString() + ")");
-  }
-
-  private void zeroPIDToAngle() {
-    io.zeroPIDToAngle();
-  }
-
-  /**
-   * Creates a command to set the claw to a specific angle.
-   *
-   * @param angle The desired claw angle
-   * @return Command to set the angle
-   */
-  private Command idleCommand(ClawPosition angle) {
-    return Commands.runOnce(() -> zeroPIDToAngle())
-        .andThen(() -> setClawPosition(angle))
-        .withName("SetElevatorPosition(" + angle.toString() + ")");
-  }
-
-  /** Factory methods for common angle commands */
-
-  /**
-   * @return Command to move the claw to idling angle
-   */
-  public final Command GOTOIDLE() {
-    return idleCommand(ClawPosition.IDLE);
-  }
-
-  /**
-   * @return Command to move the claw to idling angle
-   */
-  public final Command IDLE() {
-    return setPositionCommand(ClawPosition.IDLE);
-  }
-
-  /**
-   * @return Command to move the claw to grabbing angle
-   */
-  public final Command GRAB() {
-    return setPositionCommand(ClawPosition.GRAB);
-  }
-
-  /**
-   * @return Command to move the claw to algae-holding angle
-   */
-  public final Command HOLD() {
-    return setPositionCommand(ClawPosition.HOLD);
-  }
-
-  /**
-   * @return Command to move the claw to net angle
-   */
-  public final Command NET() {
-    return setPositionCommand(ClawPosition.NET);
-  }
-
-  /**
-   * @return Command to move the claw to processor angle
-   */
-  public final Command PROCESSOR() {
-    return setPositionCommand(ClawPosition.PROCESSOR);
-  }
-
-  /**
-   * @return Command to move the claw to floor angle
-   */
-  public final Command FLOOR() {
-    return setPositionCommand(ClawPosition.FLOOR);
-  }
-
-  /**
-   * @return Command to move the claw to toss angle
-   */
-  public final Command TOSS() {
-    return setPositionCommand(ClawPosition.TOSS);
-  }
-
-  /**
-   * @return Command to move the claw to release angle
-   */
-  public final Command RELEASE() {
-    return setPositionCommand(ClawPosition.RELEASE);
-  }
-
-  /**
-   * @return Command to stop the claw
-   */
-  public final Command stopCommand() {
-    return setPositionCommand(ClawPosition.STOP);
+  public void setState(ClawStates state) {
+    if(state != ClawStates.ZERO) doneZeroing = false;
+    if (state != ClawStates.ZERO && state != ClawStates.GRAB) {
+      timer.reset();
+    }
+    if (!timer.isRunning()) timer.start();
+    this.currentState = state;
   }
 }

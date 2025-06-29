@@ -887,7 +887,7 @@ public class RobotContainer {
                         < Units.inchesToMeters(3)
                     && elevator.isAtTarget()
                     && claw.isAtTarget()
-                    && claw.getMode() == Claw.ClawPosition.GRAB)
+                    && claw.getMode() == Claw.ClawStates.GRAB)
         .onTrue(new InstantCommand(() -> TargetingComputer.setReadyToGrabAlgae(true)));
 
     grabAlgae
@@ -907,7 +907,7 @@ public class RobotContainer {
         .onTrue(claw.PROCESSOR());
 
     shootAlgae
-        .and((() -> claw.getMode() != Claw.ClawPosition.PROCESSOR))
+        .and((() -> claw.getMode() != Claw.ClawStates.PROCESSOR))
         // && !(claw.hasAlgae()
         //     && targetSource.getAsBoolean()
         //     && TargetingComputer.getSourceTargetingAngle(drivetrain.getPose())
@@ -931,7 +931,7 @@ public class RobotContainer {
     //     .onFalse(new InstantCommand(() -> claw.setRollers(0)));
 
     shootAlgae
-        .and((() -> claw.getMode() == Claw.ClawPosition.PROCESSOR))
+        .and((() -> claw.getMode() == Claw.ClawStates.PROCESSOR))
         .onTrue(new InstantCommand(() -> claw.setRollers(-.125)))
         .onFalse(new InstantCommand(() -> claw.setRollers(0)))
         .and(() -> Constants.currentMode == Mode.SIM)
