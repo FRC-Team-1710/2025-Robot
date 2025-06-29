@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -43,6 +44,8 @@ import frc.robot.commands.WristManual;
 import frc.robot.commands.ZeroRizz;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.ReefFaces;
+import frc.robot.subsystems.Superstructure.ReefSide;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOCTRE;
@@ -1512,67 +1515,43 @@ public class RobotContainer {
     // climberUp.whileTrue(new ManualClimb(climber, () -> .2));
     // climberDown.whileTrue(new ManualClimb(climber, () -> -.2).onlyIf(() -> climber.safeToRetract));
 
-    // /* Targeting Controller Bindings */
-    // alphaButton
-    //     .and(bravoButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ALPHA)));
-    // bravoButton
-    //     .and(alphaButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.BRAVO)));
-    // charlieButton
-    //     .and(deltaButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.CHARLIE)));
-    // deltaButton
-    //     .and(charlieButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.DELTA)));
-    // echoButton
-    //     .and(foxtrotButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.ECHO)));
-    // foxtrotButton
-    //     .and(echoButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.FOXTROT)));
-    // golfButton
-    //     .and(hotelButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.GOLF)));
-    // hotelButton
-    //     .and(golfButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.HOTEL)));
-    // indiaButton
-    //     .and(julietButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.INDIA)));
-    // julietButton
-    //     .and(indiaButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.JULIET)));
-    // kiloButton
-    //     .and(limaButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.KILO)));
-    // limaButton
-    //     .and(kiloButton.negate())
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .and(() -> !TargetingComputer.targetingControllerOverride)
-    //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetBranch(Targets.LIMA)));
+    /* Targeting Controller Bindings */
+    alphaButton
+        .and(bravoButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.left)));
+    bravoButton
+        .and(alphaButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.right)));
+    charlieButton
+        .and(deltaButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.left)));
+    deltaButton
+        .and(charlieButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.right)));
+    echoButton
+        .and(foxtrotButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.left)));
+    foxtrotButton
+        .and(echoButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.right)));
+    golfButton
+        .and(hotelButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.left)));
+    hotelButton
+        .and(golfButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.right)));
+    indiaButton
+        .and(julietButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.left)));
+    julietButton
+        .and(indiaButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.right)));
+    kiloButton
+        .and(limaButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.left)));
+    limaButton
+        .and(kiloButton.negate())
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.right)));
     // l4Button
     //     .and(() -> !TargetingComputer.targetingControllerOverride)
     //     .onTrue(new InstantCommand(() -> TargetingComputer.setTargetLevel(Levels.L4)));

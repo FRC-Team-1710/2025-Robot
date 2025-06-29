@@ -371,6 +371,10 @@ public class Vision extends SubsystemBase {
     return algaeCamera.getAlgaeYaw();
   }
 
+  public boolean algaeIsVisible() {
+    return algaeCamera.targetVisible();
+  }
+
   /**
    * Processes vision data from all cameras and combines the results.
    *

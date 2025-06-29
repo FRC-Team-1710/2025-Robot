@@ -69,6 +69,9 @@ public class Funnel extends SubsystemBase {
       case L1:
         io.setRoller(0);
         break;
+      case STOP:
+      io.stop();
+      break;
       default:
         break;
     }
@@ -84,6 +87,7 @@ public class Funnel extends SubsystemBase {
    * angles.
    */
   public enum FunnelState {
+    STOP(Degrees.of(0), Degrees.of(2.5)), // Arm fully raised
     CLIMB(Degrees.of(100), Degrees.of(2.5)), // Arm fully raised
     OFF(Degrees.of(0), Degrees.of(2.5)), // Arm tucked in
     INTAKE(Degrees.of(0), Degrees.of(2.5)), // Arm tucked in

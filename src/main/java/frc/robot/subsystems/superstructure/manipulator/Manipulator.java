@@ -44,13 +44,16 @@ public class Manipulator extends SubsystemBase {
       case BUMP:
         io.setVoltage(-0.075*12);
         break;
+      case OUTTAKE:
+        io.setVoltage(ManipulatorConstants.outtakeSpeed*12);
+        break;
       default:
         break;
     }
   }
 
   public enum ManipulatorStates {
-    OFF(), INTAKE(), BUMP()
+    OFF(), INTAKE(), BUMP(), OUTTAKE()
   }
 
   public void setState(ManipulatorStates state) {

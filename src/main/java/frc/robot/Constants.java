@@ -136,10 +136,6 @@ public final class Constants {
         AUTO_RELEASE, AUTO_DRIVE_AND_MANUAL_RELEASE, NO_AUTO_DRIVE
     }
 
-    public enum ReefSelectionMethod {
-        POSE, BUTTON_BOX
-    }
-
     public static enum Mode {
         /** Running on a real robot. */
         REAL,

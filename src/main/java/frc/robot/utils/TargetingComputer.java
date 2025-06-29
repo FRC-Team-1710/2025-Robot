@@ -552,9 +552,7 @@ public class TargetingComputer {
     }
 
     public Translation2d getOffset() {
-      return aligningWithAlgae
-          ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset
-          : offset;
+      return aligningWithAlgae ? !readyToGrabAlgae ? primaryAlgaeOffset : secondaryAlgaeOffset : offset;
     }
   }
 

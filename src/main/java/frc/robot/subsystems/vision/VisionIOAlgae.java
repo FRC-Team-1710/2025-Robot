@@ -22,6 +22,10 @@ public class VisionIOAlgae {
     }
   }
 
+  public boolean targetVisible() {
+    return (!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets();
+  }
+
   // LEFT BUMBPER
   public double getAlgaeYaw() {
     boolean targetVisible = false;
