@@ -159,11 +159,11 @@ public class Superstructure extends SubsystemBase {
             case ZERO -> false;
             case INTAKE_CORAL_FROM_STATION -> false;
             case AUTO_DRIVE_TO_CORAL_STATION -> false;
-            case NO_PIECE_TELEOP -> false;
+            case NO_PIECE_TELEOP -> true;
             case NO_PIECE_AUTO -> false;
             case HOLDING_CORAL_AUTO -> false;
-            case HOLDING_CORAL_TELEOP -> false;
-            case HOLDING_ALGAE -> false;
+            case HOLDING_CORAL_TELEOP -> true;
+            case HOLDING_ALGAE -> true;
             case AUTO_DRIVE_TO_REEF -> false;
             case SCORE_LEFT_TELEOP_L2 -> false;
             case SCORE_LEFT_TELEOP_L3 -> false;
@@ -177,20 +177,20 @@ public class Superstructure extends SubsystemBase {
             case SCORE_RIGHT_AUTO_L2 -> false;
             case SCORE_RIGHT_AUTO_L3 -> false;
             case SCORE_RIGHT_AUTO_L4 -> false;
-            case MANUAL_L4 -> false;
-            case MANUAL_L3 -> false;
-            case MANUAL_L2 -> false;
-            case MANUAL_L1 -> false;
+            case MANUAL_L4 -> true;
+            case MANUAL_L3 -> true;
+            case MANUAL_L2 -> true;
+            case MANUAL_L1 -> true;
             case INTAKE_ALGAE_FROM_REEF -> false;
             case INTAKE_ALGAE_FROM_GROUND -> false;
             case SCORE_ALGAE_IN_NET -> false;
             case SCORE_ALGAE_IN_PROCESSOR -> false;
-            case MOVE_ALGAE_TO_NET_POSITION -> false;
-            case MOVE_ALGAE_TO_PROCESSOR_POSITION -> false;
-            case PRE_CLIMB -> false;
-            case CLIMB -> false;
-            case CLIMB_MANUAL -> false;
-            case STOPPED -> false;
+            case MOVE_ALGAE_TO_NET_POSITION -> true;
+            case MOVE_ALGAE_TO_PROCESSOR_POSITION -> true;
+            case PRE_CLIMB -> true;
+            case CLIMB -> true;
+            case CLIMB_MANUAL -> true;
+            case STOPPED -> true;
         };
     }
 
@@ -473,6 +473,9 @@ public class Superstructure extends SubsystemBase {
         applyDrive(sourceRotation(drivetrain.getPose()), driver.customLeft().getX() * 0.75,
                 driver.customLeft().getY() * 0.75,
                 driver.customRight().getX());
+        if (manipulator.hasCoral()) {
+            setWantedState(WantedState.DEFAULT_STATE);
+        }
     }
 
     private void autoDriveToCoralStation() {

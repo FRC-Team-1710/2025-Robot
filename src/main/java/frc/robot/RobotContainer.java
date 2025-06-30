@@ -48,8 +48,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
 
-import java.lang.System.Logger.Level;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -272,9 +270,9 @@ public class RobotContainer {
         superstructure.setTargetSourceSide(TargetSourceSide.MIDDLE);
         superstructure.setWantedState(WantedState.DEFAULT_STATE);
 
-        botWaitingForInput = new Trigger(() -> superstructure.isWaitingForInput());
+        botWaitingForInput = new Trigger(superstructure::isWaitingForInput);
 
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoFactory.buildAutos());
 
         configureBindings();
     }
@@ -283,7 +281,8 @@ public class RobotContainer {
         endgame.onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
                 .onFalse(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
 
-        
+        botWaitingForInput.onTrue(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0.5)))
+                .onFalse(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
         alphaButton
                 .and(bravoButton.negate())
