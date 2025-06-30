@@ -5,7 +5,6 @@
 package frc.robot.subsystems.superstructure.manipulator;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -42,10 +41,10 @@ public class Manipulator extends SubsystemBase {
         }
         break;
       case BUMP:
-        io.setVoltage(-0.075*12);
+        io.setVoltage(-0.075 * 12);
         break;
       case OUTTAKE:
-        io.setVoltage(ManipulatorConstants.outtakeSpeed*12);
+        io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
         break;
       default:
         break;
@@ -53,7 +52,10 @@ public class Manipulator extends SubsystemBase {
   }
 
   public enum ManipulatorStates {
-    OFF(), INTAKE(), BUMP(), OUTTAKE()
+    OFF(),
+    INTAKE(),
+    BUMP(),
+    OUTTAKE()
   }
 
   public void setState(ManipulatorStates state) {

@@ -46,14 +46,17 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       new ProfiledPIDController(kP, kI, kD, m_Constraints);
   private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
   private final DCMotor m_elevatorGearbox = DCMotor.getKrakenX60(2);
+
   @SuppressWarnings("rawtypes")
   private final LinearSystem elesys =
       LinearSystemId.createElevatorSystem(
           m_elevatorGearbox, Units.lbsToKilograms(5.5), Units.inchesToMeters(2.383), 6);
+
   @SuppressWarnings("unchecked")
   private final ElevatorSim m_ElevatorSim =
       new ElevatorSim(
           elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, Units.inchesToMeters(1));
+
   private final Encoder enc = new Encoder(4, 5);
   private final EncoderSim m_EncoderSim = new EncoderSim(enc);
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(10);

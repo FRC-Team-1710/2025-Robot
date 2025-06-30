@@ -42,7 +42,7 @@ public class VisionIOPhotonVisionSIM extends VisionIOPhotonVision {
     cameraProperties.setCalibError(0.1, 0.10);
     cameraSim = new PhotonCameraSim(camera, cameraProperties);
     visionSim.addCamera(cameraSim, robotToCamera);
-    cameraSim.enableDrawWireframe(true);
+    cameraSim.enableDrawWireframe(false);
   }
 
   @Override

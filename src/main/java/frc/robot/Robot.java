@@ -6,9 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -18,9 +15,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.FieldConstants;
-import frc.robot.utils.TargetingComputer;
-import frc.robot.utils.TargetingComputer.Targets;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -41,7 +35,6 @@ public class Robot extends LoggedRobot {
 
   public Robot() {
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
 
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
@@ -92,7 +85,7 @@ public class Robot extends LoggedRobot {
     FollowPathCommand.warmupCommand().schedule();
 
     m_robotContainer = new RobotContainer();
-    
+
     m_robotContainer.setAlliance(redAlliance);
 
     m_gcTimer.start();
@@ -103,40 +96,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
-    SmartDashboard.putString(
-        "Current Target", TargetingComputer.getCurrentTargetBranch().toString());
-    SmartDashboard.putString(
-        "Current Target Level", TargetingComputer.getCurrentTargetLevel().toString());
-    Logger.recordOutput("Target Level", TargetingComputer.getCurrentTargetLevel().toString());
-    SmartDashboard.putString(
-        "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
-    SmartDashboard.putString(
-        "Random Target Level", TargetingComputer.getCurrentTargetLevelForBranchGame().toString());
-    SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
-    // if (m_gcTimer.advanceIfElapsed(5)) System.gc();
     Logger.recordOutput("Time since startup", m_gcTimer.get());
-    Logger.recordOutput(
-        "Branch Game/Random Target Position",
-        new Transform3d(
-                FieldConstants.aprilTags
-                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                    .get()
-                    .getTranslation(),
-                FieldConstants.aprilTags
-                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                    .get()
-                    .getRotation())
-            .plus(
-                new Transform3d(
-                    new Translation3d(
-                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getX(),
-                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getY(),
-                        -FieldConstants.aprilTags
-                            .getTagPose(
-                                TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                            .get()
-                            .getZ()),
-                    new Rotation3d(0, 0, -Math.PI))));
   }
 
   /** Gets the current alliance, true is red */
@@ -167,7 +127,6 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
     m_robotContainer.setAlliance(redAlliance);
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -191,26 +150,15 @@ public class Robot extends LoggedRobot {
   public void teleopInit() {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
     m_robotContainer.setAlliance(redAlliance);
-    if (TargetingComputer.gameMode) {
-      TargetingComputer.startBranchGame();
-    }
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    if (TargetingComputer.getCurrentTargetBranch() == TargetingComputer.Targets.SOURCE_LEFT)
-      TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override
-  public void teleopPeriodic() {
-    if (TargetingComputer.gameMode) {
-      TargetingComputer.checkBranchGame();
-    }
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopExit() {}

@@ -115,7 +115,8 @@ public class LEDSubsystem extends SubsystemBase {
   //     inputBooleans[4] = false;
   //   }
 
-  //   // The drivetrain is in the alignment zone, the robot’s rotation is close to the target angle,
+  //   // The drivetrain is in the alignment zone, the robot’s rotation is close to the target
+  // angle,
   //   // the robot is close to where it should be (still aligning)
   //   if (drivetrain.isInAlignmentZone()
   //       && Math.abs(
@@ -166,11 +167,13 @@ public class LEDSubsystem extends SubsystemBase {
   // public void sendData(int value) {
   //   byte[] data = new byte[2]; // Create a byte array of length 1
   //   data[0] =
-  //       (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
+  //       (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned
+  // byte
   //   byte checksum = (byte) (data[0] + 0); // Create a byte array of length 1
   //   data[1] = checksum; // Store value as byte in the array, and mask to ensure unsigned byte
   //   uart.write(data, data.length); // Write the byte array to the serial port
   //   // System.out.println( // gavin is a bum
-  //   //     "Sending Data: " + value + " with checksum " + checksum); // Print the data that we sent
+  //   //     "Sending Data: " + value + " with checksum " + checksum); // Print the data that we
+  // sent
   // }
 }

@@ -82,7 +82,10 @@ public class Climber extends SubsystemBase {
   }
 
   public enum ClimberStates {
-    STOWED(), OUT(), CLIMBED(), MANUAL()
+    STOWED(),
+    OUT(),
+    CLIMBED(),
+    MANUAL()
   }
 
   public void setState(ClimberStates state) {

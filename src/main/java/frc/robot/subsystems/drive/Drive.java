@@ -16,7 +16,6 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -26,7 +25,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -34,7 +32,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
@@ -50,18 +47,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.Robot;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.requests.SwerveSetpointGen;
-import frc.robot.subsystems.drive.requests.SysIdSwerveTranslation_Torque;
-import frc.robot.subsystems.superstructure.elevator.Elevator;
-import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
-import frc.robot.utils.TargetingComputer;
-import frc.robot.utils.TargetingComputer.Targets;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -109,58 +98,8 @@ public class Drive extends SubsystemBase {
   /* Swerve request to apply when braking */
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
 
-  /* Swerve requests to apply during SysId characterization */
-  private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
-      new SwerveRequest.SysIdSwerveTranslation();
-  private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization =
-      new SwerveRequest.SysIdSwerveSteerGains();
   private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
       new SwerveRequest.SysIdSwerveRotation();
-
-  // Example TorqueCurrent SysID - Others are avalible.
-  private final SysIdSwerveTranslation_Torque m_translationTorqueCharacterization =
-      new SysIdSwerveTranslation_Torque();
-
-  /* SysId routine for characterizing torque translation. This is used to find PID gains for Torque Current of the drive motors. */
-  private final SysIdRoutine m_sysIdRoutineTorqueTranslation =
-      new SysIdRoutine(
-          new SysIdRoutine.Config(
-              Volts.of(5).per(Second), // Use ramp rate of 5 A/s
-              Volts.of(10), // Use dynamic step of 10 A
-              Seconds.of(5), // Use timeout of 5 seconds
-              // Log state with SignalLogger class
-              state -> Logger.recordOutput("SysIdTranslation_State", state.toString())),
-          new SysIdRoutine.Mechanism(
-              output ->
-                  setControl(
-                      m_translationTorqueCharacterization.withTorqueCurrent(
-                          output.in(Volts))), // treat volts as amps
-              null,
-              this));
-
-  /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
-  private final SysIdRoutine m_sysIdRoutineTranslation =
-      new SysIdRoutine(
-          new SysIdRoutine.Config(
-              null, // Use default ramp rate (1 V/s)
-              Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-              null, // Use default timeout (10 s)
-              // Log state with Logger class
-              state -> Logger.recordOutput("SysIdTranslation_State", state.toString())),
-          new SysIdRoutine.Mechanism(
-              output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
-
-  /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-  private final SysIdRoutine m_sysIdRoutineSteer =
-      new SysIdRoutine(
-          new SysIdRoutine.Config(
-              null, // Use default ramp rate (1 V/s)
-              Volts.of(7), // Use dynamic voltage of 7 V
-              null, // Use default timeout (10 s)
-              // Log state with Logger class
-              state -> Logger.recordOutput("SysIdSteer_State", state.toString())),
-          new SysIdRoutine.Mechanism(
-              volts -> setControl(m_steerCharacterization.withVolts(volts)), null, this));
 
   /*
    * SysId routine for characterizing rotation.
@@ -245,181 +184,9 @@ public class Drive extends SubsystemBase {
     return run(() -> io.setControl(requestSupplier.get()));
   }
 
-  public BooleanSupplier hasSpeed(Targets target, Vision vision) {
-    BooleanSupplier yes =
-        (() ->
-            TargetingComputer.getSelectTargetBranchPose(target).getX() - getPose().getX() < 0.05);
-    return yes;
-  }
-
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() {
     return inputs.speeds;
-  }
-
-  /**
-   * Aligns the robot to the set target, uses setpointgen
-   *
-   * @param requestSupplier
-   * @param target
-   * @param vision
-   * @param elevator
-   * @return
-   */
-  public Command Alignment(Targets target, Vision vision, Elevator elevator) {
-
-    TargetingComputer.setTargetBranch(target);
-
-    Logger.recordOutput("Command", "Alignment");
-
-    SwerveSetpointGen setpointGenAuto =
-        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
-            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
-            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-    return run(() ->
-            io.setControl(
-                setpointGenAuto
-                    .withOperatorForwardDirection(getOperatorForwardDirection())
-                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(
-                                Math.abs(
-                                                TargetingComputer.getSelectTargetBranchPose(target)
-                                                        .getX()
-                                                    - getPose().getX())
-                                            * 1.2
-                                        > TargetingComputer.maxAlignSpeed - .1
-                                    ? Math.copySign(
-                                        TargetingComputer.maxAlignSpeed - .1,
-                                        (TargetingComputer.getSelectTargetBranchPose(target).getX()
-                                            - getPose().getX()))
-                                    : (TargetingComputer.getSelectTargetBranchPose(target).getX()
-                                            - getPose().getX())
-                                        * 1.2)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withVelocityY(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(
-                                Math.abs(
-                                                TargetingComputer.getSelectTargetBranchPose(target)
-                                                        .getY()
-                                                    - getPose().getY())
-                                            * 1.2
-                                        > TargetingComputer.maxAlignSpeed - .1
-                                    ? Math.copySign(
-                                        TargetingComputer.maxAlignSpeed - .1,
-                                        (TargetingComputer.getSelectTargetBranchPose(target).getY()
-                                            - getPose().getY()))
-                                    : (TargetingComputer.getSelectTargetBranchPose(target).getY()
-                                            - getPose().getY())
-                                        * 1.2)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            (new Rotation2d(Units.degreesToRadians(target.getTargetingAngle()))
-                                    .minus(getPose().getRotation())
-                                    .getRadians())
-                                * 0.5))))
-        .until(
-            () ->
-                getDistanceToPose(TargetingComputer.getSelectTargetBranchPose(target)).getNorm()
-                    < TargetingComputer.alignmentTranslationTolerance);
-  }
-
-  public Command bargeAlignment(Vision vision, Elevator elevator) {
-
-    Pose2d selectedPos =
-        new Pose2d(
-            (FieldConstants.fieldWidth.in(Meters) - 7.26),
-            FieldConstants.fieldLength.in(Meters),
-            new Rotation2d(TargetingComputer.getAngleForTarget(Targets.NET)));
-
-    SwerveSetpointGen setpointGenAuto =
-        new SwerveSetpointGen(getChassisSpeeds(), getModuleStates(), () -> getRotation())
-            .withDeadband(TunerConstants.kSpeedAt12Volts.times(0.025))
-            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-    return run(() ->
-            io.setControl(
-                setpointGenAuto
-                    .withOperatorForwardDirection(getOperatorForwardDirection())
-                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(getPose().getX() - selectedPos.getX() * 1.2)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withVelocityY(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(getPose().getY() - selectedPos.getY() * 1.2)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            getPose().getRotation().minus(selectedPos.getRotation()).getRadians()
-                                * 0.45))))
-        .until(() -> getPose().getX() == selectedPos.getX());
-  }
-
-  /**
-   * Guys I can add comments to this
-   *
-   * <p>I'm gonna be as unhelpful as possible
-   *
-   * <p>Enjoy!
-   *
-   * @param requestSupplier
-   * @param target
-   * @param vision
-   * @param elevator
-   * @return
-   */
-  public Command SourceAlignment(
-      FieldCentric requestSupplier, Targets target, Vision vision, Elevator elevator) {
-    TargetingComputer.setTargetBranch(target);
-
-    Pose2d selectedPos =
-        Robot.getAlliance()
-            ? new Pose2d(
-                    Units.inchesToMeters(690.876 - 33.526),
-                    Units.inchesToMeters(317 - 25.824),
-                    FieldConstants.CoralStation.rightCenterFace
-                        .getRotation()
-                        .plus(new Rotation2d(Math.PI)))
-                .plus(new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()))
-            : FieldConstants.CoralStation.rightCenterFace.plus(
-                new Transform2d(Units.inchesToMeters(16), 0, new Rotation2d()));
-
-    return run(() ->
-            io.setControl(
-                requestSupplier
-                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(
-                                (selectedPos.getX() - getPose().getX()) * .8
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
-                                    : (selectedPos.getX() - getPose().getX()) * .8)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withVelocityY(
-                        TunerConstants.kSpeedAt12Volts
-                            .times(
-                                (selectedPos.getY() - getPose().getY()) * .8
-                                        > TargetingComputer.maxAlignSpeed
-                                    ? TargetingComputer.maxAlignSpeed
-                                    : (selectedPos.getY() - getPose().getY()) * .8)
-                            .times(Robot.getAlliance() ? -1 : 1))
-                    .withRotationalRate(
-                        Constants.MaxAngularRate.times(
-                            selectedPos.getRotation().minus(getPose().getRotation()).getRadians()
-                                * 0.4))))
-        .until(
-            () ->
-                getDistanceToPose(selectedPos).getNorm()
-                    < TargetingComputer.alignmentTranslationTolerance);
   }
 
   public Command stop(RobotCentric requestSupplier) {
@@ -498,11 +265,6 @@ public class Drive extends SubsystemBase {
     }
     updateWithTime();
 
-    Logger.recordOutput(
-        "distance to target",
-        Units.metersToInches(
-            getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()));
-
     m_field.setRobotPose(getPose());
     SmartDashboard.putData("field", m_field);
   }
@@ -547,156 +309,6 @@ public class Drive extends SubsystemBase {
   public Translation2d getDistanceToPose(Pose2d pose) {
     Pose2d currentPose = getPose();
     return pose.minus(currentPose).getTranslation().unaryMinus();
-  }
-
-  @AutoLogOutput
-  public Targets getAlignmentZone(boolean aligning) {
-    Pose2d currentPose = getPose();
-    double angle =
-        Robot.getAlliance()
-            ? new Translation2d(
-                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
-                .minus(currentPose.getTranslation())
-                .unaryMinus()
-                .getAngle()
-                .getDegrees()
-            : FieldConstants.Reef.center
-                .minus(currentPose.getTranslation())
-                .unaryMinus()
-                .getAngle()
-                .getDegrees();
-    Targets zone = Targets.ALPHA;
-
-    Logger.recordOutput("angle", angle);
-
-    if (angle >= 0 && angle < 30) {
-      zone = Robot.getAlliance() ? Targets.BRAVO : Targets.HOTEL;
-    } else if (angle >= 30 && angle < 60) {
-      zone = Robot.getAlliance() ? Targets.CHARLIE : Targets.INDIA;
-    } else if (angle >= 60 && angle < 90) {
-      zone = Robot.getAlliance() ? Targets.DELTA : Targets.JULIET;
-    } else if (angle >= 90 && angle < 120) {
-      zone = Robot.getAlliance() ? Targets.ECHO : Targets.KILO;
-    } else if (angle >= 120 && angle < 150) {
-      zone = Robot.getAlliance() ? Targets.FOXTROT : Targets.LIMA;
-    } else if (angle >= 150 && angle <= 180) {
-      zone = Robot.getAlliance() ? Targets.GOLF : Targets.ALPHA;
-    } else if (angle > -180 && angle < -150) {
-      zone = Robot.getAlliance() ? Targets.HOTEL : Targets.BRAVO;
-    } else if (angle >= -150 && angle < -120) {
-      zone = Robot.getAlliance() ? Targets.INDIA : Targets.CHARLIE;
-    } else if (angle >= -120 && angle < -90) {
-      zone = Robot.getAlliance() ? Targets.JULIET : Targets.DELTA;
-    } else if (angle >= -90 && angle < -60) {
-      zone = Robot.getAlliance() ? Targets.KILO : Targets.ECHO;
-    } else if (angle >= -60 && angle < -30) {
-      zone = Robot.getAlliance() ? Targets.LIMA : Targets.FOXTROT;
-    } else if (angle >= -30 && angle < 0) {
-      zone = Robot.getAlliance() ? Targets.ALPHA : Targets.GOLF;
-    }
-
-    if (TargetingComputer.targetingControllerOverride
-        && TargetingComputer.currentTargetBranch != zone
-        && !aligning) {
-      TargetingComputer.setTargetBranch(zone);
-    }
-
-    return zone;
-  }
-
-  @AutoLogOutput
-  public boolean isInAlignmentZone() {
-    Pose2d currentPose = getPose();
-    double zoneRadius =
-        TargetingComputer.targetingControllerOverride ? 2 : TargetingComputer.alignmentRange;
-    double angle =
-        Robot.getAlliance()
-            ? new Translation2d(
-                    Units.inchesToMeters(690.876 - 176.746), Units.inchesToMeters(158.501))
-                .minus(currentPose.getTranslation())
-                .unaryMinus()
-                .getAngle()
-                .getDegrees()
-            : FieldConstants.Reef.center
-                .minus(currentPose.getTranslation())
-                .unaryMinus()
-                .getAngle()
-                .getDegrees();
-    int zone;
-
-    Logger.recordOutput("angle", angle);
-
-    if (angle >= -30 && angle < 30) { // Golf / Alpha
-      zone = 4;
-    } else if (angle >= 30 && angle < 90) { // India / Charlie
-      zone = 5;
-    } else if (angle >= 90 && angle < 150) { // Kilo / Echo
-      zone = 6;
-    } else if (angle >= -150 && angle < -90) { // Charlie / India
-      zone = 2;
-    } else if (angle >= -90 && angle < -30) { // Echo / Kilo
-      zone = 3;
-    } else { // Alpha / Golf
-      zone = 1;
-    }
-
-    switch (TargetingComputer.getCurrentTargetBranch().getApriltag()) {
-      default:
-        return false;
-      case (6):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 3;
-      case (7):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 4;
-      case (8):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 5;
-      case (9):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 6;
-      case (10):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 1;
-      case (11):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 2;
-      case (17):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 2;
-      case (18):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 1;
-      case (19):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 6;
-      case (20):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 5;
-      case (21):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 4;
-      case (22):
-        return getDistanceToPose(TargetingComputer.getCurrentTargetBranchPose()).getNorm()
-                < zoneRadius
-            && zone == 3;
-    }
-  }
-
-  public BooleanSupplier inAlignmentZone(Targets target) {
-    TargetingComputer.setTargetBranch(target);
-    return () -> isInAlignmentZone();
   }
 
   @AutoLogOutput

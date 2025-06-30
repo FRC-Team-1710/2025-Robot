@@ -18,15 +18,12 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Claw subsystem controls a single-motor claw mechanism for game piece
- * manipulation. It
- * supports multiple angles for different game actions and provides both
- * open-loop and closed-loop
+ * The Claw subsystem controls a single-motor claw mechanism for game piece manipulation. It
+ * supports multiple angles for different game actions and provides both open-loop and closed-loop
  * control options.
  */
 public class Claw extends SubsystemBase {
@@ -46,8 +43,7 @@ public class Claw extends SubsystemBase {
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
-   * @param io
-   *          The hardware interface implementation for the claw
+   * @param io The hardware interface implementation for the claw
    */
   public Claw(ClawIO io) {
     this.io = io;
@@ -68,7 +64,11 @@ public class Claw extends SubsystemBase {
       inputs.hasAlgae = false;
     }
 
-    if (!inputs.hasAlgae && currentState != ClawStates.GRAB && currentState != ClawStates.FLOOR && currentState != ClawStates.SCORE_NET && currentState != ClawStates.SCORE_PROCESSOR) {
+    if (!inputs.hasAlgae
+        && currentState != ClawStates.GRAB
+        && currentState != ClawStates.FLOOR
+        && currentState != ClawStates.SCORE_NET
+        && currentState != ClawStates.SCORE_PROCESSOR) {
       io.setRollers(0);
     }
 
@@ -141,17 +141,18 @@ public class Claw extends SubsystemBase {
     return doneZeroing;
   }
 
-  /**
-   * Enumeration of available claw angles with their corresponding target angles.
-   */
+  /** Enumeration of available claw angles with their corresponding target angles. */
   public enum ClawStates {
     STOP(Degrees.of(0)), // Stop the wrist
-    ZERO(Degrees.of(0)), IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
+    ZERO(Degrees.of(0)),
+    IDLE(Degrees.of(2), Degrees.of(2.5)), // Wrist tucked in
     GRAB(Degrees.of(90), Degrees.of(2.5)), // Position for grabing algae
     HOLD(Degrees.of(20), Degrees.of(2.5)), // Position for holding algae
     NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
     SCORE_NET(Degrees.of(20), Degrees.of(2.5)), // Position for scoring in net
-    FLOOR(Degrees.of(110), Degrees.of(2.5)), PROCESSOR(Degrees.of(90)), SCORE_PROCESSOR(Degrees.of(90));
+    FLOOR(Degrees.of(110), Degrees.of(2.5)),
+    PROCESSOR(Degrees.of(90)),
+    SCORE_PROCESSOR(Degrees.of(90));
 
     private final Angle targetAngle;
     private final Angle angleTolerance;
@@ -172,19 +173,16 @@ public class Claw extends SubsystemBase {
 
   @AutoLogOutput
   public boolean isAtTarget() {
-    if (currentState == ClawStates.STOP)
-      return true;
+    if (currentState == ClawStates.STOP) return true;
     return inputs.angle.isNear(currentState.targetAngle, currentState.angleTolerance);
   }
 
   public void setState(ClawStates state) {
-    if (state != ClawStates.ZERO)
-      doneZeroing = false;
+    if (state != ClawStates.ZERO) doneZeroing = false;
     if (state != ClawStates.ZERO && state != ClawStates.GRAB) {
       timer.reset();
     }
-    if (!timer.isRunning())
-      timer.start();
+    if (!timer.isRunning()) timer.start();
     this.currentState = state;
   }
 }

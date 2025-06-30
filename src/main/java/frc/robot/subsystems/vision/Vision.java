@@ -22,7 +22,6 @@ import frc.robot.subsystems.vision.VisionUtil.VisionData;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
-import frc.robot.utils.TargetingComputer;
 import java.util.*;
 import org.littletonrobotics.junction.Logger;
 
@@ -134,32 +133,6 @@ public class Vision extends SubsystemBase {
       }
       Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
     }
-
-    try {
-      Logger.recordOutput(
-          "VisionDebugging/Current Target Position",
-          new Transform3d(
-                  FieldConstants.aprilTags
-                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
-                      .get()
-                      .getTranslation(),
-                  FieldConstants.aprilTags
-                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
-                      .get()
-                      .getRotation())
-              .plus(
-                  new Transform3d(
-                      new Translation3d(
-                          TargetingComputer.currentTargetBranch.getOffset().getX(),
-                          TargetingComputer.currentTargetBranch.getOffset().getY(),
-                          -FieldConstants.aprilTags
-                              .getTagPose(TargetingComputer.getCurrentTargetBranch().getApriltag())
-                              .get()
-                              .getZ()),
-                      new Rotation3d(0, 0, -Math.PI))));
-    } catch (Exception e) {
-
-    }
   }
 
   public VisionIOPhotonVision getCamera(int index) {
@@ -216,12 +189,6 @@ public class Vision extends SubsystemBase {
 
     }
 
-    if (!leftCamToTag.equals(Transform3d.kZero) && !rightCamToTag.equals(Transform3d.kZero)) {
-      return TargetingComputer.currentTargetBranch.getPreferredCamera() == 0
-          ? leftCamToTag
-          : rightCamToTag;
-    }
-
     // Return the non-zero offset, or kZero if both are zero
     var result =
         !leftCamToTag.equals(Transform3d.kZero)
@@ -232,10 +199,6 @@ public class Vision extends SubsystemBase {
 
     Logger.recordOutput("X to Tag", result.getX());
     Logger.recordOutput("Y to Tag", result.getY());
-    Logger.recordOutput(
-        "X Error", TargetingComputer.getCurrentTargetBranch().getOffset().getX() - result.getX());
-    Logger.recordOutput(
-        "Y Error", TargetingComputer.getCurrentTargetBranch().getOffset().getY() - result.getY());
 
     return result;
   }
@@ -295,8 +258,6 @@ public class Vision extends SubsystemBase {
               < 0);
 
       Logger.recordOutput("LeftSide?", leftSide);
-      if (TargetingComputer.targetingControllerOverride)
-        TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
 
@@ -311,10 +272,7 @@ public class Vision extends SubsystemBase {
       }
     }
     if (!availableTags.isEmpty()) {
-      int targetTagID =
-          Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
       Logger.recordOutput("LeftSide?", leftSide);
-      TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
 

@@ -16,10 +16,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Arm subsystem controls a dual-motor arm mechanism for game piece
- * manipulation. It supports
- * multiple positions for different game actions and provides both open-loop and
- * closed-loop control
+ * The Arm subsystem controls a dual-motor arm mechanism for game piece manipulation. It supports
+ * multiple positions for different game actions and provides both open-loop and closed-loop control
  * options.
  */
 public class Funnel extends SubsystemBase {
@@ -30,9 +28,12 @@ public class Funnel extends SubsystemBase {
   private FunnelState currentState = FunnelState.INTAKE;
 
   // Alerts for motor connection status
-  private final Alert leaderMotorAlert = new Alert("Arm funnelLeader motor isn't connected", AlertType.kError);
-  private final Alert followerMotorAlert = new Alert("Arm funnelFollower motor isn't connected", AlertType.kError);
-  private final Alert angleMotorAlert = new Alert("Arm funnelAngleMotor motor isn't connected", AlertType.kError);
+  private final Alert leaderMotorAlert =
+      new Alert("Arm funnelLeader motor isn't connected", AlertType.kError);
+  private final Alert followerMotorAlert =
+      new Alert("Arm funnelFollower motor isn't connected", AlertType.kError);
+  private final Alert angleMotorAlert =
+      new Alert("Arm funnelAngleMotor motor isn't connected", AlertType.kError);
 
   public Funnel(FunnelIO io) {
     this.io = io;
@@ -70,8 +71,8 @@ public class Funnel extends SubsystemBase {
         io.setRoller(0);
         break;
       case STOP:
-      io.stop();
-      break;
+        io.stop();
+        break;
       default:
         break;
     }
@@ -82,10 +83,7 @@ public class Funnel extends SubsystemBase {
     return Degrees.of(inputs.funnelAngle);
   }
 
-  /**
-   * Enumeration of available arm positions with their corresponding target
-   * angles.
-   */
+  /** Enumeration of available arm positions with their corresponding target angles. */
   public enum FunnelState {
     STOP(Degrees.of(0), Degrees.of(2.5)), // Arm fully raised
     CLIMB(Degrees.of(100), Degrees.of(2.5)), // Arm fully raised

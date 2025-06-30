@@ -13,8 +13,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Elevator subsystem controls a dual-motor mechanism for game piece
- * manipulation. It supports
+ * The Elevator subsystem controls a dual-motor mechanism for game piece manipulation. It supports
  * multiple distances for different game actions
  */
 public class Elevator extends SubsystemBase {
@@ -29,14 +28,15 @@ public class Elevator extends SubsystemBase {
   private boolean doneZeroing = false;
 
   // Alerts for motor connection status
-  private final Alert leaderMotorAlert = new Alert("Elevator leader motor isn't connected", AlertType.kError);
-  private final Alert followerMotorAlert = new Alert("Elevator follower motor isn't connected", AlertType.kError);
+  private final Alert leaderMotorAlert =
+      new Alert("Elevator leader motor isn't connected", AlertType.kError);
+  private final Alert followerMotorAlert =
+      new Alert("Elevator follower motor isn't connected", AlertType.kError);
 
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
-   * @param io
-   *          The hardware interface implementation for the elevator
+   * @param io The hardware interface implementation for the elevator
    */
   public Elevator(ElevatorIO io) {
     this.io = io;
