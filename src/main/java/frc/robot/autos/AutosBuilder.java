@@ -34,6 +34,8 @@ public class AutosBuilder {
     SmartDashboard.putString(
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
     autoChooser.addDefaultOption("IDLE", Auto.IDLE);
+    autoChooser.addDefaultOption("A4RM", Auto.A4RM);
+    autoChooser.addDefaultOption("J4NF", Auto.J4NF);
     autoChooser.addOption("CUSTOM", Auto.CUSTOM);
   }
 
@@ -45,15 +47,16 @@ public class AutosBuilder {
             == "(insert auto here)") {
           return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
         } else {
-          return buildCustomAuto(
-              SmartDashboard.getString("Custom Auto Input", "(insert auto here)"));
+          return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)"));
         }
-      default:
+      case IDLE:
         return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
+      default:
+        return buildAuto(autoChooser.get().toString());
     }
   }
 
-  private Command buildCustomAuto(String input) {
+  private Command buildAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
@@ -166,6 +169,8 @@ public class AutosBuilder {
 
   public enum Auto {
     IDLE,
+    A4RM,
+    J4NF,
     CUSTOM,
   }
 

@@ -5,9 +5,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -21,6 +18,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -82,6 +80,8 @@ public class Superstructure extends SubsystemBase {
 
   private boolean bump = false;
 
+  private boolean isAutoFinished = false;
+
   private boolean autoSourceIsLeft = false;
 
   private boolean scoreCoralFlag = false;
@@ -95,12 +95,8 @@ public class Superstructure extends SubsystemBase {
 
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
 
-  private final PathConstraints pathConstraints =
-      new PathConstraints(
-          MaxSpeed,
-          MetersPerSecondPerSecond.of(1),
-          Constants.MaxAngularRate,
-          RotationsPerSecondPerSecond.of(1));
+  private PathConstraints pathConstraints =
+      new PathConstraints(5.72, 10.1, 4.634, Units.degreesToRadians(1136));
 
   private final SwerveRequest.FieldCentric fieldCentric =
       new SwerveRequest.FieldCentric()
@@ -114,9 +110,9 @@ public class Superstructure extends SubsystemBase {
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025)) // Add a 10% deadband
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-  private PIDController rotation = new PIDController(0, 0, 0);
-  private PIDController translationx = new PIDController(0, 0, 0);
-  private PIDController translationy = new PIDController(0, 0, 0);
+  private PIDController rotation = new PIDController(0.05, 0, 0);
+  private PIDController translationx = new PIDController(4, 0, 0.05);
+  private PIDController translationy = new PIDController(4, 0, 0.05);
 
   private Command currentPathFindingCommand = new Command() {};
 
@@ -147,7 +143,16 @@ public class Superstructure extends SubsystemBase {
     this.mech = mech;
     this.operatorDashboard = new AutomationLevelChooser();
 
-    pathfindingDone.onTrue(Commands.runOnce(() -> handleAfterPathfinding()));
+    pathfindingDone
+        .onTrue(Commands.runOnce(() -> handleAfterPathfinding()))
+        .onFalse(Commands.runOnce(() -> isAutoFinished = false));
+
+    SmartDashboard.putNumber("transP", translationx.getP());
+    SmartDashboard.putNumber("transI", translationx.getI());
+    SmartDashboard.putNumber("transD", translationx.getD());
+    SmartDashboard.putNumber("rotationP", rotation.getP());
+    SmartDashboard.putNumber("rotationI", rotation.getI());
+    SmartDashboard.putNumber("rotationD", rotation.getD());
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -164,12 +169,27 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // translationx.setP(SmartDashboard.getNumber("transP", translationx.getP()));
+    // translationy.setP(translationx.getP());
+    // translationx.setI(SmartDashboard.getNumber("transI", translationx.getI()));
+    // translationy.setI(translationx.getI());
+    // translationx.setD(SmartDashboard.getNumber("transD", translationx.getD()));
+    // translationy.setD(translationx.getD());
+    // rotation.setP(SmartDashboard.getNumber("rotationP", rotation.getP()));
+    // rotation.setI(SmartDashboard.getNumber("rotationI", rotation.getI()));
+    // rotation.setD(SmartDashboard.getNumber("rotationD", rotation.getD()));
+
     automationLevel = operatorDashboard.getAutomationLevel();
 
     Logger.recordOutput("Superstructure/WantedState", wantedState);
     Logger.recordOutput("Superstructure/currentState", currentState);
     Logger.recordOutput("Superstructure/PreviousState", previousState);
     Logger.recordOutput("Superstructure/command", currentPathFindingCommand.hashCode());
+
+    Logger.recordOutput(
+        "Superstructure/AutoDriveIsFinished", currentPathFindingCommand.isFinished());
+    Logger.recordOutput(
+        "Superstructure/AutoDriveIsScheduled", currentPathFindingCommand.isScheduled());
 
     if (!scoreCoralFlag) {
       ejectTimer.reset();
@@ -221,25 +241,29 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void handleAfterPathfinding() {
-    if (currentState == CurrentState.AUTO_DRIVE_TO_CORAL_STATION) {
-      setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
-    } else if (currentState == CurrentState.AUTO_DRIVE_TO_REEF) {
-      setWantedState(
-          targetSide.isLeft()
-              ? targetLevel == ReefLevel.L4
-                  ? WantedState.SCORE_LEFT_L4
-                  : targetLevel == ReefLevel.L3
-                      ? WantedState.SCORE_LEFT_L3
-                      : targetLevel == ReefLevel.L2
-                          ? WantedState.SCORE_LEFT_L2
-                          : WantedState.MANUAL_L1
-              : targetLevel == ReefLevel.L4
-                  ? WantedState.SCORE_RIGHT_L4
-                  : targetLevel == ReefLevel.L3
-                      ? WantedState.SCORE_RIGHT_L3
-                      : targetLevel == ReefLevel.L2
-                          ? WantedState.SCORE_RIGHT_L2
-                          : WantedState.MANUAL_L1);
+    if (!isAutoFinished) {
+      isAutoFinished = true;
+      if (currentState == CurrentState.AUTO_DRIVE_TO_CORAL_STATION) {
+        setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
+      } else if (currentState == CurrentState.AUTO_DRIVE_TO_REEF) {
+        setWantedState(
+            targetSide.isLeft()
+                ? targetLevel == ReefLevel.L4
+                    ? WantedState.SCORE_LEFT_L4
+                    : targetLevel == ReefLevel.L3
+                        ? WantedState.SCORE_LEFT_L3
+                        : targetLevel == ReefLevel.L2
+                            ? WantedState.SCORE_LEFT_L2
+                            : WantedState.MANUAL_L1
+                : targetLevel == ReefLevel.L4
+                    ? WantedState.SCORE_RIGHT_L4
+                    : targetLevel == ReefLevel.L3
+                        ? WantedState.SCORE_RIGHT_L3
+                        : targetLevel == ReefLevel.L2
+                            ? WantedState.SCORE_RIGHT_L2
+                            : WantedState.MANUAL_L1);
+      }
+      currentPathFindingCommand.cancel();
     }
   }
 
@@ -579,10 +603,9 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
     // applyDrive(driver);
-    if (!currentPathFindingCommand.isFinished()) {
+    if (!currentPathFindingCommand.isScheduled()) {
       currentPathFindingCommand =
-          AutoBuilder.pathfindToPose(
-              targetSourcePose(drivetrain.getPose()), pathConstraints, MetersPerSecond.of(1));
+          AutoBuilder.pathfindToPose(targetSourcePose(drivetrain.getPose()), pathConstraints, 1);
       currentPathFindingCommand.schedule();
     }
   }
@@ -630,9 +653,9 @@ public class Superstructure extends SubsystemBase {
     if (!currentPathFindingCommand.isScheduled()) {
       currentPathFindingCommand =
           AutoBuilder.pathfindToPose(
-              getTargetPose().plus(new Transform2d(0.5, 0, new Rotation2d())),
+              getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d())),
               pathConstraints,
-              MetersPerSecond.of(0.75));
+              1.5);
       currentPathFindingCommand.schedule();
     }
   }
@@ -937,7 +960,7 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 robotCentric
-                    .withVelocityX(MaxSpeed.times(0.25))
+                    .withVelocityX(MaxSpeed.times(-0.125))
                     .withVelocityY(MaxSpeed.times(0))
                     .withRotationalRate(Constants.MaxAngularRate.times(0)))
         .schedule();
@@ -1008,12 +1031,12 @@ public class Superstructure extends SubsystemBase {
                 fieldCentric
                     .withVelocityX(
                         MaxSpeed.times(
-                            -(translationx.calculate(drivetrain.getPose().getX() - pose.getX(), 0)
-                                + (y * 0.25))))
+                            (translationx.calculate(drivetrain.getPose().getX() - pose.getX(), 0)
+                                - (y * 0.25))))
                     .withVelocityY(
                         MaxSpeed.times(
-                            -(translationy.calculate(drivetrain.getPose().getY() - pose.getY(), 0)
-                                + (x * 0.25))))
+                            (translationy.calculate(drivetrain.getPose().getY() - pose.getY(), 0)
+                                - (x * 0.25))))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             rotation.calculate(
@@ -1034,12 +1057,12 @@ public class Superstructure extends SubsystemBase {
                 fieldCentric
                     .withVelocityX(
                         MaxSpeed.times(
-                            -(translationx.calculate(drivetrain.getPose().getX() - pose.getX(), 0)
-                                + (driver.customLeft().getY() * 0.25))))
+                            (translationx.calculate(drivetrain.getPose().getX() - pose.getX(), 0)
+                                - (driver.customLeft().getY() * 0.25))))
                     .withVelocityY(
                         MaxSpeed.times(
-                            -(translationy.calculate(drivetrain.getPose().getY() - pose.getY(), 0)
-                                + (driver.customLeft().getX() * 0.25))))
+                            (translationy.calculate(drivetrain.getPose().getY() - pose.getY(), 0)
+                                - (driver.customLeft().getX() * 0.25))))
                     .withRotationalRate(
                         Constants.MaxAngularRate.times(
                             rotation.calculate(
@@ -1072,11 +1095,12 @@ public class Superstructure extends SubsystemBase {
             : isRedAlliance ? 126 : 306);
   }
 
+  @AutoLogOutput(key = "Superstructure/TargetSourcePose")
   public Pose2d targetSourcePose(Pose2d pose) {
     if (DriverStation.isAutonomous()) {
       return new Pose2d(
               FieldConstants.aprilTags
-                  .getTagPose(autoSourceIsLeft ? isRedAlliance ? 1 : 2 : isRedAlliance ? 12 : 13)
+                  .getTagPose(!autoSourceIsLeft ? isRedAlliance ? 1 : 2 : isRedAlliance ? 12 : 13)
                   .get()
                   .getTranslation()
                   .toTranslation2d(),
@@ -1086,7 +1110,7 @@ public class Superstructure extends SubsystemBase {
                       : isRedAlliance ? 126 : 306))
           .plus(
               new Transform2d(
-                  0,
+                  -0.25,
                   targetSourceSide == TargetSourceSide.FAR
                       ? 0.5
                       : targetSourceSide == TargetSourceSide.MIDDLE ? 0 : -0.5,

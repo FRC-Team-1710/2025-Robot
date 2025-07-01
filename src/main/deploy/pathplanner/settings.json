@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [
     "Back",
+    "AutoToReef",
     "To"
   ],
   "autoFolders": [],

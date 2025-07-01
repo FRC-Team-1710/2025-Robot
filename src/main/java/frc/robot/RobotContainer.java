@@ -268,6 +268,16 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    driver
+        .a()
+        .onTrue(
+            Commands.runOnce(() -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_REEF)));
+    driver
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                () -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_CORAL_STATION)));
+
     endgame
         .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
         .onFalse(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
