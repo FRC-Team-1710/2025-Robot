@@ -5,6 +5,9 @@
 package frc.robot.subsystems.superstructure.manipulator;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -13,6 +16,7 @@ public class Manipulator extends SubsystemBase {
   private final ManipulatorIO io;
 
   private ManipulatorStates currentState = ManipulatorStates.OFF;
+  private CurrentCoralState currentCoralState = CurrentCoralState.NONE;
 
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io) {
@@ -30,13 +34,11 @@ public class Manipulator extends SubsystemBase {
         io.setVoltage(0);
         break;
       case INTAKE:
-        if (inputs.beam1Broken && inputs.beam2Broken) {
-          io.setVoltage(ManipulatorConstants.insideSpeed * 12);
-        } else if (!inputs.beam1Broken && inputs.beam2Broken) {
+        if (hasCoral()) {
           io.setVoltage(0);
-        } else if (!inputs.beam1Broken && !inputs.beam2Broken) {
+        } else if (!detectsCoral()) {
           io.setVoltage(ManipulatorConstants.intakeSpeed * 12);
-        } else if (inputs.beam1Broken && !inputs.beam2Broken) {
+        } else if (detectsCoral()) {
           io.setVoltage(ManipulatorConstants.insideSpeed * 12);
         }
         break;
@@ -58,17 +60,31 @@ public class Manipulator extends SubsystemBase {
     OUTTAKE()
   }
 
+  public enum CurrentCoralState {
+    NONE(),
+    DETECTS(),
+    SECURED()
+  }
+
   public void setState(ManipulatorStates state) {
     this.currentState = state;
   }
 
   @AutoLogOutput
   public boolean hasCoral() {
-    return inputs.beam2Broken && !inputs.beam1Broken;
+    return Constants.currentMode == Mode.SIM ? (currentCoralState == CurrentCoralState.SECURED) : (inputs.beam2Broken && !inputs.beam1Broken);
   }
 
   @AutoLogOutput
   public boolean detectsCoral() {
-    return inputs.beam2Broken || inputs.beam1Broken;
+    return Constants.currentMode == Mode.SIM ? (currentCoralState == CurrentCoralState.DETECTS || currentCoralState == CurrentCoralState.SECURED) : (inputs.beam2Broken || inputs.beam1Broken);
+  }
+
+  public void advanceGamePiece() {
+    currentCoralState = switch (currentCoralState) {
+      case NONE -> CurrentCoralState.DETECTS;
+      case DETECTS -> CurrentCoralState.SECURED;
+      case SECURED -> CurrentCoralState.NONE;
+    };
   }
 }
