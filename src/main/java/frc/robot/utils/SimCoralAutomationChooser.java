@@ -9,8 +9,10 @@ public class SimCoralAutomationChooser {
   public SimCoralAutomationChooser() {
     simCoralAutomationChooser = new LoggedDashboardChooser<>("Sim Coral Automation Choises");
 
-    simCoralAutomationChooser.addDefaultOption("Automatically sims coral in robot based on time", SimCoralAutomation.AUTO_SIM_CORAL);
-    simCoralAutomationChooser.addOption("Tell the robot the coral state manually", SimCoralAutomation.MANUAL_SIM_CORAL);
+    simCoralAutomationChooser.addDefaultOption(
+        "Tell the robot the coral state manually", SimCoralAutomation.MANUAL_SIM_CORAL);
+    simCoralAutomationChooser.addOption(
+        "Automatically sims coral in robot based on time", SimCoralAutomation.AUTO_SIM_CORAL);
   }
 
   public SimCoralAutomation getAutomationLevel() {

@@ -9,9 +9,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
 import java.util.ArrayList;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Add your docs here. */
@@ -35,12 +38,17 @@ public class AutosBuilder {
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
     autoChooser.addDefaultOption("IDLE", Auto.IDLE);
     autoChooser.addDefaultOption("A4RM", Auto.A4RM);
-    autoChooser.addDefaultOption("J4NF", Auto.J4NF);
+    autoChooser.addDefaultOption("J4NFK4RMC4RC", Auto.J4NFK4RMC4RC);
     autoChooser.addOption("CUSTOM", Auto.CUSTOM);
+
+    Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
   }
 
   public Command getAuto() {
     commandList = new ArrayList<>();
+    if (Constants.currentMode == Mode.SIM) {
+      commandList.add(Commands.runOnce(() -> superstructure.beginSimAuto()));
+    }
     switch (autoChooser.get()) {
       case CUSTOM:
         if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
@@ -120,7 +128,7 @@ public class AutosBuilder {
         } else if (character == 'C') {
           sourceDistance = SourceDistance.CLOSE;
         }
-        commandList.add(getCommand());
+        commandList.add(getCommand(nextCommand, reef, reefHeight, source, sourceDistance));
       }
       first = !first;
     }
@@ -131,18 +139,23 @@ public class AutosBuilder {
     return commands;
   }
 
-  private Command getCommand() {
+  private Command getCommand(
+      NextCommand nextCommand,
+      Reef reef,
+      ReefHeight reefHeight,
+      Source source,
+      SourceDistance sourceDistance) {
     switch (nextCommand) {
       case PLACE:
-        return createPlaceCommand();
+        return createPlaceCommand(reef, reefHeight);
       case SOURCE:
-        return createSourceCommand();
+        return createSourceCommand(source, sourceDistance);
       default:
         return new Command() {};
     }
   }
 
-  private Command createPlaceCommand() {
+  private Command createPlaceCommand(Reef reef, ReefHeight reefHeight) {
     return Commands.runOnce(() -> superstructure.setTargets(reef, reefHeight))
         .andThen(
             Commands.runOnce(() -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_REEF)))
@@ -153,7 +166,7 @@ public class AutosBuilder {
                 () -> superstructure.getWantedState() == WantedState.DEFAULT_STATE));
   }
 
-  private Command createSourceCommand() {
+  private Command createSourceCommand(Source source, SourceDistance sourceDistance) {
     return Commands.runOnce(() -> superstructure.setTargets(source, sourceDistance))
         .andThen(
             Commands.runOnce(
@@ -170,7 +183,7 @@ public class AutosBuilder {
   public enum Auto {
     IDLE,
     A4RM,
-    J4NF,
+    J4NFK4RMC4RC,
     CUSTOM,
   }
 
