@@ -268,15 +268,62 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+
+    driver
+        .rightTrigger()
+        .and(driver.leftTrigger().negate())
+        .onTrue(
+            superstructure.configureButtonBinding(
+                superstructure.decideIfAutoDriveToReef(),
+                superstructure.decideStateForAlgae(),
+                WantedState.DEFAULT_STATE))
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedState.DEFAULT_STATE)
+                .alongWith(
+                    Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false))));
+
     driver
         .a()
-        .onTrue(
-            Commands.runOnce(() -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_REEF)));
+        .and(driver.rightTrigger())
+        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)));
+
     driver
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                () -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_CORAL_STATION)));
+        .povRight()
+        .onTrue(Commands.runOnce(() -> superstructure.decideGamePieceScore()))
+        .onFalse(Commands.runOnce(() -> superstructure.stopGamePieceScore()));
+
+    driver
+        .leftTrigger()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(superstructure.decideStateForIntake()))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver
+        .y()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver
+        .x()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver
+        .a()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver
+        .povUp()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()));
 
     endgame
         .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))

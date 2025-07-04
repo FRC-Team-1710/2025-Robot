@@ -30,7 +30,11 @@ public class Manipulator extends SubsystemBase {
 
     switch (currentState) {
       case OFF:
-        io.setVoltage(0);
+        if (hasCoral() || !detectsCoral()) {
+          io.setVoltage(0);
+        } else if (detectsCoral()) {
+          io.setVoltage(ManipulatorConstants.insideSpeed * 12);
+        }
         break;
       case INTAKE:
         if (hasCoral()) {

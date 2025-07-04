@@ -101,7 +101,9 @@ public class Claw extends SubsystemBase {
         if (!inputs.hasAlgae) {
           io.setAngle(currentState.targetAngle);
           io.setRollers(0.5);
-          inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          if (Constants.currentMode != Mode.SIM) {
+            inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          }
           if (inputs.hasAlgae) {
             rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
             io.lockRoller();
@@ -121,7 +123,9 @@ public class Claw extends SubsystemBase {
         } else {
           io.setAngle(currentState.targetAngle);
           io.setRollers(0.5);
-          inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          if (Constants.currentMode != Mode.SIM) {
+            inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+          }
           if (hasAlgae()) {
             rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
             io.lockRoller();
