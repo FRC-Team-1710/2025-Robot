@@ -272,9 +272,9 @@ public class RobotContainer {
         .and(driver.leftTrigger().negate())
         .onTrue(
             superstructure.configureButtonBinding(
-                superstructure.decideIfAutoDriveToReef(),
-                superstructure.decideStateForAlgae(),
-                superstructure.decideIfAutoDriveToReef()))
+                WantedState.AUTO_DRIVE_TO_REEF,
+                WantedState.SCORE_ALGAE,
+                WantedState.AUTO_DRIVE_TO_REEF))
         .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
 
     driver
@@ -291,7 +291,7 @@ public class RobotContainer {
     driver
         .leftTrigger()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(superstructure.decideStateForIntake()))
+        .onTrue(superstructure.setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION))
         .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
 
     driver

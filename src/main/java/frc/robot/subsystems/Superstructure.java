@@ -217,9 +217,16 @@ public class Superstructure extends SubsystemBase {
       MaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.5);
       Logger.recordOutput("Superstructure/MaxSpeedCompression", 0.5);
     } else {
-      MaxSpeed = TunerConstants.kSpeedAt12Volts.times(((55 - (elevator.getPosition().in(Inches) - 15)) - 10) / 30);
-      Logger.recordOutput("Superstructure/MaxSpeedCompression", (40 - (elevator.getPosition().in(Inches) - 15)) / 40);
+      MaxSpeed =
+          TunerConstants.kSpeedAt12Volts.times(1 - ((elevator.getPosition().in(Inches) - 15) / 60));
+      Logger.recordOutput(
+          "Superstructure/MaxSpeedCompression",
+          1 - ((elevator.getPosition().in(Inches) - 15) / 60));
     }
+
+    Logger.recordOutput(
+        "ISLITERALYNEAR",
+        drivetrain.getPose().getMeasureX().in(Meters) >= FieldConstants.fieldLength.in(Meters) / 2);
 
     Logger.recordOutput("Superstructure/WantedState", wantedState);
     Logger.recordOutput("Superstructure/currentState", currentState);
@@ -279,113 +286,117 @@ public class Superstructure extends SubsystemBase {
             case L4 -> WantedState.SCORE_L4;
           };
     }
-    switch (wantedState) {
-      case ZERO:
-        currentState = CurrentState.ZERO;
-        break;
-      case INTAKE_CORAL_FROM_STATION:
-        currentState =
-            DriverStation.isAutonomous()
-                ? CurrentState.INTAKE_CORAL_FROM_STATION_AUTO
-                : CurrentState.INTAKE_CORAL_FROM_STATION;
-        break;
-      case AUTO_DRIVE_TO_CORAL_STATION:
-        if (automationLevel != AutomationLevel.NO_AUTO_DRIVE || DriverStation.isAutonomous()) {
-          currentState = CurrentState.AUTO_DRIVE_TO_CORAL_STATION;
-        } else {
+    if (wantedState == WantedState.SCORE_ALGAE) {
+      currentState = decideStateForAlgae();
+    } else {
+      switch (wantedState) {
+        case ZERO:
+          currentState = CurrentState.ZERO;
+          break;
+        case INTAKE_CORAL_FROM_STATION:
           currentState =
-              manipulator.hasCoral()
-                  ? CurrentState.HOLDING_CORAL_TELEOP
-                  : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
-        }
-        break;
-      case DEFAULT_STATE:
-        if (manipulator.hasCoral()) {
-          if (DriverStation.isAutonomous()) {
-            currentState = CurrentState.HOLDING_CORAL_AUTO;
+              DriverStation.isAutonomous()
+                  ? CurrentState.INTAKE_CORAL_FROM_STATION_AUTO
+                  : CurrentState.INTAKE_CORAL_FROM_STATION;
+          break;
+        case AUTO_DRIVE_TO_CORAL_STATION:
+          if (automationLevel != AutomationLevel.NO_AUTO_DRIVE || DriverStation.isAutonomous()) {
+            currentState = CurrentState.AUTO_DRIVE_TO_CORAL_STATION;
           } else {
-            currentState = CurrentState.HOLDING_CORAL_TELEOP;
+            currentState =
+                manipulator.hasCoral()
+                    ? CurrentState.HOLDING_CORAL_TELEOP
+                    : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
           }
-        } else if (claw.hasAlgae()) {
-          currentState = CurrentState.HOLDING_ALGAE;
-        } else {
-          if (DriverStation.isAutonomous()) {
-            currentState = CurrentState.NO_PIECE_AUTO;
+          break;
+        case DEFAULT_STATE:
+          if (manipulator.hasCoral()) {
+            if (DriverStation.isAutonomous()) {
+              currentState = CurrentState.HOLDING_CORAL_AUTO;
+            } else {
+              currentState = CurrentState.HOLDING_CORAL_TELEOP;
+            }
+          } else if (claw.hasAlgae()) {
+            currentState = CurrentState.HOLDING_ALGAE;
           } else {
-            currentState = CurrentState.NO_PIECE_TELEOP;
+            if (DriverStation.isAutonomous()) {
+              currentState = CurrentState.NO_PIECE_AUTO;
+            } else {
+              currentState = CurrentState.NO_PIECE_TELEOP;
+            }
           }
-        }
-        break;
-      case AUTO_DRIVE_TO_REEF:
-        if (automationLevel != AutomationLevel.NO_AUTO_DRIVE || DriverStation.isAutonomous()) {
-          currentState = CurrentState.AUTO_DRIVE_TO_REEF;
-        } else {
+          break;
+        case AUTO_DRIVE_TO_REEF:
+          if (automationLevel != AutomationLevel.NO_AUTO_DRIVE || DriverStation.isAutonomous()) {
+            currentState = CurrentState.AUTO_DRIVE_TO_REEF;
+          } else {
+            currentState =
+                manipulator.hasCoral()
+                    ? CurrentState.HOLDING_CORAL_TELEOP
+                    : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
+          }
+          break;
+        case SCORE_L2:
           currentState =
-              manipulator.hasCoral()
-                  ? CurrentState.HOLDING_CORAL_TELEOP
-                  : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
-        }
-        break;
-      case SCORE_L2:
-        currentState =
-            DriverStation.isAutonomous()
-                ? CurrentState.SCORE_AUTO_L2
-                : CurrentState.SCORE_TELEOP_L2;
-        break;
-      case SCORE_L3:
-        currentState =
-            DriverStation.isAutonomous()
-                ? CurrentState.SCORE_AUTO_L3
-                : CurrentState.SCORE_TELEOP_L3;
-        break;
-      case SCORE_L4:
-        currentState =
-            DriverStation.isAutonomous()
-                ? CurrentState.SCORE_AUTO_L4
-                : CurrentState.SCORE_TELEOP_L4;
-        break;
-      case MANUAL_L1:
-        currentState = CurrentState.MANUAL_L1;
-        break;
-      case MANUAL_L2:
-        currentState = CurrentState.MANUAL_L2;
-        break;
-      case MANUAL_L3:
-        currentState = CurrentState.MANUAL_L3;
-        break;
-      case MANUAL_L4:
-        currentState = CurrentState.MANUAL_L4;
-        break;
-      case INTAKE_ALGAE_FROM_REEF:
-        currentState = CurrentState.INTAKE_ALGAE_FROM_REEF;
-        break;
-      case INTAKE_ALGAE_FROM_GROUND:
-        currentState = CurrentState.INTAKE_ALGAE_FROM_GROUND;
-        break;
-      case MOVE_ALGAE_TO_NET_POSITION:
-        currentState = CurrentState.MOVE_ALGAE_TO_NET_POSITION;
-        break;
-      case MOVE_ALGAE_TO_PROCESSOR_POSITION:
-        currentState = CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
-        break;
-      case SCORE_ALGAE_IN_NET:
-        currentState = CurrentState.SCORE_ALGAE_IN_NET;
-        break;
-      case SCORE_ALGAE_IN_PROCESSOR:
-        currentState = CurrentState.SCORE_ALGAE_IN_PROCESSOR;
-        break;
-      case PRE_CLIMB:
-        currentState = CurrentState.PRE_CLIMB;
-        break;
-      case CLIMB:
-        currentState = CurrentState.CLIMB;
-        break;
-      case CLIMB_MANUAL:
-        currentState = CurrentState.CLIMB_MANUAL;
-        break;
-      default:
-        currentState = CurrentState.STOPPED;
-        break;
+              DriverStation.isAutonomous()
+                  ? CurrentState.SCORE_AUTO_L2
+                  : CurrentState.SCORE_TELEOP_L2;
+          break;
+        case SCORE_L3:
+          currentState =
+              DriverStation.isAutonomous()
+                  ? CurrentState.SCORE_AUTO_L3
+                  : CurrentState.SCORE_TELEOP_L3;
+          break;
+        case SCORE_L4:
+          currentState =
+              DriverStation.isAutonomous()
+                  ? CurrentState.SCORE_AUTO_L4
+                  : CurrentState.SCORE_TELEOP_L4;
+          break;
+        case MANUAL_L1:
+          currentState = CurrentState.MANUAL_L1;
+          break;
+        case MANUAL_L2:
+          currentState = CurrentState.MANUAL_L2;
+          break;
+        case MANUAL_L3:
+          currentState = CurrentState.MANUAL_L3;
+          break;
+        case MANUAL_L4:
+          currentState = CurrentState.MANUAL_L4;
+          break;
+        case INTAKE_ALGAE_FROM_REEF:
+          currentState = CurrentState.INTAKE_ALGAE_FROM_REEF;
+          break;
+        case INTAKE_ALGAE_FROM_GROUND:
+          currentState = CurrentState.INTAKE_ALGAE_FROM_GROUND;
+          break;
+        case MOVE_ALGAE_TO_NET_POSITION:
+          currentState = CurrentState.MOVE_ALGAE_TO_NET_POSITION;
+          break;
+        case MOVE_ALGAE_TO_PROCESSOR_POSITION:
+          currentState = CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
+          break;
+        case SCORE_ALGAE_IN_NET:
+          currentState = CurrentState.SCORE_ALGAE_IN_NET;
+          break;
+        case SCORE_ALGAE_IN_PROCESSOR:
+          currentState = CurrentState.SCORE_ALGAE_IN_PROCESSOR;
+          break;
+        case PRE_CLIMB:
+          currentState = CurrentState.PRE_CLIMB;
+          break;
+        case CLIMB:
+          currentState = CurrentState.CLIMB;
+          break;
+        case CLIMB_MANUAL:
+          currentState = CurrentState.CLIMB_MANUAL;
+          break;
+        default:
+          currentState = CurrentState.STOPPED;
+          break;
+      }
     }
     // Ensure you can't move anything after deploying climber
     if (previousState == CurrentState.PRE_CLIMB && currentState != CurrentState.CLIMB) {
@@ -635,7 +646,10 @@ public class Superstructure extends SubsystemBase {
     if (!currentPathFindingCommand.isScheduled()) {
       currentPathFindingCommand =
           AutoBuilder.pathfindToPose(
-              getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d())),
+              !manipulator.hasCoral()
+                  ? getBeforeReadyToGrabAlgaePose()
+                      .plus(new Transform2d(-0.125, 0, new Rotation2d()))
+                  : getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d())),
               pathConstraints,
               1);
       currentPathFindingCommand.schedule();
@@ -879,7 +893,7 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    applyDrive();
+    applyDrive(Rotation2d.fromDegrees(45));
   }
 
   private void scoreAlgaeProcessor() {
@@ -897,7 +911,7 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    applyDrive();
+    applyDrive(Rotation2d.fromDegrees(45));
   }
 
   private void moveAlgaeToProcessorPosition() {
@@ -1300,6 +1314,7 @@ public class Superstructure extends SubsystemBase {
     SCORE_ALGAE_IN_NET,
     MOVE_ALGAE_TO_PROCESSOR_POSITION,
     SCORE_ALGAE_IN_PROCESSOR,
+    SCORE_ALGAE,
     PRE_CLIMB,
     CLIMB,
     CLIMB_MANUAL
@@ -1372,40 +1387,22 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
-  public WantedState decideIfAutoDriveToReef() {
-    return isNearRange()
-        ? manipulator.hasCoral() ? WantedState.SCORE_L4 : WantedState.INTAKE_ALGAE_FROM_REEF
-        : WantedState.AUTO_DRIVE_TO_REEF;
+  public boolean onOtherHalfOfField() {
+    return drivetrain.getPose().getMeasureX().in(Meters)
+        >= FieldConstants.fieldLength.in(Meters) / 2;
   }
 
-  public WantedState decideStateForAlgae() {
-    if (!isRedAlliance) {
-      if (drivetrain.getPose().getX()
-          >= FieldConstants.fieldLength.in(Meters) / 2) { // Robot is on other half of field
-        return WantedState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
-      } else if (drivetrain.getPose().getY()
-          >= (FieldConstants.fieldWidth.in(Meters) / 2) - 0.5) { // Robot is near net
-        return WantedState.MOVE_ALGAE_TO_NET_POSITION;
-      } else {
-        return WantedState.MOVE_ALGAE_TO_NET_POSITION;
-      }
-    } else {
-      if (drivetrain.getPose().getX()
-          <= FieldConstants.fieldLength.in(Meters) / 2) { // Robot is on other half of field
-        return WantedState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
-      } else if (drivetrain.getPose().getY()
-          < (FieldConstants.fieldWidth.in(Meters) / 2) + 0.5) { // Robot is near net
-        return WantedState.MOVE_ALGAE_TO_NET_POSITION;
-      } else {
-        return WantedState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
-      }
-    }
+  public boolean onLeftHalfOfField() {
+    return drivetrain.getPose().getMeasureY().in(Meters)
+        >= (FieldConstants.fieldWidth.in(Meters) / 2) - 0.5;
   }
 
-  public WantedState decideStateForIntake() {
-    return isNearSource()
-        ? WantedState.INTAKE_CORAL_FROM_STATION
-        : WantedState.AUTO_DRIVE_TO_CORAL_STATION;
+  public CurrentState decideStateForAlgae() {
+    return onOtherHalfOfField()
+        ? CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION
+        : onLeftHalfOfField()
+            ? CurrentState.MOVE_ALGAE_TO_NET_POSITION
+            : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
   }
 
   public Command setWantedStateCommand(WantedState state) {
