@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -77,8 +79,6 @@ public class RobotContainer {
   private Vision vision;
 
   private final AutosBuilder autosBuilder;
-
-  private final Trigger botWaitingForInput;
 
   private final Trigger endgame =
       new Trigger(
@@ -262,8 +262,6 @@ public class RobotContainer {
 
     autosBuilder = new AutosBuilder(superstructure);
 
-    botWaitingForInput = new Trigger(superstructure::isWaitingForInput);
-
     configureBindings();
   }
 
@@ -276,17 +274,14 @@ public class RobotContainer {
             superstructure.configureButtonBinding(
                 superstructure.decideIfAutoDriveToReef(),
                 superstructure.decideStateForAlgae(),
-                WantedState.DEFAULT_STATE))
-        .onFalse(
-            superstructure
-                .setWantedStateCommand(WantedState.DEFAULT_STATE)
-                .alongWith(
-                    Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false))));
+                superstructure.decideIfAutoDriveToReef()))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
 
     driver
         .a()
         .and(driver.rightTrigger())
-        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)));
+        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)))
+        .onFalse(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false)));
 
     driver
         .povRight()
@@ -325,13 +320,24 @@ public class RobotContainer {
 
     driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()));
 
+    driver.povDown().onTrue(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    driver
+        .start()
+        .onTrue(
+            drivetrain.runOnce(
+                () ->
+                    drivetrain.resetPose(
+                        new Pose2d(
+                            drivetrain.getPose().getX(),
+                            drivetrain.getPose().getY(),
+                            new Rotation2d()))));
+
+    driver.back().onTrue(Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()));
+
     endgame
         .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
         .onFalse(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
-
-    botWaitingForInput
-        .onTrue(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0.5)))
-        .onFalse(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
     alphaButton
         .and(bravoButton.negate())
