@@ -4,18 +4,22 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
+import com.therekrab.autopilot.APConstraints;
+import com.therekrab.autopilot.APProfile;
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -26,7 +30,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.AutomationLevel;
 import frc.robot.Constants.SimCoralAutomation;
@@ -61,15 +64,24 @@ public class Superstructure extends SubsystemBase {
   private final Climber climber;
   private final Elevator elevator;
   private final Funnel funnel;
+  private final Manipulator manipulator;
+  private final Vision vision;
 
   @SuppressWarnings("unused")
   private final LEDSubsystem ledSubsystem;
 
-  private final Manipulator manipulator;
-  private final Vision vision;
-
   private final TunableController driver;
   private final TunableController mech;
+
+  private final APConstraints constraints = new APConstraints().withAcceleration(10).withJerk(0.1);
+  private final APProfile profile =
+      new APProfile(constraints)
+          .withErrorXY(Inches.of(1))
+          .withErrorTheta(Degrees.of(2.5))
+          .withBeelineRadius(Inches.of(24));
+  private Autopilot autopilot = new Autopilot(profile);
+
+  private APTarget currentTarget = new APTarget(new Pose2d());
 
   private WantedState wantedState = WantedState.STOPPED;
   private CurrentState currentState = CurrentState.STOPPED;
@@ -115,8 +127,9 @@ public class Superstructure extends SubsystemBase {
 
   private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
 
-  private final PathConstraints pathConstraints =
-      new PathConstraints(MaxSpeed.in(MetersPerSecond), 20, 4.634, Units.degreesToRadians(1136));
+  // private final PathConstraints pathConstraints =
+  // new PathConstraints(MaxSpeed.in(MetersPerSecond), 20, 4.634,
+  // Units.degreesToRadians(1136));
 
   private final SwerveRequest.FieldCentric fieldCentric =
       new SwerveRequest.FieldCentric()
@@ -131,14 +144,15 @@ public class Superstructure extends SubsystemBase {
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   private final PIDController rotation = new PIDController(0.05, 0, 0);
+  private final PIDController movingRotation = new PIDController(0.03, 0, 0.00175);
   private final PIDController translationx = new PIDController(4, 0, 0.05);
   private final PIDController translationy = new PIDController(4, 0, 0.05);
 
   private Command currentPathFindingCommand = new Command() {};
 
-  private final Trigger pathfindingDone =
-      new Trigger(() -> currentPathFindingCommand.isFinished())
-          .and(() -> !DriverStation.isAutonomous());
+  // private final Trigger pathfindingDone =
+  // new Trigger(() -> currentPathFindingCommand.isFinished())
+  // .and(() -> !DriverStation.isAutonomous());
 
   public Superstructure(
       Drive drivetrain,
@@ -164,7 +178,7 @@ public class Superstructure extends SubsystemBase {
     this.automationLevelChooser = new AutomationLevelChooser();
     this.simCoralAutomationChooser = new SimCoralAutomationChooser();
 
-    pathfindingDone.onTrue(Commands.runOnce(() -> handleAfterPathfinding()));
+    // pathfindingDone.onTrue(Commands.runOnce(() -> handleAfterPathfinding()));
 
     // SmartDashboard.putNumber("transP", translationx.getP());
     // SmartDashboard.putNumber("transI", translationx.getI());
@@ -174,10 +188,13 @@ public class Superstructure extends SubsystemBase {
     // SmartDashboard.putNumber("rotationD", rotation.getD());
 
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
+
+    SmartDashboard.putNumber("Jerk", 0.1);
+    SmartDashboard.putNumber("Acceleration", 10);
   }
 
   public boolean isPathFindingFinishedAuto() {
-    return currentPathFindingCommand.isFinished();
+    return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
   public void setAlliance(boolean redAlliance) {
@@ -186,15 +203,22 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    autopilot =
+        new Autopilot(
+            profile.withConstraints(
+                constraints
+                    .withAcceleration(SmartDashboard.getNumber("Acceleration", 10))
+                    .withJerk(SmartDashboard.getNumber("Jerk", 0.1))));
+
     // translationx.setP(SmartDashboard.getNumber("transP", translationx.getP()));
     // translationy.setP(translationx.getP());
     // translationx.setI(SmartDashboard.getNumber("transI", translationx.getI()));
     // translationy.setI(translationx.getI());
     // translationx.setD(SmartDashboard.getNumber("transD", translationx.getD()));
     // translationy.setD(translationx.getD());
-    // rotation.setP(SmartDashboard.getNumber("rotationP", rotation.getP()));
-    // rotation.setI(SmartDashboard.getNumber("rotationI", rotation.getI()));
-    // rotation.setD(SmartDashboard.getNumber("rotationD", rotation.getD()));
+    // movingRotation.setP(SmartDashboard.getNumber("rotationP", movingRotation.getP()));
+    // movingRotation.setI(SmartDashboard.getNumber("rotationI", movingRotation.getI()));
+    // movingRotation.setD(SmartDashboard.getNumber("rotationD", movingRotation.getD()));
 
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
@@ -231,12 +255,13 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Superstructure/WantedState", wantedState);
     Logger.recordOutput("Superstructure/currentState", currentState);
     Logger.recordOutput("Superstructure/PreviousState", previousState);
-    Logger.recordOutput("Superstructure/command", currentPathFindingCommand.hashCode());
 
-    Logger.recordOutput(
-        "Superstructure/AutoDriveIsFinished", currentPathFindingCommand.isFinished());
-    Logger.recordOutput(
-        "Superstructure/AutoDriveIsScheduled", currentPathFindingCommand.isScheduled());
+    // Logger.recordOutput(
+    // "Superstructure/AutoDriveIsFinished",
+    // currentPathFindingCommand.isFinished());
+    // Logger.recordOutput(
+    // "Superstructure/AutoDriveIsScheduled",
+    // currentPathFindingCommand.isScheduled());
 
     Logger.recordOutput("Superstructure/CurrentGamePiecePosition", currentGamePiecePosition);
 
@@ -258,21 +283,21 @@ public class Superstructure extends SubsystemBase {
     applyStates();
   }
 
-  private void handleAfterPathfinding() {
-    if (currentState == CurrentState.AUTO_DRIVE_TO_CORAL_STATION) {
-      setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
-    } else if (currentState == CurrentState.AUTO_DRIVE_TO_REEF) {
-      setWantedState(
-          manipulator.hasCoral()
-              ? targetLevel == ReefLevel.L4
-                  ? WantedState.SCORE_L4
-                  : targetLevel == ReefLevel.L3
-                      ? WantedState.SCORE_L3
-                      : targetLevel == ReefLevel.L2 ? WantedState.SCORE_L2 : WantedState.MANUAL_L1
-              : WantedState.INTAKE_ALGAE_FROM_REEF);
-    }
-    currentPathFindingCommand.cancel();
-  }
+  // private void handleAfterPathfinding() {
+  // if (currentState == CurrentState.AUTO_DRIVE_TO_CORAL_STATION) {
+  // setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
+  // } else if (currentState == CurrentState.AUTO_DRIVE_TO_REEF) {
+  // setWantedState(
+  // manipulator.hasCoral()
+  // ? targetLevel == ReefLevel.L4
+  // ? WantedState.SCORE_L4
+  // : targetLevel == ReefLevel.L3
+  // ? WantedState.SCORE_L3
+  // : targetLevel == ReefLevel.L2 ? WantedState.SCORE_L2 : WantedState.MANUAL_L1
+  // : WantedState.INTAKE_ALGAE_FROM_REEF);
+  // }
+  // currentPathFindingCommand.cancel();
+  // }
 
   @AutoLogOutput(key = "Superstructure/CurrentState")
   private CurrentState handStateTransitions() {
@@ -597,11 +622,12 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.INTAKE);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    if (!currentPathFindingCommand.isScheduled()) {
-      currentPathFindingCommand =
-          AutoBuilder.pathfindToPose(targetSourcePose(drivetrain.getPose()), pathConstraints, 0);
-      currentPathFindingCommand.schedule();
-    }
+    // if (!currentPathFindingCommand.isScheduled()) {
+    // currentPathFindingCommand =
+    // AutoBuilder.pathfindToPose(targetSourcePose(drivetrain.getPose()),
+    // pathConstraints, 0);
+    // currentPathFindingCommand.schedule();
+    // }
   }
 
   private void noPiece() {
@@ -643,17 +669,58 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.INTAKE);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    if (!currentPathFindingCommand.isScheduled()) {
-      currentPathFindingCommand =
-          AutoBuilder.pathfindToPose(
-              !manipulator.hasCoral()
-                  ? getBeforeReadyToGrabAlgaePose()
-                      .plus(new Transform2d(-0.125, 0, new Rotation2d()))
-                  : getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d())),
-              pathConstraints,
-              1);
-      currentPathFindingCommand.schedule();
+
+    currentTarget =
+        new APTarget(
+                !manipulator.hasCoral()
+                    ? getBeforeReadyToGrabAlgaePose()
+                        .plus(new Transform2d(-0.125, 0, new Rotation2d()))
+                    : getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d())))
+            .withoutEntryAngle();
+    // .withEntryAngle((
+    // !manipulator.hasCoral() ? getBeforeReadyToGrabAlgaePose().plus(new Transform2d(-0.125, 0, new
+    // Rotation2d()))
+    //     : getTargetPose().plus(new Transform2d(-0.125, 0, new Rotation2d()))
+    // drivetrain.getPose()).getRotation());
+    Translation2d velocities =
+        new Translation2d(
+            drivetrain.getChassisSpeeds().vxMetersPerSecond / MaxSpeed.in(MetersPerSecond),
+            drivetrain.getChassisSpeeds().vyMetersPerSecond / MaxSpeed.in(MetersPerSecond));
+    Pose2d pose = drivetrain.getPose();
+
+    Transform2d output = autopilot.calculate(pose, velocities, currentTarget);
+
+    double veloX = output.getX();
+    double veloY = output.getY();
+    Rotation2d rotationSnap = output.getRotation();
+
+    Logger.recordOutput("AP/Velocities", velocities);
+    Logger.recordOutput("AP/Output", output);
+
+    Logger.recordOutput(
+        "AP/ErrorTrans",
+        pose.getTranslation().getDistance(currentTarget.getReference().getTranslation()));
+    Logger.recordOutput(
+        "AP/ErrorRot",
+        pose.getRotation().minus(currentTarget.getReference().getRotation()).getDegrees());
+
+    if (pose.getTranslation().getDistance(currentTarget.getReference().getTranslation()) < 2) {
+      applyDrive(veloX, veloY, rotationSnap);
+    } else {
+      applyDrive(veloX, veloY);
     }
+
+    // if (autopilot.atTarget(pose, currentTarget)) {
+    //   setWantedState(
+    //       manipulator.hasCoral()
+    //           ? targetLevel == ReefLevel.L4
+    //               ? WantedState.SCORE_L4
+    //               : targetLevel == ReefLevel.L3
+    //                   ? WantedState.SCORE_L3
+    //                   : targetLevel == ReefLevel.L2 ? WantedState.SCORE_L2 :
+    // WantedState.MANUAL_L1
+    //           : WantedState.INTAKE_ALGAE_FROM_REEF);
+    // }
   }
 
   private void scoreL2Teleop() {
@@ -970,6 +1037,48 @@ public class Superstructure extends SubsystemBase {
                     .withVelocityX(MaxSpeed.times(-0.125))
                     .withVelocityY(MaxSpeed.times(0))
                     .withRotationalRate(maxAngularRate.times(0)))
+        .schedule();
+  }
+
+  /** Uses custom x and y velocities with rotation snap */
+  private void applyDrive(double x, double y, Rotation2d rotationSnap) {
+    drivetrain
+        .applyRequest(
+            () ->
+                fieldCentric
+                    .withVelocityX(
+                        MaxSpeed.times(
+                            clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
+                    .withVelocityY(
+                        MaxSpeed.times(
+                            clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
+                    .withRotationalRate(
+                        maxAngularRate.times(
+                            clamp(
+                                movingRotation.calculate(
+                                        drivetrain
+                                            .getPose()
+                                            .getRotation()
+                                            .minus(rotationSnap)
+                                            .getDegrees(),
+                                        0)
+                                    - (driver.customRight().getX() * driverOverideAllignment)))))
+        .schedule();
+  }
+
+  /** Uses custom x and y velocities without rotation snap */
+  private void applyDrive(double x, double y) {
+    drivetrain
+        .applyRequest(
+            () ->
+                fieldCentric
+                    .withVelocityX(
+                        MaxSpeed.times(
+                            clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
+                    .withVelocityY(
+                        MaxSpeed.times(
+                            clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
+                    .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())))
         .schedule();
   }
 

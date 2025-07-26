@@ -1,7 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -266,74 +264,79 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-
-    driver
-        .rightTrigger()
-        .and(driver.leftTrigger().negate())
-        .onTrue(
-            superstructure.configureButtonBinding(
-                WantedState.AUTO_DRIVE_TO_REEF,
-                WantedState.SCORE_ALGAE,
-                WantedState.AUTO_DRIVE_TO_REEF))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
     driver
         .a()
-        .and(driver.rightTrigger())
-        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)))
-        .onFalse(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false)));
-
-    driver
-        .povRight()
-        .onTrue(Commands.runOnce(() -> superstructure.decideGamePieceScore()))
-        .onFalse(Commands.runOnce(() -> superstructure.stopGamePieceScore()));
-
-    driver
-        .leftTrigger()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver
-        .y()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver
-        .x()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver
-        .a()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver
-        .povUp()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()));
-
-    driver.povDown().onTrue(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
-
-    driver
-        .start()
         .onTrue(
-            drivetrain.runOnce(
-                () ->
-                    drivetrain.resetPose(
-                        new Pose2d(
-                            drivetrain.getPose().getX(),
-                            drivetrain.getPose().getY(),
-                            new Rotation2d()))));
+            Commands.runOnce(() -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_REEF)))
+        .onFalse(Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE)));
 
-    driver.back().onTrue(Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()));
+    // driver
+    //     .rightTrigger()
+    //     .and(driver.leftTrigger().negate())
+    //     .onTrue(
+    //         superstructure.configureButtonBinding(
+    //             WantedState.AUTO_DRIVE_TO_REEF,
+    //             WantedState.SCORE_ALGAE,
+    //             WantedState.AUTO_DRIVE_TO_REEF))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .a()
+    //     .and(driver.rightTrigger())
+    //     .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)))
+    //     .onFalse(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false)));
+
+    // driver
+    //     .povRight()
+    //     .onTrue(Commands.runOnce(() -> superstructure.decideGamePieceScore()))
+    //     .onFalse(Commands.runOnce(() -> superstructure.stopGamePieceScore()));
+
+    // driver
+    //     .leftTrigger()
+    //     .and(driver.rightTrigger().negate())
+    //     .onTrue(superstructure.setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .y()
+    //     .and(driver.rightTrigger().negate())
+    //     .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .x()
+    //     .and(driver.rightTrigger().negate())
+    //     .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .a()
+    //     .and(driver.rightTrigger().negate())
+    //     .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .povUp()
+    //     .and(driver.rightTrigger().negate())
+    //     .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1))
+    //     .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()));
+
+    // driver.povDown().onTrue(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+
+    // driver
+    //     .start()
+    //     .onTrue(
+    //         drivetrain.runOnce(
+    //             () ->
+    //                 drivetrain.resetPose(
+    //                     new Pose2d(
+    //                         drivetrain.getPose().getX(),
+    //                         drivetrain.getPose().getY(),
+    //                         new Rotation2d()))));
+
+    // driver.back().onTrue(Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()));
 
     endgame
         .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
