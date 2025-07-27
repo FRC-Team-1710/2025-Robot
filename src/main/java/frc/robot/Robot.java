@@ -143,7 +143,8 @@ public class Robot extends LoggedRobot {
   public void autonomousExit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
-    } // Somehow this makes it so that when A-Stop is hit it doesnt run during teleop :shrug:
+      m_robotContainer.requsetDefault();
+    }
   }
 
   @Override
@@ -154,6 +155,7 @@ public class Robot extends LoggedRobot {
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
+      m_robotContainer.requsetDefault();
     }
   }
 

@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.AutomationLevel;
+import frc.robot.Constants.Mode;
 import frc.robot.Constants.SimCoralAutomation;
 import frc.robot.autos.AutosBuilder.Reef;
 import frc.robot.autos.AutosBuilder.ReefHeight;
@@ -54,6 +55,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.AutomationLevelChooser;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.SimCoralAutomationChooser;
+import frc.robot.utils.SimFaceChooser;
 import frc.robot.utils.TunableController;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -73,8 +75,7 @@ public class Superstructure extends SubsystemBase {
   private final TunableController driver;
   private final TunableController mech;
 
-  private final APConstraints constraints =
-      new APConstraints().withAcceleration(50).withJerk(0.1);
+  private final APConstraints constraints = new APConstraints().withAcceleration(50).withJerk(0.1);
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
@@ -98,6 +99,7 @@ public class Superstructure extends SubsystemBase {
   private AutomationLevel automationLevel = AutomationLevel.AUTO_RELEASE;
   private SimCoralAutomation simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
 
+  private final SimFaceChooser simFaceChooser;
   private final AutomationLevelChooser automationLevelChooser;
   private final SimCoralAutomationChooser simCoralAutomationChooser;
 
@@ -163,12 +165,15 @@ public class Superstructure extends SubsystemBase {
     this.vision = vision;
     this.driver = driver;
     this.mech = mech;
+    this.simFaceChooser = new SimFaceChooser();
     this.automationLevelChooser = new AutomationLevelChooser();
     this.simCoralAutomationChooser = new SimCoralAutomationChooser();
 
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
     SmartDashboard.putNumber("Acceleration", 50);
+
+    SmartDashboard.putBoolean("TargetSideIsLeft", false);
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -185,6 +190,12 @@ public class Superstructure extends SubsystemBase {
     //     new Autopilot(
     //         new APProfile(
     //             constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
+
+    if (!DriverStation.isAutonomous() && Constants.currentMode == Mode.SIM) {
+      targetFace = simFaceChooser.getReefFace();
+      targetSide =
+          SmartDashboard.getBoolean("TargetSideIsLeft", false) ? ReefSide.left : ReefSide.right;
+    }
 
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
@@ -983,7 +994,15 @@ public class Superstructure extends SubsystemBase {
 
   /** Uses AP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
-    currentTarget = new APTarget(pose).withoutEntryAngle();
+    if (currentState == CurrentState.AUTO_DRIVE_TO_REEF && isRobotOnWrongHalfOfReefFace(pose)) {
+      currentTarget =
+          new APTarget(pose)
+              .withEntryAngle(
+                  pose.getRotation()
+                      .plus(Rotation2d.fromDegrees(isRobotOnLeftHalfOfReefFace(pose) ? -90 : 90)));
+    } else {
+      currentTarget = new APTarget(pose).withoutEntryAngle();
+    }
 
     Transform2d output =
         autopilot.calculate(
@@ -1085,13 +1104,29 @@ public class Superstructure extends SubsystemBase {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
-  public boolean isRobotOnWrongHalfOfReefFace() {
-    switch (targetFace) {
-      case ab, gh:
-          return isRedAlliance ? drivetrain.getPose().getY() < getTargetPose().getY() : drivetrain.getPose().getY() > getTargetPose().getY();
-      default:
-        break;
-    }
+  public boolean isRobotOnWrongHalfOfReefFace(Pose2d pose) {
+    Translation2d relativeTranslation =
+        drivetrain.getPose().getTranslation().minus(pose.getTranslation());
+    Translation2d referenceForwardVector =
+        new Translation2d(pose.getRotation().getCos(), pose.getRotation().getSin());
+    double dotProduct =
+        relativeTranslation.getX() * referenceForwardVector.getX()
+            + relativeTranslation.getY() * referenceForwardVector.getY();
+
+    return dotProduct > 0;
+  }
+
+  public boolean isRobotOnLeftHalfOfReefFace(Pose2d pose) {
+    Translation2d relativeTranslation =
+        drivetrain.getPose().getTranslation().minus(pose.getTranslation());
+    Rotation2d rightRotation = pose.getRotation().plus(Rotation2d.fromDegrees(-90.0));
+    Translation2d referenceRightVector =
+        new Translation2d(rightRotation.getCos(), rightRotation.getSin());
+    double dotProduct =
+        relativeTranslation.getX() * referenceRightVector.getX()
+            + relativeTranslation.getY() * referenceRightVector.getY();
+
+    return dotProduct < 0;
   }
 
   private Rotation2d getProcessorRotation() {

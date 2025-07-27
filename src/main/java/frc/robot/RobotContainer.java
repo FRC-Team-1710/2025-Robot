@@ -266,6 +266,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    
+
     driver
         .rightTrigger()
         .and(driver.leftTrigger().negate())
@@ -273,60 +275,60 @@ public class RobotContainer {
             superstructure.configureButtonBinding(
                 WantedState.AUTO_DRIVE_TO_REEF,
                 WantedState.SCORE_ALGAE,
-                WantedState.AUTO_DRIVE_TO_REEF))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+                WantedState.AUTO_DRIVE_TO_REEF).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .b()
         .and(driver.rightTrigger())
-        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)))
-        .onFalse(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false)));
+        .onTrue(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true)).ignoringDisable(true))
+        .onFalse(Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false)).ignoringDisable(true));
 
     driver
         .povRight()
-        .onTrue(Commands.runOnce(() -> superstructure.decideGamePieceScore()))
-        .onFalse(Commands.runOnce(() -> superstructure.stopGamePieceScore()));
+        .onTrue(Commands.runOnce(() -> superstructure.decideGamePieceScore()).ignoringDisable(true))
+        .onFalse(Commands.runOnce(() -> superstructure.stopGamePieceScore()).ignoringDisable(true));
 
     driver
         .leftTrigger()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .y()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .x()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .a()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .povUp()
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .leftBumper()
         .or(driver.rightBumper())
         .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.INTAKE_ALGAE_FROM_GROUND))
-        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+        .onTrue(superstructure.setWantedStateCommand(WantedState.INTAKE_ALGAE_FROM_GROUND).ignoringDisable(true))
+        .onFalse(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
-    driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()));
+    driver.povLeft().onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()).ignoringDisable(true));
 
-    driver.povDown().onTrue(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE));
+    driver.povDown().onTrue(superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .start()
@@ -337,9 +339,9 @@ public class RobotContainer {
                         new Pose2d(
                             drivetrain.getPose().getX(),
                             drivetrain.getPose().getY(),
-                            new Rotation2d()))));
+                            new Rotation2d()))).ignoringDisable(true));
 
-    driver.back().onTrue(Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()));
+    driver.back().onTrue(Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()).ignoringDisable(true));
 
     endgame
         .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
@@ -347,48 +349,52 @@ public class RobotContainer {
 
     alphaButton
         .and(bravoButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.left)).ignoringDisable(true));
     bravoButton
         .and(alphaButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.right)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ab, ReefSide.right)).ignoringDisable(true));
     charlieButton
         .and(deltaButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.left)).ignoringDisable(true));
     deltaButton
         .and(charlieButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.right)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.cd, ReefSide.right)).ignoringDisable(true));
     echoButton
         .and(foxtrotButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.left)).ignoringDisable(true));
     foxtrotButton
         .and(echoButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.right)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ef, ReefSide.right)).ignoringDisable(true));
     golfButton
         .and(hotelButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.left)).ignoringDisable(true));
     hotelButton
         .and(golfButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.right)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.gh, ReefSide.right)).ignoringDisable(true));
     indiaButton
         .and(julietButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.left)).ignoringDisable(true));
     julietButton
         .and(indiaButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.right)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.ij, ReefSide.right)).ignoringDisable(true));
     kiloButton
         .and(limaButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.left)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.left)).ignoringDisable(true));
     limaButton
         .and(kiloButton.negate())
-        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.right)));
-    l4Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L4)));
-    l3Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L3)));
-    l2Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)));
-    l1Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L1)));
+        .onTrue(Commands.runOnce(() -> superstructure.setTarget(ReefFaces.kl, ReefSide.right)).ignoringDisable(true));
+    l4Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L4)).ignoringDisable(true));
+    l3Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L3)).ignoringDisable(true));
+    l2Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)).ignoringDisable(true));
+    l1Button.onTrue(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L1)).ignoringDisable(true));
   }
 
   public void setAlliance(boolean alliance) {
     superstructure.setAlliance(alliance);
+  }
+
+  public void requsetDefault() {
+    superstructure.setWantedState(WantedState.DEFAULT_STATE);
   }
 
   public Command getAutonomousCommand() {
