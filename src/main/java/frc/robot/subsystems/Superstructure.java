@@ -73,11 +73,12 @@ public class Superstructure extends SubsystemBase {
   private final TunableController driver;
   private final TunableController mech;
 
-  private final APConstraints constraints = new APConstraints().withAcceleration(10).withJerk(0.1);
+  private final APConstraints constraints =
+      new APConstraints().withAcceleration(50).withJerk(0.1);
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
-          .withErrorTheta(Degrees.of(2.5))
+          .withErrorTheta(Degrees.of(1.5))
           .withBeelineRadius(Inches.of(24));
   private Autopilot autopilot = new Autopilot(profile);
 
@@ -100,7 +101,7 @@ public class Superstructure extends SubsystemBase {
   private final AutomationLevelChooser automationLevelChooser;
   private final SimCoralAutomationChooser simCoralAutomationChooser;
 
-  private final double driverOverideAllignment = 0.25;
+  private double driverOverideAllignment = 0.25;
 
   private boolean bump = false;
 
@@ -167,8 +168,7 @@ public class Superstructure extends SubsystemBase {
 
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
-    SmartDashboard.putNumber("Jerk", 0.1);
-    SmartDashboard.putNumber("Acceleration", 10);
+    SmartDashboard.putNumber("Acceleration", 50);
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -181,12 +181,10 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    autopilot =
-        new Autopilot(
-            profile.withConstraints(
-                constraints
-                    .withAcceleration(SmartDashboard.getNumber("Acceleration", 10))
-                    .withJerk(SmartDashboard.getNumber("Jerk", 0.1))));
+    // autopilot =
+    //     new Autopilot(
+    //         new APProfile(
+    //             constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
 
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
@@ -288,7 +286,14 @@ public class Superstructure extends SubsystemBase {
           break;
         case AUTO_DRIVE_TO_CORAL_STATION:
           if (automationLevel != AutomationLevel.NO_AUTO_DRIVE || DriverStation.isAutonomous()) {
-            currentState = CurrentState.AUTO_DRIVE_TO_CORAL_STATION;
+            if (manipulator.hasCoral()) {
+              currentState =
+                  manipulator.hasCoral()
+                      ? CurrentState.HOLDING_CORAL_TELEOP
+                      : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
+            } else {
+              currentState = CurrentState.AUTO_DRIVE_TO_CORAL_STATION;
+            }
           } else {
             currentState =
                 manipulator.hasCoral()
@@ -397,6 +402,14 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void applyStates() {
+    switch (currentState) {
+      case AUTO_DRIVE_TO_CORAL_STATION, AUTO_DRIVE_TO_REEF:
+        driverOverideAllignment = 0;
+        break;
+      default:
+        driverOverideAllignment = 0.25;
+        break;
+    }
     switch (currentState) {
       case ZERO:
         zero();
@@ -976,11 +989,15 @@ public class Superstructure extends SubsystemBase {
         autopilot.calculate(
             drivetrain.getPose(),
             new Translation2d(
-                drivetrain.getChassisSpeeds().vxMetersPerSecond / MaxSpeed.in(MetersPerSecond),
-                drivetrain.getChassisSpeeds().vyMetersPerSecond / MaxSpeed.in(MetersPerSecond)),
+                    drivetrain.getChassisSpeeds().vxMetersPerSecond / MaxSpeed.in(MetersPerSecond),
+                    drivetrain.getChassisSpeeds().vyMetersPerSecond / MaxSpeed.in(MetersPerSecond))
+                .rotateBy(drivetrain.getPose().getRotation()),
             currentTarget);
 
-    applyDrive(output.getX(), output.getY(), output.getRotation());
+    Logger.recordOutput("AP/AppliedX%", clamp(output.getX()));
+    Logger.recordOutput("AP/AppliedY%", clamp(output.getY()));
+
+    applyDrive(clamp(output.getX()), clamp(output.getY()), output.getRotation());
   }
 
   /** Uses custom x and y velocities with rotation snap */
@@ -1068,8 +1085,18 @@ public class Superstructure extends SubsystemBase {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
+  public boolean isRobotOnWrongHalfOfReefFace() {
+    switch (targetFace) {
+      case ab, gh:
+          return isRedAlliance ? drivetrain.getPose().getY() < getTargetPose().getY() : drivetrain.getPose().getY() > getTargetPose().getY();
+      default:
+        break;
+    }
+  }
+
   private Rotation2d getProcessorRotation() {
-    return Rotation2d.fromDegrees(isRedAlliance ? 90 : 270);
+    return Rotation2d.fromDegrees(
+        isRedAlliance ? onOtherHalfOfField() ? 270 : 90 : onOtherHalfOfField() ? 90 : 270);
   }
 
   private Pose2d targetSourcePose(Pose2d pose) {

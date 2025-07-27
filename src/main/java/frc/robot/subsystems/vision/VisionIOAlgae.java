@@ -25,7 +25,9 @@ public class VisionIOAlgae {
   }
 
   public boolean targetVisible() {
-    return (!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets();
+    return Constants.currentMode == Mode.REAL
+        ? ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets())
+        : false;
   }
 
   // LEFT BUMBPER
