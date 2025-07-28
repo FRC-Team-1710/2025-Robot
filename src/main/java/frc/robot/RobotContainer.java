@@ -300,6 +300,12 @@ public class RobotContainer {
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
+        .leftTrigger()
+        .and(superstructure::detectsCoral)
+        .onTrue(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 1)))
+        .onFalse(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
+
+    driver
         .rightBumper()
         .and(driver.rightTrigger().negate())
         .onTrue(
