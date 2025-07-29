@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -10,7 +6,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
 import com.therekrab.autopilot.APTarget;
@@ -25,6 +21,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,126 +54,135 @@ import frc.robot.utils.FieldConstants;
 import frc.robot.utils.GamePlanChooser;
 import frc.robot.utils.SimCoralAutomationChooser;
 import frc.robot.utils.TunableController;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+@SuppressWarnings("unused")
 public class Superstructure extends SubsystemBase {
-  private final Drive drivetrain;
   private final Claw claw;
-  private final Climber climber;
-  private final Elevator elevator;
-  private final Funnel funnel;
-  private final Manipulator manipulator;
-  private final Vision vision;
-
-  @SuppressWarnings("unused")
-  private final LEDSubsystem ledSubsystem;
-
   private final Memory memory;
-
-  private final TunableController driver;
+  private final Funnel funnel;
+  private final Vision vision;
+  private final Climber climber;
+  private final Drive drivetrain;
+  private final Timer ejectTimer;
+  private final double offsetY;
+  private final double offsetX;
+  private final Elevator elevator;
+  private final double elevUpThresh;
   private final TunableController mech;
-
-  private final APConstraints constraints = new APConstraints().withAcceleration(50).withJerk(0.1);
-  private final APProfile profile =
-      new APProfile(constraints)
-          .withErrorXY(Inches.of(1))
-          .withErrorTheta(Degrees.of(1.5))
-          .withBeelineRadius(Inches.of(24));
-  private Autopilot autopilot = new Autopilot(profile);
-
-  private APTarget currentTarget = new APTarget(new Pose2d());
-
-  private WantedState wantedState = WantedState.STOPPED;
-  private CurrentState currentState = CurrentState.STOPPED;
-  private CurrentState previousState;
-
-  private ReefFaces targetFace = ReefFaces.ab;
-  private ReefSide targetSide = ReefSide.left;
-  private ReefLevel targetLevel = ReefLevel.L4;
-  private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
-
-  private TargetingMethod targetingMethod = TargetingMethod.DISTANCE;
-
-  private GamePiecePositions currentGamePiecePosition = GamePiecePositions.NONE;
-
-  private AutomationLevel automationLevel = AutomationLevel.AUTO_RELEASE;
-  private SimCoralAutomation simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
-
+  private final Manipulator manipulator;
+  private final TunableController driver;
+  private final LEDSubsystem ledSubsystem;
+  private final FieldCentric fieldCentric;
+  private final PIDController movingRotation;
+  private final GamePlanChooser gamePlanChooser;
   private final AutomationLevelChooser automationLevelChooser;
   private final SimCoralAutomationChooser simCoralAutomationChooser;
-  private final GamePlanChooser gamePlanChooser;
 
-  private double driverOverideAllignment = 0.25;
+  private long delayEnd;
+  private long delayStart;
+  private ReefSide targetSide;
+  private Autopilot autopilot;
+  private ReefFaces targetFace;
+  private ReefLevel targetLevel;
+  private APTarget currentTarget;
+  private WantedState wantedState;
+  private long delayBetweenLoopMS;
+  private LinearVelocity maxSpeed;
+  private CurrentState currentState;
+  private CurrentState previousState;
+  private double driverOverideAllignment;
+  private AngularVelocity maxAngularRate;
+  private AutomationLevel automationLevel;
+  private TargetingMethod targetingMethod;
+  private TargetSourceSide targetSourceSide;
+  private SimCoralAutomation simCoralAutomation;
+  private GamePiecePositions currentGamePiecePosition;
 
-  private final double metersToElevatorUp = 0.75;
-
-  private boolean goingForRP = true;
-
-  private boolean bump = false;
-
-  private boolean autoSourceIsLeft = false;
-
-  private boolean scoreCoralFlag = false;
-
-  private boolean manualScoreCoralBeingFlagged = false;
-
-  private boolean hasScoredCoralSim = false;
-
-  private boolean isRedAlliance = false;
-
-  private boolean wantingToGrabAlgaeOffReef = false;
-
-  private boolean compressMaxSpeed = true;
-
-  private final double offsetX = Units.inchesToMeters(17.5);
-  private final double offsetY = Units.inchesToMeters(7);
-
-  private final Timer ejectTimer = new Timer();
-
-  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
-
-  private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
-
-  private final SwerveRequest.FieldCentric fieldCentric =
-      new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed.times(0.025))
-          .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-  private final PIDController movingRotation = new PIDController(0.03, 0, 0.00175);
+  private boolean bump;
+  private boolean goingForRP;
+  private boolean isRedAlliance;
+  private boolean scoreCoralFlag;
+  private boolean compressMaxSpeed;
+  private boolean autoSourceIsLeft;
+  private boolean hasScoredCoralSim;
+  private boolean wantingToGrabAlgaeOffReef;
+  private boolean manualScoreCoralBeingFlagged;
 
   public Superstructure(
-      Drive drivetrain,
       Claw claw,
-      Climber climber,
-      Elevator elevator,
       Funnel funnel,
-      LEDSubsystem ledSubsystem,
-      Manipulator manipulator,
       Vision vision,
+      Climber climber,
+      Drive drivetrain,
+      Elevator elevator,
+      TunableController mech,
+      Manipulator manipulator,
       TunableController driver,
-      TunableController mech) {
-    this.drivetrain = drivetrain;
-    this.claw = claw;
-    this.climber = climber;
-    this.elevator = elevator;
-    this.funnel = funnel;
-    this.ledSubsystem = ledSubsystem;
-    this.manipulator = manipulator;
-    this.vision = vision;
-    this.driver = driver;
-    this.mech = mech;
+      LEDSubsystem ledSubsystem) {
+
+    this.elevUpThresh = 0.75;
+    this.delayBetweenLoopMS = 0;
+    this.driverOverideAllignment = 0.25;
+
     this.memory = new Memory();
+    this.gamePlanChooser = new GamePlanChooser();
     this.automationLevelChooser = new AutomationLevelChooser();
     this.simCoralAutomationChooser = new SimCoralAutomationChooser();
-    this.gamePlanChooser = new GamePlanChooser();
+
+    this.bump = false;
+    this.goingForRP = true;
+    this.isRedAlliance = false;
+    this.scoreCoralFlag = false;
+    this.compressMaxSpeed = true;
+    this.autoSourceIsLeft = false;
+    this.hasScoredCoralSim = false;
+    this.wantingToGrabAlgaeOffReef = false;
+    this.manualScoreCoralBeingFlagged = false;
+
+    this.claw = claw;
+    this.mech = mech;
+    this.driver = driver;
+    this.funnel = funnel;
+    this.vision = vision;
+    this.climber = climber;
+    this.elevator = elevator;
+    this.drivetrain = drivetrain;
+    this.manipulator = manipulator;
+    this.ledSubsystem = ledSubsystem;
+
+    this.ejectTimer = new Timer();
+    this.targetFace = ReefFaces.ab;
+    this.targetSide = ReefSide.left;
+    this.targetLevel = ReefLevel.L4;
+    this.wantedState = WantedState.STOPPED;
+    this.currentState = CurrentState.STOPPED;
+    this.targetSourceSide = TargetSourceSide.FAR;
+    this.offsetY = Units.inchesToMeters(7);
+    this.delayEnd = RobotController.getFPGATime();
+    this.maxSpeed = TunerConstants.kSpeedAt12Volts;
+    this.maxAngularRate = Constants.MaxAngularRate;
+    this.delayStart = RobotController.getFPGATime();
+    this.currentTarget = new APTarget(new Pose2d());
+    this.targetingMethod = TargetingMethod.DISTANCE;
+    this.offsetX = Units.inchesToMeters(17.5);
+    this.automationLevel = AutomationLevel.AUTO_RELEASE;
+    this.currentGamePiecePosition = GamePiecePositions.NONE;
+    this.simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
+    this.movingRotation = new PIDController(0.03, 0, 0.00175);
+    this.fieldCentric =
+        new FieldCentric()
+            .withDeadband(maxSpeed.times(0.025))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withRotationalDeadband(Constants.MaxAngularRate.times(0.025));
+    this.autopilot =
+        new Autopilot(
+            new APProfile(new APConstraints().withJerk(0.1).withAcceleration(50))
+                .withErrorXY(Inches.of(1))
+                .withErrorTheta(Degrees.of(1.5))
+                .withBeelineRadius(Inches.of(24)));
 
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-
-    SmartDashboard.putNumber("Acceleration", 50);
-
-    SmartDashboard.putBoolean("TargetSideIsLeft", false);
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -189,14 +195,29 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // autopilot =
-    // new Autopilot(
-    // new APProfile(
-    // constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
+    delayEnd = RobotController.getFPGATime();
+    delayBetweenLoopMS = ((delayStart - delayEnd) / 1000);
 
+    memory.periodic();
+
+    goingForRP = gamePlanChooser.goingForRP();
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
-    goingForRP = gamePlanChooser.goingForRP();
+
+    maxAngularRate = Constants.MaxAngularRate.times(claw.hasAlgae() ? 0.5 : 1);
+    maxSpeed =
+        TunerConstants.kSpeedAt12Volts.times(
+            (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed)
+                ? 1
+                : (elevator.getPosition().in(Inches) > 45)
+                    ? 0.5
+                    : (1 - ((elevator.getPosition().in(Inches) - 15) / 60)));
+
+    if (!scoreCoralFlag) {
+      ejectTimer.reset();
+      if (ejectTimer.isRunning()) ejectTimer.stop();
+      hasScoredCoralSim = false;
+    }
 
     currentGamePiecePosition =
         manipulator.hasCoral()
@@ -207,68 +228,14 @@ public class Superstructure extends SubsystemBase {
                     ? GamePiecePositions.CORAL_IN_FUNNEL
                     : claw.hasAlgae() ? GamePiecePositions.ALGAE_IN_CLAW : GamePiecePositions.NONE;
 
-    maxAngularRate = Constants.MaxAngularRate.times(claw.hasAlgae() ? 0.5 : 1);
-
-    if (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed) {
-      MaxSpeed = TunerConstants.kSpeedAt12Volts;
-      Logger.recordOutput("Superstructure/MaxSpeedCompression", 1);
-    } else if (elevator.getPosition().in(Inches) > 45) {
-      MaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.5);
-      Logger.recordOutput("Superstructure/MaxSpeedCompression", 0.5);
-    } else {
-      MaxSpeed =
-          TunerConstants.kSpeedAt12Volts.times(1 - ((elevator.getPosition().in(Inches) - 15) / 60));
-      Logger.recordOutput(
-          "Superstructure/MaxSpeedCompression",
-          1 - ((elevator.getPosition().in(Inches) - 15) / 60));
-    }
-
-    Logger.recordOutput(
-        "AP/ErrorTrans",
-        Units.metersToInches(
-            drivetrain
-                .getPose()
-                .getTranslation()
-                .getDistance(currentTarget.getReference().getTranslation())));
-    Logger.recordOutput(
-        "AP/ErrorTransM",
-        drivetrain
-            .getPose()
-            .getTranslation()
-            .getDistance(currentTarget.getReference().getTranslation()));
-    Logger.recordOutput(
-        "AP/ErrorRot",
-        drivetrain
-            .getPose()
-            .getRotation()
-            .minus(currentTarget.getReference().getRotation())
-            .getDegrees());
-
-    Logger.recordOutput("Superstructure/WantedState", wantedState);
-    Logger.recordOutput("Superstructure/currentState", currentState);
-    Logger.recordOutput("Superstructure/PreviousState", previousState);
-
-    Logger.recordOutput("Superstructure/CurrentGamePiecePosition", currentGamePiecePosition);
-
-    Logger.recordOutput("Superstructure/TargetSourcePose", targetSourcePose(drivetrain.getPose()));
-
-    Logger.recordOutput("Superstructure/TargetFace", targetFace);
-    Logger.recordOutput("Superstructure/TargetSide", targetSide);
-    Logger.recordOutput("Superstructure/TargetLevel", targetLevel);
-    Logger.recordOutput("Superstructure/TargetSourceAutoIsLeft", autoSourceIsLeft);
-    Logger.recordOutput("Superstructure/TargetSourceDistance", targetSourceSide);
-
-    if (!scoreCoralFlag) {
-      ejectTimer.reset();
-      if (ejectTimer.isRunning()) ejectTimer.stop();
-      hasScoredCoralSim = false;
-    }
-
     currentState = handStateTransitions();
     applyStates();
+
+    logAllData();
+
+    delayStart = RobotController.getFPGATime();
   }
 
-  @AutoLogOutput(key = "Superstructure/CurrentState")
   private CurrentState handStateTransitions() {
     previousState = currentState;
     if (wantedState == WantedState.SCORE_AUTO) {
@@ -1024,13 +991,13 @@ public class Superstructure extends SubsystemBase {
         autopilot.calculate(
             drivetrain.getPose(),
             new Translation2d(
-                    drivetrain.getChassisSpeeds().vxMetersPerSecond / MaxSpeed.in(MetersPerSecond),
-                    drivetrain.getChassisSpeeds().vyMetersPerSecond / MaxSpeed.in(MetersPerSecond))
+                    drivetrain.getChassisSpeeds().vxMetersPerSecond / maxSpeed.in(MetersPerSecond),
+                    drivetrain.getChassisSpeeds().vyMetersPerSecond / maxSpeed.in(MetersPerSecond))
                 .rotateBy(drivetrain.getPose().getRotation()),
             currentTarget);
 
-    Logger.recordOutput("AP/AppliedX%", clamp(output.getX()));
-    Logger.recordOutput("AP/AppliedY%", clamp(output.getY()));
+    Logger.recordOutput("AutoPilot/AppliedX%", clamp(output.getX()));
+    Logger.recordOutput("AutoPilot/AppliedY%", clamp(output.getY()));
 
     applyDrive(clamp(output.getX()), clamp(output.getY()), output.getRotation());
   }
@@ -1042,21 +1009,21 @@ public class Superstructure extends SubsystemBase {
             () ->
                 fieldCentric
                     .withVelocityX(
-                        MaxSpeed.times(
+                        maxSpeed.times(
                             clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
                     .withVelocityY(
-                        MaxSpeed.times(
+                        maxSpeed.times(
                             clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
-                                        movingRotation.calculate(
-                                            drivetrain
-                                                .getPose()
-                                                .getRotation()
-                                                .minus(rotationSnap)
-                                                .getDegrees(),
-                                            0)
+                                movingRotation.calculate(
+                                        drivetrain
+                                            .getPose()
+                                            .getRotation()
+                                            .minus(rotationSnap)
+                                            .getDegrees(),
+                                        0)
                                     - (driver.customRight().getX() * driverOverideAllignment)))))
         .schedule();
   }
@@ -1069,8 +1036,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(rotation)
@@ -1084,8 +1051,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())))
         .schedule();
   }
@@ -1096,8 +1063,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
@@ -1196,7 +1163,6 @@ public class Superstructure extends SubsystemBase {
                 new Rotation2d()));
   }
 
-  @AutoLogOutput(key = "Superstructure/TargetPose")
   private Pose2d getTargetPose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1228,7 +1194,7 @@ public class Superstructure extends SubsystemBase {
                         offsetX, targetSide.isLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)))
                 .getTranslation()
                 .getDistance(drivetrain.getPose().getTranslation()))
-        < metersToElevatorUp;
+        < elevUpThresh;
   }
 
   private Pose2d getFacePose(ReefFaces face) {
@@ -1510,7 +1476,6 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
-  @AutoLogOutput(key = "Superstructure/WantedState")
   public void setWantedState(WantedState state) {
     this.wantedState = state;
   }
@@ -1643,5 +1608,55 @@ public class Superstructure extends SubsystemBase {
         Commands.either(
             setWantedStateCommand(hasAlgae), setWantedStateCommand(noPiece), claw::hasAlgae),
         manipulator::detectsCoral);
+  }
+
+  private void logAllData() {
+    Logger.recordOutput("Superstructure/Misc/BumpCoral", bump);
+    Logger.recordOutput("Superstructure/Targets/TargetFace", targetFace);
+    Logger.recordOutput("Superstructure/Targets/TargetSide", targetSide);
+    Logger.recordOutput("Superstructure/States/WantedState", wantedState);
+    Logger.recordOutput("Superstructure/Targets/TargetLevel", targetLevel);
+    Logger.recordOutput("Superstructure/Misc/IsRedAlliance", isRedAlliance);
+    Logger.recordOutput("Superstructure/States/currentState", currentState);
+    Logger.recordOutput("Superstructure/Automation/GoingForRP", goingForRP);
+    Logger.recordOutput("Superstructure/Misc/ScoreCoralFlag", scoreCoralFlag);
+    Logger.recordOutput("Superstructure/States/PreviousState", previousState);
+    Logger.recordOutput("Superstructure/Misc/EjectTimerTime", ejectTimer.get());
+    Logger.recordOutput("Superstructure/Misc/CompressMaxSpeed", compressMaxSpeed);
+    Logger.recordOutput("Superstructure/Sim/HasScoredCoralSim", hasScoredCoralSim);
+    Logger.recordOutput("Superstructure/Targets/TargetingMethod", targetingMethod);
+    Logger.recordOutput("Superstructure/Poses/CurrentTargetPose", getTargetPose());
+    Logger.recordOutput("Superstructure/Sim/SimCoralAutomation", simCoralAutomation);
+    Logger.recordOutput("Superstructure/Automation/AutomationLevel", automationLevel);
+    Logger.recordOutput("Superstructure/Targets/TargetSourceDistance", targetSourceSide);
+    Logger.recordOutput("Superstructure/Targets/TargetSourceAutoIsLeft", autoSourceIsLeft);
+    Logger.recordOutput("Superstructure/Misc/SuperstructurePeriodicLoopMS", delayBetweenLoopMS);
+    Logger.recordOutput("Superstructure/Misc/ManualScoreCoralFlag", manualScoreCoralBeingFlagged);
+    Logger.recordOutput("Superstructure/Poses/AutoPilotTargetPose", currentTarget.getReference());
+    Logger.recordOutput("Superstructure/Misc/CurrentGamePiecePosition", currentGamePiecePosition);
+    Logger.recordOutput("Superstructure/Misc/WantingToGrabAlgaeOffReef", wantingToGrabAlgaeOffReef);
+    Logger.recordOutput("Superstructure/Misc/MaxAngularRateCompression", claw.hasAlgae() ? 0.5 : 1);
+    Logger.recordOutput(
+        "Superstructure/Poses/TargetSourcePose", targetSourcePose(drivetrain.getPose()));
+    Logger.recordOutput(
+        "Superstructure/Misc/MaxSpeedCompression",
+        ((elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed)
+            ? 1
+            : (elevator.getPosition().in(Inches) > 45)
+                ? 0.5
+                : (1 - ((elevator.getPosition().in(Inches) - 15) / 60))));
+    Logger.recordOutput(
+        "AutoPilot/ErrorTransMeters",
+        drivetrain
+            .getPose()
+            .getTranslation()
+            .getDistance(currentTarget.getReference().getTranslation()));
+    Logger.recordOutput(
+        "AutoPilot/ErrorRotationDegrees",
+        drivetrain
+            .getPose()
+            .getRotation()
+            .minus(currentTarget.getReference().getRotation())
+            .getDegrees());
   }
 }
