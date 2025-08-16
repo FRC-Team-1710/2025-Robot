@@ -244,16 +244,16 @@ public class RobotContainer {
 
     superstructure =
         new Superstructure(
-            claw,
-            funnel,
-            vision,
-            climber,
             drivetrain,
+            claw,
+            climber,
             elevator,
-            mech,
+            funnel,
+            ledsubsystem,
             manipulator,
+            vision,
             driver,
-            ledsubsystem);
+            mech);
 
     superstructure.setTarget(ReefFaces.ab, ReefSide.left);
     superstructure.setTargetLevel(ReefLevel.L4);

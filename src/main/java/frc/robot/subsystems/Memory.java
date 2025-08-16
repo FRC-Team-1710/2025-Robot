@@ -8,7 +8,6 @@ import edu.wpi.first.math.Pair;
 import frc.robot.subsystems.Superstructure.ReefFaces;
 import frc.robot.subsystems.Superstructure.ReefLevel;
 import frc.robot.subsystems.Superstructure.ReefSide;
-import frc.robot.utils.PriorityFaces;
 import frc.robot.utils.SimCoral;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,10 +19,6 @@ public class Memory {
   private final ArrayList<ReefSide> listOfSides;
   private final ArrayList<ReefLevel> listOfLevels;
 
-  private final PriorityFaces priorityFacesChooser;
-
-  private ArrayList<ReefFaces> priorityFaces = new ArrayList<>();
-
   private ReefSide reefSide = ReefSide.left;
   private ReefLevel reefLevel = ReefLevel.L4;
 
@@ -31,12 +26,6 @@ public class Memory {
     listOfFaces = new ArrayList<>();
     listOfSides = new ArrayList<>();
     listOfLevels = new ArrayList<>();
-
-    priorityFacesChooser = new PriorityFaces();
-  }
-
-  public void periodic() {
-    priorityFaces = priorityFacesChooser.getPriorityFaces();
   }
 
   public void addScoredCoral(ReefFaces face, ReefSide side, ReefLevel level) {
