@@ -55,6 +55,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.AutomationLevelChooser;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.GamePlanChooser;
+import frc.robot.utils.SimCoral;
 import frc.robot.utils.SimCoralAutomationChooser;
 import frc.robot.utils.TunableController;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -190,9 +191,9 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
     // autopilot =
-    // new Autopilot(
-    // new APProfile(
-    // constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
+    //     new Autopilot(
+    //         new APProfile(
+    //             constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
 
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
@@ -688,6 +689,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
@@ -720,6 +722,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
@@ -756,6 +759,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(1)) {
@@ -778,6 +782,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
@@ -797,6 +802,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
@@ -820,6 +826,7 @@ public class Superstructure extends SubsystemBase {
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
+        SimCoral.addPose(targetFace, targetSide, targetLevel);
         memory.addScoredCoral(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(1)) {
@@ -1050,13 +1057,13 @@ public class Superstructure extends SubsystemBase {
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
-                                        movingRotation.calculate(
-                                            drivetrain
-                                                .getPose()
-                                                .getRotation()
-                                                .minus(rotationSnap)
-                                                .getDegrees(),
-                                            0)
+                                movingRotation.calculate(
+                                        drivetrain
+                                            .getPose()
+                                            .getRotation()
+                                            .minus(rotationSnap)
+                                            .getDegrees(),
+                                        0)
                                     - (driver.customRight().getX() * driverOverideAllignment)))))
         .schedule();
   }
@@ -1114,10 +1121,6 @@ public class Superstructure extends SubsystemBase {
 
   private double clamp(double amount) {
     return Math.copySign(Math.abs(amount) > 1 ? 1 : amount, amount);
-  }
-
-  public boolean detectsCoral() {
-    return manipulator.detectsCoral();
   }
 
   public boolean isDrivetrainAtTarget() {
@@ -1311,80 +1314,146 @@ public class Superstructure extends SubsystemBase {
   }
 
   public void decideNextReefTargetFace() {
+    ReefFaces newFace = ReefFaces.ab;
     switch (targetingMethod) {
       case NO_AUTO_TARGET:
         return;
       case ROTATION:
-        targetFace =
-            memory.getNextBestOption(
-                new double[] {
-                  Math.abs(
-                      getFacePose(ReefFaces.ab)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees()),
-                  Math.abs(
-                      getFacePose(ReefFaces.cd)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees()),
-                  Math.abs(
-                      getFacePose(ReefFaces.ef)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees()),
-                  Math.abs(
-                      getFacePose(ReefFaces.gh)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees()),
-                  Math.abs(
-                      getFacePose(ReefFaces.ij)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees()),
-                  Math.abs(
-                      getFacePose(ReefFaces.kl)
-                          .getRotation()
-                          .minus(drivetrain.getPose().getRotation())
-                          .getDegrees())
-                },
-                goingForRP);
+        double closestRotation =
+            Math.abs(
+                getFacePose(ReefFaces.ab)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees());
+        if (closestRotation
+            > Math.abs(
+                getFacePose(ReefFaces.cd)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees())) {
+          closestRotation =
+              Math.abs(
+                  getFacePose(ReefFaces.cd)
+                      .getRotation()
+                      .minus(drivetrain.getPose().getRotation())
+                      .getDegrees());
+          newFace = ReefFaces.cd;
+        }
+        if (closestRotation
+            > Math.abs(
+                getFacePose(ReefFaces.ef)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees())) {
+          closestRotation =
+              Math.abs(
+                  getFacePose(ReefFaces.ef)
+                      .getRotation()
+                      .minus(drivetrain.getPose().getRotation())
+                      .getDegrees());
+          newFace = ReefFaces.ef;
+        }
+        if (closestRotation
+            > Math.abs(
+                getFacePose(ReefFaces.gh)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees())) {
+          closestRotation =
+              Math.abs(
+                  getFacePose(ReefFaces.gh)
+                      .getRotation()
+                      .minus(drivetrain.getPose().getRotation())
+                      .getDegrees());
+          newFace = ReefFaces.gh;
+        }
+        if (closestRotation
+            > Math.abs(
+                getFacePose(ReefFaces.ij)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees())) {
+          closestRotation =
+              Math.abs(
+                  getFacePose(ReefFaces.ij)
+                      .getRotation()
+                      .minus(drivetrain.getPose().getRotation())
+                      .getDegrees());
+          newFace = ReefFaces.ij;
+        }
+        if (closestRotation
+            > Math.abs(
+                getFacePose(ReefFaces.kl)
+                    .getRotation()
+                    .minus(drivetrain.getPose().getRotation())
+                    .getDegrees())) {
+          closestRotation =
+              Math.abs(
+                  getFacePose(ReefFaces.kl)
+                      .getRotation()
+                      .minus(drivetrain.getPose().getRotation())
+                      .getDegrees());
+          newFace = ReefFaces.kl;
+        }
         break;
       case DISTANCE:
-        targetFace =
-            memory.getNextBestOption(
-                new double[] {
-                  Math.abs(
-                      getFacePose(ReefFaces.ab)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation())),
-                  Math.abs(
-                      getFacePose(ReefFaces.cd)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation())),
-                  Math.abs(
-                      getFacePose(ReefFaces.ef)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation())),
-                  Math.abs(
-                      getFacePose(ReefFaces.gh)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation())),
-                  Math.abs(
-                      getFacePose(ReefFaces.ij)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation())),
-                  Math.abs(
-                      getFacePose(ReefFaces.kl)
-                          .getTranslation()
-                          .getDistance(drivetrain.getPose().getTranslation()))
-                },
-                goingForRP);
+        double closestDistance =
+            getFacePose(ReefFaces.ab)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation());
+        if (closestDistance
+            > getFacePose(ReefFaces.cd)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation())) {
+          closestDistance =
+              getFacePose(ReefFaces.cd)
+                  .getTranslation()
+                  .getDistance(drivetrain.getPose().getTranslation());
+          newFace = ReefFaces.cd;
+        }
+        if (closestDistance
+            > getFacePose(ReefFaces.ef)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation())) {
+          closestDistance =
+              getFacePose(ReefFaces.ef)
+                  .getTranslation()
+                  .getDistance(drivetrain.getPose().getTranslation());
+          newFace = ReefFaces.ef;
+        }
+        if (closestDistance
+            > getFacePose(ReefFaces.gh)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation())) {
+          closestDistance =
+              getFacePose(ReefFaces.gh)
+                  .getTranslation()
+                  .getDistance(drivetrain.getPose().getTranslation());
+          newFace = ReefFaces.gh;
+        }
+        if (closestDistance
+            > getFacePose(ReefFaces.ij)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation())) {
+          closestDistance =
+              getFacePose(ReefFaces.ij)
+                  .getTranslation()
+                  .getDistance(drivetrain.getPose().getTranslation());
+          newFace = ReefFaces.ij;
+        }
+        if (closestDistance
+            > getFacePose(ReefFaces.kl)
+                .getTranslation()
+                .getDistance(drivetrain.getPose().getTranslation())) {
+          closestDistance =
+              getFacePose(ReefFaces.kl)
+                  .getTranslation()
+                  .getDistance(drivetrain.getPose().getTranslation());
+          newFace = ReefFaces.kl;
+        }
         break;
     }
-    targetLevel = memory.getTargetLevel();
-    targetSide = memory.getTargetSide();
+    this.targetFace = newFace;
   }
 
   public void setTargetSide(ReefSide side) {

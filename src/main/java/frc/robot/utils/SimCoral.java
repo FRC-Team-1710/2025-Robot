@@ -25,124 +25,123 @@ public class SimCoral {
   }
 
   public static void addPose(ReefFaces face, ReefSide side, ReefLevel level) {
-    poses.add(
-        apply(
-            switch (face) {
-              case ab ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.A2.pose;
-                          case right -> spots.B2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.A3.pose;
-                          case right -> spots.B3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.A4.pose;
-                          case right -> spots.B4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-              case cd ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.C2.pose;
-                          case right -> spots.D2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.C3.pose;
-                          case right -> spots.D3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.C4.pose;
-                          case right -> spots.D4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-              case ef ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.E2.pose;
-                          case right -> spots.F2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.E3.pose;
-                          case right -> spots.F3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.E4.pose;
-                          case right -> spots.F4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-              case gh ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.G2.pose;
-                          case right -> spots.H2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.G3.pose;
-                          case right -> spots.H3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.G4.pose;
-                          case right -> spots.H4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-              case ij ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.I2.pose;
-                          case right -> spots.J2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.I3.pose;
-                          case right -> spots.J3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.I4.pose;
-                          case right -> spots.J4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-              case kl ->
-                  switch (level) {
-                    case L2 ->
-                        switch (side) {
-                          case left -> spots.K2.pose;
-                          case right -> spots.L2.pose;
-                        };
-                    case L3 ->
-                        switch (side) {
-                          case left -> spots.K3.pose;
-                          case right -> spots.L3.pose;
-                        };
-                    case L4 ->
-                        switch (side) {
-                          case left -> spots.K4.pose;
-                          case right -> spots.L4.pose;
-                        };
-                    default -> spots.Level1.pose;
-                  };
-            }));
+    poses.add(apply(
+        switch (face) {
+          case ab ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.A2.pose;
+                      case right -> spots.B2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.A3.pose;
+                      case right -> spots.B3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.A4.pose;
+                      case right -> spots.B4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+          case cd ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.C2.pose;
+                      case right -> spots.D2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.C3.pose;
+                      case right -> spots.D3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.C4.pose;
+                      case right -> spots.D4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+          case ef ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.E2.pose;
+                      case right -> spots.F2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.E3.pose;
+                      case right -> spots.F3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.E4.pose;
+                      case right -> spots.F4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+          case gh ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.G2.pose;
+                      case right -> spots.H2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.G3.pose;
+                      case right -> spots.H3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.G4.pose;
+                      case right -> spots.H4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+          case ij ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.I2.pose;
+                      case right -> spots.J2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.I3.pose;
+                      case right -> spots.J3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.I4.pose;
+                      case right -> spots.J4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+          case kl ->
+              switch (level) {
+                case L2 ->
+                    switch (side) {
+                      case left -> spots.K2.pose;
+                      case right -> spots.L2.pose;
+                    };
+                case L3 ->
+                    switch (side) {
+                      case left -> spots.K3.pose;
+                      case right -> spots.L3.pose;
+                    };
+                case L4 ->
+                    switch (side) {
+                      case left -> spots.K4.pose;
+                      case right -> spots.L4.pose;
+                    };
+                default -> spots.Level1.pose;
+              };
+        }));
     Pose3d[] newPoses = new Pose3d[poses.size()];
     for (int i = 0; i < poses.size(); i++) {
       newPoses[i] = poses.get(i);
