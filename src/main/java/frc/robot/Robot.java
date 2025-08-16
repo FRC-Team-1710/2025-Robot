@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.SimCoral;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -89,8 +88,6 @@ public class Robot extends LoggedRobot {
 
     m_robotContainer.setAlliance(redAlliance);
 
-    SimCoral.setRedAlliance(redAlliance);
-
     m_gcTimer.start();
   }
 
@@ -132,8 +129,6 @@ public class Robot extends LoggedRobot {
     redAlliance = checkRedAlliance();
     m_robotContainer.setAlliance(redAlliance);
 
-    SimCoral.setRedAlliance(redAlliance);
-
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -157,8 +152,6 @@ public class Robot extends LoggedRobot {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
     m_robotContainer.setAlliance(redAlliance);
-
-    SimCoral.setRedAlliance(redAlliance);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
