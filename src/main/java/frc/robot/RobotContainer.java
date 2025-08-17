@@ -294,7 +294,8 @@ public class RobotContainer {
         .and(driver.rightTrigger().negate())
         .onTrue(
             superstructure
-                .setWantedStateCommand(WantedState.AUTO_DRIVE_TO_CORAL_STATION)
+                .setWantedStateCommand(
+                    WantedState.INTAKE_CORAL_FROM_STATION) // AUTO_DRIVE_TO_CORAL_STATION)
                 .ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
@@ -371,6 +372,16 @@ public class RobotContainer {
         .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
+
+    driver
+        .povDown()
+        .and(driver.rightTrigger())
+        .onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()).ignoringDisable(true));
+
+    driver
+        .povDown()
+        .and(driver.leftTrigger())
+        .onTrue(Commands.runOnce(() -> superstructure.advanceCoral()).ignoringDisable(true));
 
     driver
         .povLeft()
@@ -486,5 +497,9 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autosBuilder.getAuto();
+  }
+
+  public void autoPeriodic() {
+    autosBuilder.periodic();
   }
 }

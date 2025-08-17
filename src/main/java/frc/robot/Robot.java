@@ -100,6 +100,7 @@ public class Robot extends LoggedRobot {
     Threads.setCurrentThreadPriority(false, 10);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
+    m_robotContainer.autoPeriodic();
   }
 
   /** Gets the current alliance, true is red */

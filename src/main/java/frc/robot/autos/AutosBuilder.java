@@ -31,6 +31,8 @@ public class AutosBuilder {
 
   LoggedDashboardChooser<Auto> autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
 
+  private String customString = "";
+
   public AutosBuilder(Superstructure superstructure) {
     this.superstructure = superstructure;
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
@@ -42,6 +44,113 @@ public class AutosBuilder {
     autoChooser.addOption("CUSTOM", Auto.CUSTOM);
 
     Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
+  }
+
+  public void periodic() {
+    if (autoChooser.get() == Auto.CUSTOM
+        && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
+      customString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
+      String output = validateAuto(customString);
+      SmartDashboard.putBoolean("Is Auto Valid", output == "");
+      SmartDashboard.putString("Auto Validation Error", output);
+    } else if (autoChooser.get() != Auto.CUSTOM) {
+      SmartDashboard.putBoolean("Is Auto Valid", true);
+      SmartDashboard.putString("Auto Validation Error", "");
+    }
+  }
+
+  public String validateAuto(String input) {
+    boolean first = true;
+    for (int i = 0; i < input.length(); i++) {
+      char character = input.charAt(i);
+      if (first) {
+        if (character == 'R') {
+          nextCommand = NextCommand.SOURCE;
+          source = Source.RIGHT;
+        } else if (character == 'N') {
+          nextCommand = NextCommand.SOURCE;
+          source = Source.LEFT;
+        } else if (character == 'A') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.A;
+        } else if (character == 'B') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.B;
+        } else if (character == 'C') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.C;
+        } else if (character == 'D') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.D;
+        } else if (character == 'E') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.E;
+        } else if (character == 'F') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.F;
+        } else if (character == 'G') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.G;
+        } else if (character == 'H') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.H;
+        } else if (character == 'I') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.I;
+        } else if (character == 'J') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.J;
+        } else if (character == 'K') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.K;
+        } else if (character == 'L') {
+          nextCommand = NextCommand.PLACE;
+          reef = Reef.L;
+        } else {
+          return "Character at character "
+              + (i + 1)
+              + " of the first half was "
+              + String.valueOf(character)
+              + " which is invalid";
+        }
+      } else {
+        if (nextCommand == NextCommand.PLACE) {
+          if (character == '2') {
+            reefHeight = ReefHeight.L2;
+          } else if (character == '3') {
+            reefHeight = ReefHeight.L3;
+          } else if (character == '4') {
+            reefHeight = ReefHeight.L4;
+          } else {
+            return "Character at character "
+                + (i + 1)
+                + " of the second half was "
+                + String.valueOf(character)
+                + " while trying to "
+                + nextCommand.toString()
+                + " which is invalid";
+          }
+        } else {
+          if (character == 'F') {
+            sourceDistance = SourceDistance.FAR;
+          } else if (character == 'M') {
+            sourceDistance = SourceDistance.MID;
+          } else if (character == 'C') {
+            sourceDistance = SourceDistance.CLOSE;
+          } else {
+            return "Character at character "
+                + (i + 1)
+                + " of the second half was "
+                + String.valueOf(character)
+                + " while trying to "
+                + nextCommand.toString()
+                + " which is invalid";
+          }
+        }
+      }
+      first = !first;
+    }
+    return "";
   }
 
   public Command getAuto() {
