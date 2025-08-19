@@ -8,6 +8,8 @@ package frc.robot.subsystems.superstructure.funnel;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -26,6 +28,7 @@ public class Funnel extends SubsystemBase {
   private final FunnelIOInputsAutoLogged inputs;
 
   private FunnelState currentState = FunnelState.INTAKE;
+  private final BooleanSupplier bumpBoolean;
 
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
@@ -35,9 +38,10 @@ public class Funnel extends SubsystemBase {
   private final Alert angleMotorAlert =
       new Alert("Arm funnelAngleMotor motor isn't connected", AlertType.kError);
 
-  public Funnel(FunnelIO io) {
+  public Funnel(FunnelIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
     this.inputs = new FunnelIOInputsAutoLogged();
+    this.bumpBoolean = bumpBoolean;
   }
 
   @Override
@@ -51,30 +55,31 @@ public class Funnel extends SubsystemBase {
 
     io.setPosition(currentState.targetAngle);
 
-    switch (currentState) {
-      case CLIMB:
-        io.setRoller(0);
-        break;
-      case OFF:
-        io.setRoller(0);
-        break;
-      case INTAKE:
-        io.setRoller(FunnelConstants.intakeSpeed);
-        break;
-      case INTAKE_SLOW:
-        io.setRoller(FunnelConstants.insideSpeed);
-        break;
-      case BUMP:
-        io.setRoller(-0.075);
-        break;
-      case L1:
-        io.setRoller(0);
-        break;
-      case STOP:
-        io.stop();
-        break;
-      default:
-        break;
+    if (bumpBoolean.getAsBoolean()) {
+      io.setRoller(-0.075);
+    } else {
+      switch (currentState) {
+        case CLIMB:
+          io.setRoller(0);
+          break;
+        case OFF:
+          io.setRoller(0);
+          break;
+        case INTAKE:
+          io.setRoller(FunnelConstants.intakeSpeed);
+          break;
+        case INTAKE_SLOW:
+          io.setRoller(FunnelConstants.insideSpeed);
+          break;
+        case L1:
+          io.setRoller(0);
+          break;
+        case STOP:
+          io.stop();
+          break;
+        default:
+          break;
+      }
     }
   }
 

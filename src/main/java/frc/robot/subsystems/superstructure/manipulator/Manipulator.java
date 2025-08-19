@@ -7,6 +7,9 @@ package frc.robot.subsystems.superstructure.manipulator;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -17,10 +20,13 @@ public class Manipulator extends SubsystemBase {
   private ManipulatorStates currentState = ManipulatorStates.OFF;
   private CurrentCoralState currentCoralState = CurrentCoralState.NONE;
 
+  private final BooleanSupplier bumpBoolean;
+
   /** Creates a new Claw. */
-  public Manipulator(ManipulatorIO io) {
+  public Manipulator(ManipulatorIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
+    this.bumpBoolean = bumpBoolean;
   }
 
   @Override
@@ -28,38 +34,38 @@ public class Manipulator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Manipulator", inputs);
 
-    switch (currentState) {
-      case OFF:
-        if (hasCoral() || !detectsCoral()) {
-          io.setVoltage(0);
-        } else if (detectsCoral()) {
-          io.setVoltage(ManipulatorConstants.insideSpeed * 12);
-        }
-        break;
-      case INTAKE:
-        if (hasCoral()) {
-          io.setVoltage(0);
-        } else if (!detectsCoral()) {
-          io.setVoltage(ManipulatorConstants.intakeSpeed * 12);
-        } else if (detectsCoral()) {
-          io.setVoltage(ManipulatorConstants.insideSpeed * 12);
-        }
-        break;
-      case BUMP:
-        io.setVoltage(-0.075 * 12);
-        break;
-      case OUTTAKE:
-        io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
-        break;
-      default:
-        break;
+    if (bumpBoolean.getAsBoolean()) {
+      io.setVoltage(-0.075 * 12);
+    } else {
+      switch (currentState) {
+        case OFF:
+          if (hasCoral() || !detectsCoral()) {
+            io.setVoltage(0);
+          } else if (detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.insideSpeed * 12);
+          }
+          break;
+        case INTAKE:
+          if (hasCoral()) {
+            io.setVoltage(0);
+          } else if (!detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.intakeSpeed * 12);
+          } else if (detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.insideSpeed * 12);
+          }
+          break;
+        case OUTTAKE:
+          io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
+          break;
+        default:
+          break;
+      }
     }
   }
 
   public enum ManipulatorStates {
     OFF(),
     INTAKE(),
-    BUMP(),
     OUTTAKE()
   }
 

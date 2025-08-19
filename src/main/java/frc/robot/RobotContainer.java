@@ -110,10 +110,10 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         drivetrain = new Drive(currentDriveTrain);
-        manipulator = new Manipulator(new ManipulatorIOCTRE());
-        elevator = new Elevator(new ElevatorIOCTRE());
-        claw = new Claw(new ClawIOCTRE());
-        funnel = new Funnel(new FunnelIOCTRE());
+        manipulator = new Manipulator(new ManipulatorIOCTRE(), () -> mech.leftBumper().getAsBoolean());
+        elevator = new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY());
+        claw = new Claw(new ClawIOCTRE(), () -> mech.getRightY());
+        funnel = new Funnel(new FunnelIOCTRE(), () -> mech.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
         algaeCam = new VisionIOAlgae("AlgaeCam");
         vision =
@@ -167,11 +167,11 @@ public class RobotContainer {
 
       case SIM:
         drivetrain = new Drive(currentDriveTrain);
-        manipulator = new Manipulator(new ManipulatorIOSim());
+        manipulator = new Manipulator(new ManipulatorIOSim(), () -> mech.leftBumper().getAsBoolean());
         ElevatorIOSIM iosim = new ElevatorIOSIM();
-        elevator = new Elevator(iosim);
-        claw = new Claw(new ClawIOSIM(iosim));
-        funnel = new Funnel(new FunnelIOSIM());
+        elevator = new Elevator(iosim, () -> mech.getLeftY());
+        claw = new Claw(new ClawIOSIM(iosim), () -> mech.getRightY());
+        funnel = new Funnel(new FunnelIOSIM(), () -> mech.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
         algaeCam = new VisionIOAlgae("AlgaeCam");
 
@@ -224,10 +224,10 @@ public class RobotContainer {
 
       default:
         drivetrain = new Drive(new DriveIO() {});
-        manipulator = new Manipulator(new ManipulatorIO() {});
-        elevator = new Elevator(new ElevatorIO() {});
-        claw = new Claw(new ClawIO() {});
-        funnel = new Funnel(new FunnelIO() {});
+        manipulator = new Manipulator(new ManipulatorIO() {}, () -> mech.leftBumper().getAsBoolean());
+        elevator = new Elevator(new ElevatorIO() {}, () -> mech.getLeftY());
+        claw = new Claw(new ClawIO() {}, () -> mech.getRightY());
+        funnel = new Funnel(new FunnelIO() {}, () -> mech.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
         algaeCam = new VisionIOAlgae("AlgaeCam");
 

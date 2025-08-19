@@ -108,8 +108,6 @@ public class Superstructure extends SubsystemBase {
 
   private final double metersToElevatorUp = 0.75;
 
-  private boolean bump = false;
-
   private boolean autoSourceIsLeft = false;
 
   private boolean scoreCoralFlag = false;
@@ -570,11 +568,8 @@ public class Superstructure extends SubsystemBase {
     claw.setState(ClawStates.IDLE);
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.INTAKE);
-    manipulator.setState(bump ? ManipulatorStates.BUMP : ManipulatorStates.INTAKE);
-    funnel.setState(
-        bump
-            ? FunnelState.BUMP
-            : manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
+    manipulator.setState(ManipulatorStates.INTAKE);
+    funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()).getRotation());
     if (manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
@@ -586,11 +581,8 @@ public class Superstructure extends SubsystemBase {
     claw.setState(ClawStates.IDLE);
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.INTAKE);
-    manipulator.setState(bump ? ManipulatorStates.BUMP : ManipulatorStates.INTAKE);
-    funnel.setState(
-        bump
-            ? FunnelState.BUMP
-            : manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
+    manipulator.setState(ManipulatorStates.INTAKE);
+    funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
     if (manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);

@@ -34,6 +34,8 @@ public interface ElevatorIO {
     public boolean killSwich = false;
     public boolean encoderFault = false;
 
+    public boolean locked = false;
+
     public Angle leaderPosition = Rotations.of(0);
     public Angle leaderRotorPosition = Rotations.of(0);
 

@@ -13,6 +13,8 @@ package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -38,6 +40,8 @@ public class Claw extends SubsystemBase {
   private boolean doneZeroing = false;
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
+  private final DoubleSupplier manualSupplier;
+
   private Timer timer = new Timer();
 
   private final Alert wristAlert = new Alert("Wrist motor isn't connected", AlertType.kError);
@@ -48,10 +52,11 @@ public class Claw extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the claw
    */
-  public Claw(ClawIO io) {
+  public Claw(ClawIO io, DoubleSupplier manualSupplier) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
     // SmartDashboard.putData(this);
+    this.manualSupplier = manualSupplier;
   }
 
   @Override
@@ -79,68 +84,72 @@ public class Claw extends SubsystemBase {
       io.setRollers(0);
     }
 
-    switch (currentState) {
-      case STOP:
-        io.stopAll();
-        break;
-      case ZERO:
-        if (doneZeroing) {
-          io.setAngle(ClawStates.IDLE.targetAngle);
-        } else {
-          io.wristManual(-0.5);
-          doneZeroing = (timer.hasElapsed(0.25) && inputs.wristStatorCurrent.in(Amps) > 18);
-        }
-        break;
-      case IDLE:
-        io.setAngle(currentState.targetAngle);
-        break;
-      case HOLD:
-        io.setAngle(currentState.targetAngle);
-        break;
-      case GRAB:
-        if (!inputs.hasAlgae) {
-          io.setAngle(currentState.targetAngle);
-          io.setRollers(0.5);
-          if (Constants.currentMode != Mode.SIM) {
-            inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+    if (manualSupplier.getAsDouble() != 0) {
+      io.wristManual(manualSupplier.getAsDouble());
+    } else {
+      switch (currentState) {
+        case STOP:
+          io.stopAll();
+          break;
+        case ZERO:
+          if (doneZeroing) {
+            io.setAngle(ClawStates.IDLE.targetAngle);
+          } else {
+            io.wristManual(-0.5);
+            doneZeroing = (timer.hasElapsed(0.25) && inputs.wristStatorCurrent.in(Amps) > 18);
           }
+          break;
+        case IDLE:
+          io.setAngle(currentState.targetAngle);
+          break;
+        case HOLD:
+          io.setAngle(currentState.targetAngle);
+          break;
+        case GRAB:
+          if (!inputs.hasAlgae) {
+            io.setAngle(currentState.targetAngle);
+            io.setRollers(0.5);
+            if (Constants.currentMode != Mode.SIM) {
+              inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+            }
+            if (inputs.hasAlgae) {
+              rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
+              io.lockRoller();
+            }
+          }
+          break;
+        case NET:
+          io.setAngle(currentState.targetAngle);
+          break;
+        case SCORE_NET:
+          io.setAngle(currentState.targetAngle);
+          io.setRollers(-0.2);
+          break;
+        case FLOOR:
           if (inputs.hasAlgae) {
-            rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
-            io.lockRoller();
+            io.setAngle(ClawStates.HOLD.targetAngle);
+          } else {
+            io.setAngle(currentState.targetAngle);
+            io.setRollers(0.5);
+            if (Constants.currentMode != Mode.SIM) {
+              inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+            }
+            if (hasAlgae()) {
+              rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
+              io.lockRoller();
+            }
           }
-        }
-        break;
-      case NET:
-        io.setAngle(currentState.targetAngle);
-        break;
-      case SCORE_NET:
-        io.setAngle(currentState.targetAngle);
-        io.setRollers(-0.2);
-        break;
-      case FLOOR:
-        if (inputs.hasAlgae) {
-          io.setAngle(ClawStates.HOLD.targetAngle);
-        } else {
+          break;
+        case PROCESSOR:
           io.setAngle(currentState.targetAngle);
-          io.setRollers(0.5);
-          if (Constants.currentMode != Mode.SIM) {
-            inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
-          }
-          if (hasAlgae()) {
-            rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
-            io.lockRoller();
-          }
-        }
-        break;
-      case PROCESSOR:
-        io.setAngle(currentState.targetAngle);
-        break;
-      case SCORE_PROCESSOR:
-        io.setAngle(currentState.targetAngle);
-        io.setRollers(-0.2);
-        break;
-      default:
-        break;
+          break;
+        case SCORE_PROCESSOR:
+          io.setAngle(currentState.targetAngle);
+          io.setRollers(-0.2);
+          break;
+        default:
+          break;
+      }
     }
   }
 

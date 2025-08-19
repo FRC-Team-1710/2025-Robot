@@ -2,6 +2,8 @@ package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -27,6 +29,8 @@ public class Elevator extends SubsystemBase {
   private final Timer timer = new Timer();
   private boolean doneZeroing = false;
 
+  private final DoubleSupplier manualSupplier;
+
   // Alerts for motor connection status
   private final Alert leaderMotorAlert =
       new Alert("Elevator leader motor isn't connected", AlertType.kError);
@@ -38,9 +42,10 @@ public class Elevator extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the elevator
    */
-  public Elevator(ElevatorIO io) {
+  public Elevator(ElevatorIO io, DoubleSupplier manualSupplier) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
+    this.manualSupplier = manualSupplier;
     SmartDashboard.putData(this);
   }
 
@@ -58,7 +63,15 @@ public class Elevator extends SubsystemBase {
         Conversions.rotationsToDistance(inputs.leaderRotorPosition, 6, Inches.of(1.105)));
 
     if (currentState != ElevatorStates.STOP && currentState != ElevatorStates.ZERO) {
-      io.setDistance(currentState.targetDistance);
+      if (manualSupplier.getAsDouble() != 0) {
+        io.setManual(manualSupplier.getAsDouble());
+      } else {
+        if (!inputs.locked) {
+          // Resets pid controller
+          io.setManual(0);
+        }
+        io.setDistance(currentState.targetDistance);
+      }
     } else if (currentState == ElevatorStates.STOP) {
       io.stop();
     } else {

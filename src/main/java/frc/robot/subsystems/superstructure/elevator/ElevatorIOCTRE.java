@@ -220,6 +220,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     inputs.elevatorSetpoint = setpoint;
 
+    inputs.locked = locked;
+
     SmartDashboard.putNumber("Elevator Inches", inputs.elevatorDistance.in(Inches));
     SmartDashboard.putNumber("Elevator Setpoint", elevatorPID.getSetpoint().position);
     SmartDashboard.putNumber("Elevator Goal", elevatorPID.getGoal().position);
@@ -281,9 +283,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Override
   public void setManual(double power) {
-    leader.setVoltage(power * 12);
     if (power == 0) {
       elevatorPID.reset(encoder.getDistance().in(Inches));
+    } else {
+      leader.setVoltage(power * 12);
     }
     locked = false;
   }
