@@ -81,6 +81,7 @@ public class Superstructure extends SubsystemBase {
           .withErrorXY(Inches.of(1))
           .withErrorTheta(Degrees.of(1.5))
           .withBeelineRadius(Inches.of(24));
+
   private Autopilot autopilot = new Autopilot(profile);
 
   private APTarget currentTarget = new APTarget(new Pose2d());
@@ -166,8 +167,6 @@ public class Superstructure extends SubsystemBase {
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
     SmartDashboard.putNumber("Acceleration", 50);
-
-    SmartDashboard.putBoolean("TargetSideIsLeft", false);
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -180,11 +179,6 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // autopilot =
-    //     new Autopilot(
-    //         new APProfile(
-    //             constraints.withAcceleration(SmartDashboard.getNumber("Acceleration", 0))));
-
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
 
@@ -415,11 +409,15 @@ public class Superstructure extends SubsystemBase {
         zero();
         break;
       case INTAKE_CORAL_FROM_STATION:
-        advanceCoral(true);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(true);
+        }
         intakeCoralFromStation();
         break;
       case INTAKE_CORAL_FROM_STATION_AUTO:
-        advanceCoral(true);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(true);
+        }
         intakeCoralFromStationAuto();
         break;
       case AUTO_DRIVE_TO_CORAL_STATION:
@@ -448,27 +446,39 @@ public class Superstructure extends SubsystemBase {
         autoDriveToReef();
         break;
       case SCORE_TELEOP_L2:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL2Teleop();
         break;
       case SCORE_TELEOP_L3:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL3Teleop();
         break;
       case SCORE_TELEOP_L4:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL4Teleop();
         break;
       case SCORE_AUTO_L2:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL2Auto();
         break;
       case SCORE_AUTO_L3:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL3Auto();
         break;
       case SCORE_AUTO_L4:
-        advanceCoral(false);
+        if (Constants.currentMode == Mode.SIM) {
+          advanceCoral(false);
+        }
         scoreL4Auto();
         break;
       case MANUAL_L4:
@@ -484,30 +494,20 @@ public class Superstructure extends SubsystemBase {
         manualL1();
         break;
       case INTAKE_ALGAE_FROM_REEF:
-        if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
-          SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-          claw.advanceGamePiece();
-        }
         intakeAlgaeFromReef();
         break;
       case INTAKE_ALGAE_FROM_GROUND:
-        if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
-          SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-          claw.advanceGamePiece();
-        }
         intakeAlgaeFromGround();
         break;
       case SCORE_ALGAE_IN_NET:
-        if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
-          SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-          claw.advanceGamePiece();
+        if (Constants.currentMode == Mode.SIM && claw.hasAlgae()) {
+          advanceAlgae();
         }
         scoreAlgaeNet();
         break;
       case SCORE_ALGAE_IN_PROCESSOR:
-        if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
-          SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-          claw.advanceGamePiece();
+        if (Constants.currentMode == Mode.SIM && claw.hasAlgae()) {
+          advanceAlgae();
         }
         scoreAlgaeProcessor();
         break;
@@ -532,12 +532,11 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
+  /** Advances coral in the sim */
   private void advanceCoral(boolean intaking) {
-    if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)
-        || (simCoralAutomation == SimCoralAutomation.AUTO_SIM_CORAL
+    if ((simCoralAutomation == SimCoralAutomation.AUTO_SIM_CORAL
             && ((scoreCoralFlag && !hasScoredCoralSim) || (intaking)))
         || (manualScoreCoralBeingFlagged && !hasScoredCoralSim)) {
-      SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
       if (!intaking) {
         hasScoredCoralSim = true;
       }
@@ -545,6 +544,7 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
+  /** Zeros Wrist and Elevator */
   private void zero() {
     if (claw.isDoneZeroing() && previousState == CurrentState.ZERO) {
       claw.setState(ClawStates.IDLE);
@@ -929,7 +929,25 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    applyDrive(Rotation2d.fromDegrees(45));
+    double angle1 =
+        Math.abs(
+            drivetrain
+                .getPose()
+                .getRotation()
+                .minus(Rotation2d.fromDegrees(isRedAlliance ? 180 + 45 : 45))
+                .minus(Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5))
+                .getDegrees());
+    double angle2 =
+        Math.abs(
+            drivetrain
+                .getPose()
+                .getRotation()
+                .minus(Rotation2d.fromDegrees(isRedAlliance ? 180 - 45 : -45))
+                .minus(Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5))
+                .getDegrees());
+    applyDrive(
+        Rotation2d.fromDegrees(
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
   }
 
   private void scoreAlgaeProcessor() {
@@ -947,7 +965,25 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    applyDrive(Rotation2d.fromDegrees(45));
+    double angle1 =
+        Math.abs(
+            drivetrain
+                .getPose()
+                .getRotation()
+                .minus(Rotation2d.fromDegrees(isRedAlliance ? 180 + 45 : 45))
+                .minus(Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5))
+                .getDegrees());
+    double angle2 =
+        Math.abs(
+            drivetrain
+                .getPose()
+                .getRotation()
+                .minus(Rotation2d.fromDegrees(isRedAlliance ? 180 - 45 : -45))
+                .minus(Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5))
+                .getDegrees());
+    applyDrive(
+        Rotation2d.fromDegrees(
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
   }
 
   private void moveAlgaeToProcessorPosition() {
@@ -1002,9 +1038,9 @@ public class Superstructure extends SubsystemBase {
     Pose2d newPose =
         pose.plus(
             new Transform2d(
-                (-driver.customLeft().getY() * driverOverideAllignment),
-                (-driver.customLeft().getX() * driverOverideAllignment),
-                Rotation2d.fromDegrees(-driver.customRight().getX() * driverOverideAllignment)));
+                (-driver.customLeft().getY() * driverOverideAllignment * (isRedAlliance ? -1 : 1)),
+                (-driver.customLeft().getX() * driverOverideAllignment * (isRedAlliance ? -1 : 1)),
+                Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)));
     if (currentState == CurrentState.AUTO_DRIVE_TO_REEF && isRobotOnWrongHalfOfReefFace(pose)) {
       currentTarget =
           new APTarget(newPose)
@@ -1027,7 +1063,11 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("AP/AppliedX%", clamp(output.getX()));
     Logger.recordOutput("AP/AppliedY%", clamp(output.getY()));
 
-    applyDrive(clamp(output.getX()), clamp(output.getY()), output.getRotation(), false);
+    applyDrive(
+        clamp(output.getX() * (isRedAlliance ? -1 : 1)),
+        clamp(output.getY() * (isRedAlliance ? -1 : 1)),
+        output.getRotation(),
+        false);
   }
 
   /**
@@ -1120,14 +1160,17 @@ public class Superstructure extends SubsystemBase {
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
-                                    movingRotation.calculate(
-                                        drivetrain
-                                            .getPose()
-                                            .getRotation()
-                                            .minus(rotationSnap)
-                                            .getDegrees(),
-                                        0))
-                                - (driver.customRight().getX() * driverOverideAllignment))))
+                                movingRotation.calculate(
+                                    drivetrain
+                                        .getPose()
+                                        .getRotation()
+                                        .minus(rotationSnap)
+                                        .minus(
+                                            Rotation2d.fromDegrees(
+                                                -driver.customRight().getX() * 12.5))
+                                        .getDegrees(),
+                                    0)))))
+        // - (driver.customRight().getX() * driverOverideAllignment)))))
         .schedule();
   }
 
@@ -1691,13 +1734,19 @@ public class Superstructure extends SubsystemBase {
   }
 
   public boolean onOtherHalfOfField() {
-    return drivetrain.getPose().getMeasureX().in(Meters)
-        >= FieldConstants.fieldLength.in(Meters) / 2;
+    return isRedAlliance
+        ? (drivetrain.getPose().getMeasureX().in(Meters)
+            <= FieldConstants.fieldLength.in(Meters) / 2)
+        : (drivetrain.getPose().getMeasureX().in(Meters)
+            >= FieldConstants.fieldLength.in(Meters) / 2);
   }
 
   public boolean onLeftHalfOfField() {
-    return drivetrain.getPose().getMeasureY().in(Meters)
-        >= (FieldConstants.fieldWidth.in(Meters) / 2) - 0.5;
+    return isRedAlliance
+        ? (drivetrain.getPose().getMeasureY().in(Meters)
+            <= (FieldConstants.fieldWidth.in(Meters) / 2) + 0.5)
+        : (drivetrain.getPose().getMeasureY().in(Meters)
+            >= (FieldConstants.fieldWidth.in(Meters) / 2) - 0.5);
   }
 
   public CurrentState decideStateForAlgae() {

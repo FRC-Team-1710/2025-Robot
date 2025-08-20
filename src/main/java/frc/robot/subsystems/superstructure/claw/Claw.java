@@ -13,8 +13,6 @@ package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -22,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -110,7 +109,8 @@ public class Claw extends SubsystemBase {
             io.setAngle(currentState.targetAngle);
             io.setRollers(0.5);
             if (Constants.currentMode != Mode.SIM) {
-              inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+              inputs.hasAlgae =
+                  (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
             }
             if (inputs.hasAlgae) {
               rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;
@@ -132,7 +132,8 @@ public class Claw extends SubsystemBase {
             io.setAngle(currentState.targetAngle);
             io.setRollers(0.5);
             if (Constants.currentMode != Mode.SIM) {
-              inputs.hasAlgae = (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
+              inputs.hasAlgae =
+                  (timer.hasElapsed(0.25) && inputs.rollerStatorCurrent.in(Amps) > 120);
             }
             if (hasAlgae()) {
               rollerPositionWhenAlgaeGrabbed = inputs.rollerPosition;

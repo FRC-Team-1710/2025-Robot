@@ -110,7 +110,8 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         drivetrain = new Drive(currentDriveTrain);
-        manipulator = new Manipulator(new ManipulatorIOCTRE(), () -> mech.leftBumper().getAsBoolean());
+        manipulator =
+            new Manipulator(new ManipulatorIOCTRE(), () -> mech.leftBumper().getAsBoolean());
         elevator = new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY());
         claw = new Claw(new ClawIOCTRE(), () -> mech.getRightY());
         funnel = new Funnel(new FunnelIOCTRE(), () -> mech.leftBumper().getAsBoolean());
@@ -167,7 +168,8 @@ public class RobotContainer {
 
       case SIM:
         drivetrain = new Drive(currentDriveTrain);
-        manipulator = new Manipulator(new ManipulatorIOSim(), () -> mech.leftBumper().getAsBoolean());
+        manipulator =
+            new Manipulator(new ManipulatorIOSim(), () -> mech.leftBumper().getAsBoolean());
         ElevatorIOSIM iosim = new ElevatorIOSIM();
         elevator = new Elevator(iosim, () -> mech.getLeftY());
         claw = new Claw(new ClawIOSIM(iosim), () -> mech.getRightY());
@@ -224,7 +226,8 @@ public class RobotContainer {
 
       default:
         drivetrain = new Drive(new DriveIO() {});
-        manipulator = new Manipulator(new ManipulatorIO() {}, () -> mech.leftBumper().getAsBoolean());
+        manipulator =
+            new Manipulator(new ManipulatorIO() {}, () -> mech.leftBumper().getAsBoolean());
         elevator = new Elevator(new ElevatorIO() {}, () -> mech.getLeftY());
         claw = new Claw(new ClawIO() {}, () -> mech.getRightY());
         funnel = new Funnel(new FunnelIO() {}, () -> mech.leftBumper().getAsBoolean());
