@@ -83,7 +83,7 @@ public class Superstructure extends SubsystemBase {
           .withBeelineRadius(Inches.of(24));
 
   private Autopilot autopilot = new Autopilot(profile);
- 
+
   private APTarget currentTarget = new APTarget(new Pose2d());
 
   private WantedState wantedState = WantedState.STOPPED;
@@ -681,12 +681,8 @@ public class Superstructure extends SubsystemBase {
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
-      ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
-      }
-      if (ejectTimer.hasElapsed(0.5)) {
-        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
@@ -710,12 +706,8 @@ public class Superstructure extends SubsystemBase {
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
-      ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
-      }
-      if (ejectTimer.hasElapsed(0.5)) {
-        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
