@@ -95,7 +95,9 @@ public class Superstructure extends SubsystemBase {
   private ReefLevel targetLevel = ReefLevel.L4;
   private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
-  private TargetingMethod targetingMethod = TargetingMethod.DISTANCE;
+  private TargetingMethod targetingMethod = TargetingMethod.ROTATION;
+
+  private TargetType targetingType = TargetType.CORAL;
 
   private GamePiecePositions currentGamePiecePosition = GamePiecePositions.NONE;
 
@@ -118,8 +120,6 @@ public class Superstructure extends SubsystemBase {
   private boolean hasScoredCoralSim = false;
 
   private boolean isRedAlliance = false;
-
-  private boolean wantingToGrabAlgaeOffReef = false;
 
   private boolean compressMaxSpeed = true;
 
@@ -351,6 +351,12 @@ public class Superstructure extends SubsystemBase {
           break;
         case MANUAL_L4:
           currentState = CurrentState.MANUAL_L4;
+          break;
+        case INTAKE:
+          currentState =
+              targetingType == TargetType.CORAL
+                  ? CurrentState.INTAKE_CORAL_FROM_STATION
+                  : CurrentState.INTAKE_ALGAE_FROM_REEF;
           break;
         case INTAKE_ALGAE_FROM_REEF:
           currentState = CurrentState.INTAKE_ALGAE_FROM_REEF;
@@ -680,10 +686,7 @@ public class Superstructure extends SubsystemBase {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
-        setWantedState(
-            wantingToGrabAlgaeOffReef
-                ? WantedState.INTAKE_ALGAE_FROM_REEF
-                : WantedState.DEFAULT_STATE);
+        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
@@ -712,10 +715,7 @@ public class Superstructure extends SubsystemBase {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(0.5)) {
-        setWantedState(
-            wantingToGrabAlgaeOffReef
-                ? WantedState.INTAKE_ALGAE_FROM_REEF
-                : WantedState.DEFAULT_STATE);
+        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
@@ -748,10 +748,7 @@ public class Superstructure extends SubsystemBase {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
       if (ejectTimer.hasElapsed(1)) {
-        setWantedState(
-            wantingToGrabAlgaeOffReef
-                ? WantedState.INTAKE_ALGAE_FROM_REEF
-                : WantedState.DEFAULT_STATE);
+        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
@@ -1036,11 +1033,17 @@ public class Superstructure extends SubsystemBase {
   /** Uses AP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
     Pose2d newPose =
-        pose.plus(
-            new Transform2d(
-                (-driver.customLeft().getY() * driverOverideAllignment * (isRedAlliance ? -1 : 1)),
-                (-driver.customLeft().getX() * driverOverideAllignment * (isRedAlliance ? -1 : 1)),
-                Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)));
+        new Pose2d(pose.getTranslation(), Rotation2d.kZero)
+            .plus(
+                new Transform2d(
+                    (-driver.customLeft().getY()
+                        * driverOverideAllignment
+                        * (isRedAlliance ? -1 : 1)),
+                    (-driver.customLeft().getX()
+                        * driverOverideAllignment
+                        * (isRedAlliance ? -1 : 1)),
+                    Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)
+                        .plus(pose.getRotation())));
     if (currentState == CurrentState.AUTO_DRIVE_TO_REEF && isRobotOnWrongHalfOfReefFace(pose)) {
       currentTarget =
           new APTarget(newPose)
@@ -1265,7 +1268,7 @@ public class Superstructure extends SubsystemBase {
             FieldConstants.aprilTags.getTagPose(getTagForFace()).get().getRotation().toRotation2d())
         .plus(
             new Transform2d(
-                offsetX, targetSide.isLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)));
+                offsetX, isTargetSideLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)));
   }
 
   private boolean isDrivetrainNearTarget() {
@@ -1283,7 +1286,7 @@ public class Superstructure extends SubsystemBase {
                         .toRotation2d())
                 .plus(
                     new Transform2d(
-                        offsetX, targetSide.isLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)))
+                        offsetX, isTargetSideLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)))
                 .getTranslation()
                 .getDistance(drivetrain.getPose().getTranslation()))
         < metersToElevatorUp;
@@ -1330,6 +1333,23 @@ public class Superstructure extends SubsystemBase {
     compressMaxSpeed = !compressMaxSpeed;
   }
 
+  public boolean isIntakingCoralSim() {
+    return currentState == CurrentState.INTAKE_CORAL_FROM_STATION;
+  }
+
+  public void advanceGamePiece() {
+    switch (currentState) {
+      case INTAKE_CORAL_FROM_STATION:
+        advanceCoral();
+        break;
+      case INTAKE_ALGAE_FROM_REEF, INTAKE_ALGAE_FROM_GROUND:
+        advanceCoral();
+        break;
+      default:
+        break;
+    }
+  }
+
   public void advanceCoral() {
     manipulator.advanceGamePiece();
   }
@@ -1350,6 +1370,14 @@ public class Superstructure extends SubsystemBase {
     while (!manipulator.hasCoral()) {
       manipulator.advanceGamePiece();
     }
+  }
+
+  public boolean hasAlgae() {
+    return claw.hasAlgae();
+  }
+
+  public boolean doesntHaveAlgae() {
+    return !claw.hasAlgae();
   }
 
   public WantedState getWantedState() {
@@ -1515,6 +1543,20 @@ public class Superstructure extends SubsystemBase {
     this.targetSide = side;
   }
 
+  public boolean isTargetSideLeft() {
+    if (DriverStation.isAutonomous() || targetingMethod == TargetingMethod.NO_AUTO_TARGET) {
+      return targetSide.isLeft();
+    } else {
+      return (targetFace.inverted ? !targetSide.isLeft() : targetSide.isLeft());
+    }
+  }
+
+  public void setTargetSideIfAble(ReefSide side) {
+    if (targetingMethod != TargetingMethod.NO_AUTO_TARGET) {
+      this.targetSide = side;
+    }
+  }
+
   public void setTargets(Reef reef, ReefHeight height) {
     this.targetFace =
         switch (reef) {
@@ -1563,6 +1605,11 @@ public class Superstructure extends SubsystemBase {
     L4()
   }
 
+  public enum TargetType {
+    CORAL(),
+    ALGAE()
+  }
+
   private int getTagForFace() {
     return switch (targetFace) {
       case ab -> isRedAlliance ? 7 : 18;
@@ -1583,6 +1630,10 @@ public class Superstructure extends SubsystemBase {
       case ij -> isRedAlliance ? 11 : 20;
       case kl -> isRedAlliance ? 6 : 19;
     };
+  }
+
+  public void toggleTargetType() {
+    this.targetingType = (targetingType == TargetType.ALGAE ? TargetType.CORAL : TargetType.ALGAE);
   }
 
   public void setTargetSourceSide(TargetSourceSide side) {
@@ -1613,12 +1664,20 @@ public class Superstructure extends SubsystemBase {
   public enum ReefFaces {
     ab(),
     cd(),
-    ef(),
-    gh(),
-    ij(),
+    ef(true),
+    gh(true),
+    ij(true),
     kl();
 
-    ReefFaces() {}
+    public final boolean inverted;
+
+    ReefFaces() {
+      this.inverted = false;
+    }
+
+    ReefFaces(boolean inverted) {
+      this.inverted = inverted;
+    }
 
     public boolean isHighAlgae() {
       return this == ab || this == ef || this == ij;
@@ -1654,6 +1713,7 @@ public class Superstructure extends SubsystemBase {
     MANUAL_L3,
     MANUAL_L2,
     MANUAL_L1,
+    INTAKE,
     INTAKE_ALGAE_FROM_REEF,
     INTAKE_ALGAE_FROM_GROUND,
     MOVE_ALGAE_TO_NET_POSITION,
@@ -1701,21 +1761,14 @@ public class Superstructure extends SubsystemBase {
 
   public void stopGamePieceScore() {
     switch (currentState) {
-      case SCORE_ALGAE_IN_NET:
-        setWantedState(WantedState.MOVE_ALGAE_TO_NET_POSITION);
-        break;
-      case SCORE_ALGAE_IN_PROCESSOR:
-        setWantedState(WantedState.MOVE_ALGAE_TO_PROCESSOR_POSITION);
+      case SCORE_ALGAE_IN_NET, SCORE_ALGAE_IN_PROCESSOR:
+        setWantedState(WantedState.DEFAULT_STATE);
         break;
       default:
         scoreCoralFlag = false;
         manualScoreCoralBeingFlagged = false;
         break;
     }
-  }
-
-  public void setWantingToGrabAlgaeOffReef(boolean wantingToGrabAlgaeOffReef) {
-    this.wantingToGrabAlgaeOffReef = wantingToGrabAlgaeOffReef;
   }
 
   public void decideGamePieceScore() {

@@ -280,36 +280,43 @@ public class RobotContainer {
 
     driver
         .rightTrigger()
-        .onTrue(Commands.runOnce(() -> superstructure.decideNextReefTargetFace()))
-        .and(driver.leftTrigger().negate())
+        .onTrue(
+            Commands.runOnce(() -> superstructure.setTargetSideIfAble(ReefSide.right))
+                .andThen(Commands.runOnce(() -> superstructure.decideNextReefTargetFace())))
+        .and(driver.rightBumper().negate())
         .onTrue(
             superstructure
                 .configureButtonBinding(
                     WantedState.AUTO_DRIVE_TO_REEF,
-                    WantedState.SCORE_ALGAE,
-                    WantedState.AUTO_DRIVE_TO_REEF)
-                .ignoringDisable(true))
-        .onFalse(
-            superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
-
-    driver
-        .leftTrigger()
-        .and(driver.rightTrigger().negate())
-        .onTrue(
-            superstructure
-                .setWantedStateCommand(
-                    WantedState.INTAKE_CORAL_FROM_STATION) // AUTO_DRIVE_TO_CORAL_STATION)
+                    WantedState.DEFAULT_STATE,
+                    WantedState.INTAKE_ALGAE_FROM_REEF)
                 .ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .rightBumper()
+        .onTrue(
+            Commands.runOnce(() -> superstructure.setTargetSideIfAble(ReefSide.left))
+                .andThen(Commands.runOnce(() -> superstructure.decideNextReefTargetFace())))
         .and(driver.rightTrigger().negate())
         .onTrue(
             superstructure
-                .setWantedStateCommand(WantedState.INTAKE_ALGAE_FROM_GROUND)
+                .configureButtonBinding(
+                    WantedState.AUTO_DRIVE_TO_REEF,
+                    WantedState.DEFAULT_STATE,
+                    WantedState.INTAKE_ALGAE_FROM_REEF)
                 .ignoringDisable(true))
+        .onFalse(
+            superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
+
+    driver
+        .leftTrigger()
+        .and(driver.leftBumper().negate())
+        .onTrue(
+            Commands.runOnce(() -> superstructure.setTargetSideIfAble(ReefSide.left))
+                .andThen(Commands.runOnce(() -> superstructure.decideNextReefTargetFace())))
+        .onTrue(superstructure.setWantedStateCommand(WantedState.INTAKE).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
@@ -320,48 +327,61 @@ public class RobotContainer {
 
     driver
         .y()
-        .and(driver.rightTrigger())
+        .and(driver.rightTrigger().or(driver.rightBumper()))
+        .and(superstructure::doesntHaveAlgae)
         .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L4).ignoringDisable(true));
 
     driver
         .x()
-        .and(driver.rightTrigger())
+        .and(driver.rightTrigger().or(driver.rightBumper()))
         .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L3).ignoringDisable(true));
 
     driver
         .a()
-        .and(driver.rightTrigger())
+        .and(driver.rightTrigger().or(driver.rightBumper()))
         .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L2).ignoringDisable(true));
 
     driver
         .y()
-        .and(driver.rightTrigger().negate())
+        .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
+        .and(superstructure::doesntHaveAlgae)
         .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .x()
-        .and(driver.rightTrigger().negate())
+        .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
         .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .a()
-        .and(driver.rightTrigger().negate())
+        .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
         .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .b()
-        .and(driver.rightTrigger())
+        .and(superstructure::doesntHaveAlgae)
+        .onTrue(Commands.runOnce(() -> superstructure.toggleTargetType()).ignoringDisable(true));
+
+    driver
+        .b()
+        .and(superstructure::hasAlgae)
         .onTrue(
-            Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(true))
-                .ignoringDisable(true))
-        .onFalse(
-            Commands.runOnce(() -> superstructure.setWantingToGrabAlgaeOffReef(false))
+            superstructure
+                .setWantedStateCommand(WantedState.MOVE_ALGAE_TO_PROCESSOR_POSITION)
+                .ignoringDisable(true));
+
+    driver
+        .y()
+        .and(superstructure::hasAlgae)
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.MOVE_ALGAE_TO_NET_POSITION)
                 .ignoringDisable(true));
 
     driver
@@ -371,32 +391,31 @@ public class RobotContainer {
 
     driver
         .povDown()
-        .and(driver.rightTrigger().negate())
+        .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
         .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1).ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
-        .povDown()
-        .and(driver.rightTrigger())
+        .povLeft()
+        .and(driver.rightTrigger().or(driver.rightBumper()))
         .onTrue(Commands.runOnce(() -> superstructure.advanceAlgae()).ignoringDisable(true));
 
     driver
-        .povDown()
+        .povLeft()
         .and(driver.leftTrigger())
-        .onTrue(Commands.runOnce(() -> superstructure.advanceCoral()).ignoringDisable(true));
+        .onTrue(
+            Commands.runOnce(() -> superstructure.advanceCoral())
+                .ignoringDisable(true)
+                .unless(() -> !superstructure.isIntakingCoralSim()));
 
     driver
         .povLeft()
+        .and(driver.leftTrigger())
         .onTrue(
-            Commands.runOnce(() -> superstructure.setTargetSide(ReefSide.left))
-                .ignoringDisable(true));
-
-    driver
-        .povRight()
-        .onTrue(
-            Commands.runOnce(() -> superstructure.setTargetSide(ReefSide.right))
-                .ignoringDisable(true));
+            Commands.runOnce(() -> superstructure.advanceAlgae())
+                .ignoringDisable(true)
+                .unless(() -> superstructure.isIntakingCoralSim()));
 
     driver
         .start()
@@ -417,8 +436,8 @@ public class RobotContainer {
             Commands.runOnce(() -> superstructure.toggleCompressMaxSpeed()).ignoringDisable(true));
 
     endgame
-        .onTrue(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 1)))
-        .onFalse(Commands.runOnce(() -> mech.setRumble(RumbleType.kBothRumble, 0)));
+        .onTrue(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0.5)))
+        .onFalse(Commands.runOnce(() -> driver.setRumble(RumbleType.kBothRumble, 0)));
 
     alphaButton
         .and(bravoButton.negate())
