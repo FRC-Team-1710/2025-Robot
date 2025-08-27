@@ -83,7 +83,7 @@ public class Superstructure extends SubsystemBase {
           .withBeelineRadius(Inches.of(24));
 
   private Autopilot autopilot = new Autopilot(profile);
-
+ 
   private APTarget currentTarget = new APTarget(new Pose2d());
 
   private WantedState wantedState = WantedState.STOPPED;
