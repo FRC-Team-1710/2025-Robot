@@ -1046,22 +1046,19 @@ public class Superstructure extends SubsystemBase {
       currentTarget = new APTarget(newPose).withoutEntryAngle();
     }
 
-    Transform2d output =
+    var output =
         autopilot.calculate(
             drivetrain.getPose(),
-            new Translation2d(
-                    drivetrain.getChassisSpeeds().vxMetersPerSecond / MaxSpeed.in(MetersPerSecond),
-                    drivetrain.getChassisSpeeds().vyMetersPerSecond / MaxSpeed.in(MetersPerSecond))
-                .rotateBy(drivetrain.getPose().getRotation()),
+            drivetrain.getChassisSpeeds(),
             currentTarget);
 
-    Logger.recordOutput("AP/AppliedX%", clamp(output.getX()));
-    Logger.recordOutput("AP/AppliedY%", clamp(output.getY()));
+    Logger.recordOutput("AP/AppliedX%", clamp(output.vx().in(MetersPerSecond)));
+    Logger.recordOutput("AP/AppliedY%", clamp(output.vx().in(MetersPerSecond)));
 
     applyDrive(
-        clamp(output.getX() * (isRedAlliance ? -1 : 1)),
-        clamp(output.getY() * (isRedAlliance ? -1 : 1)),
-        output.getRotation(),
+        clamp(output.vx().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
+        clamp(output.vy().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
+        output.targetAngle(),
         false);
   }
 
