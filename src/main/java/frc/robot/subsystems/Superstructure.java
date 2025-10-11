@@ -1047,10 +1047,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     var output =
-        autopilot.calculate(
-            drivetrain.getPose(),
-            drivetrain.getChassisSpeeds(),
-            currentTarget);
+        autopilot.calculate(drivetrain.getPose(), drivetrain.getChassisSpeeds(), currentTarget);
 
     Logger.recordOutput("AP/AppliedX%", clamp(output.vx().in(MetersPerSecond)));
     Logger.recordOutput("AP/AppliedY%", clamp(output.vx().in(MetersPerSecond)));
