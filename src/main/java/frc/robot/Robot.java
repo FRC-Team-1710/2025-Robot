@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SimCoral;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -73,17 +76,22 @@ public class Robot extends LoggedRobot {
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     SignalLogger.stop();
 
+    // Set Pathfinding to the default AdvantageKit Pathfinder
+
+    Pathfinding.setPathfinder(new LocalADStarAK());
+
     // Warmup the PPLib library
+
     FollowPathCommand.warmupCommand().schedule();
-    // PathfindingCommand.warmupCommand().schedule();
+    PathfindingCommand.warmupCommand().schedule();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     // Warmup the PPLib library
-
-    FollowPathCommand.warmupCommand().schedule();
 
     m_robotContainer = new RobotContainer();
 

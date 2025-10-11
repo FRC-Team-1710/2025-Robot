@@ -11,6 +11,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
 import com.therekrab.autopilot.APTarget;
@@ -90,6 +92,9 @@ public class Superstructure extends SubsystemBase {
   private CurrentState currentState = CurrentState.STOPPED;
   private CurrentState previousState;
 
+  private AutoAlignType currentAutoDriveType = AutoAlignType.PP;
+  private AlignTarget currentAlignTarget = AlignTarget.REEF;
+
   private ReefFaces targetFace = ReefFaces.ab;
   private ReefSide targetSide = ReefSide.left;
   private ReefLevel targetLevel = ReefLevel.L4;
@@ -128,17 +133,26 @@ public class Superstructure extends SubsystemBase {
 
   private final Timer ejectTimer = new Timer();
 
-  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
+  private LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
 
   private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
 
   private final SwerveRequest.FieldCentric fieldCentric =
       new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed.times(0.025))
+          .withDeadband(maxSpeed.times(0.025))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   private final PIDController movingRotation = new PIDController(0.03, 0, 0.00175);
+
+  private Command currentPathFindingCommand = Commands.none();
+  private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
+
+  // new PathConstraints(
+  //     maxSpeed,
+  //     MetersPerSecondPerSecond.of(50),
+  //     maxAngularRate,
+  //     RotationsPerSecondPerSecond.of(15));
 
   public Superstructure(
       Drive drivetrain,
@@ -170,7 +184,10 @@ public class Superstructure extends SubsystemBase {
   }
 
   public boolean isPathFindingFinishedAuto() {
-    return isDrivetrainAtTarget() && DriverStation.isAutonomous();
+    return switch (currentAutoDriveType) {
+      case AP -> isDrivetrainAtTarget() && DriverStation.isAutonomous();
+      case PP -> false; // Waits for the automatic switch to AutoPilot allign
+    };
   }
 
   public void setAlliance(boolean redAlliance) {
@@ -194,13 +211,13 @@ public class Superstructure extends SubsystemBase {
     maxAngularRate = Constants.MaxAngularRate.times(claw.hasAlgae() ? 0.5 : 1);
 
     if (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed) {
-      MaxSpeed = TunerConstants.kSpeedAt12Volts;
+      maxSpeed = TunerConstants.kSpeedAt12Volts;
       Logger.recordOutput("Superstructure/MaxSpeedCompression", 1);
     } else if (elevator.getPosition().in(Inches) > 45) {
-      MaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.5);
+      maxSpeed = TunerConstants.kSpeedAt12Volts.times(0.5);
       Logger.recordOutput("Superstructure/MaxSpeedCompression", 0.5);
     } else {
-      MaxSpeed =
+      maxSpeed =
           TunerConstants.kSpeedAt12Volts.times(1 - ((elevator.getPosition().in(Inches) - 15) / 60));
       Logger.recordOutput(
           "Superstructure/MaxSpeedCompression",
@@ -272,6 +289,26 @@ public class Superstructure extends SubsystemBase {
         case ZERO:
           currentState = CurrentState.ZERO;
           break;
+        case DEFAULT_STATE:
+          if (currentPathFindingCommand.isScheduled()) {
+            currentPathFindingCommand.cancel();
+          }
+          if (manipulator.hasCoral()) {
+            if (DriverStation.isAutonomous()) {
+              currentState = CurrentState.HOLDING_CORAL_AUTO;
+            } else {
+              currentState = CurrentState.HOLDING_CORAL_TELEOP;
+            }
+          } else if (claw.hasAlgae()) {
+            currentState = CurrentState.HOLDING_ALGAE;
+          } else {
+            if (DriverStation.isAutonomous()) {
+              currentState = CurrentState.NO_PIECE_AUTO;
+            } else {
+              currentState = CurrentState.NO_PIECE_TELEOP;
+            }
+          }
+          break;
         case INTAKE_CORAL_FROM_STATION:
           currentState =
               DriverStation.isAutonomous()
@@ -293,23 +330,6 @@ public class Superstructure extends SubsystemBase {
                 manipulator.hasCoral()
                     ? CurrentState.HOLDING_CORAL_TELEOP
                     : claw.hasAlgae() ? CurrentState.HOLDING_ALGAE : CurrentState.NO_PIECE_TELEOP;
-          }
-          break;
-        case DEFAULT_STATE:
-          if (manipulator.hasCoral()) {
-            if (DriverStation.isAutonomous()) {
-              currentState = CurrentState.HOLDING_CORAL_AUTO;
-            } else {
-              currentState = CurrentState.HOLDING_CORAL_TELEOP;
-            }
-          } else if (claw.hasAlgae()) {
-            currentState = CurrentState.HOLDING_ALGAE;
-          } else {
-            if (DriverStation.isAutonomous()) {
-              currentState = CurrentState.NO_PIECE_AUTO;
-            } else {
-              currentState = CurrentState.NO_PIECE_TELEOP;
-            }
           }
           break;
         case AUTO_DRIVE_TO_REEF:
@@ -589,6 +609,7 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.INTAKE);
     manipulator.setState(ManipulatorStates.INTAKE);
     funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
+    currentAlignTarget = AlignTarget.SOURCE;
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
     if (manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
@@ -601,6 +622,7 @@ public class Superstructure extends SubsystemBase {
     elevator.setState(ElevatorStates.INTAKE);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
+    currentAlignTarget = AlignTarget.SOURCE;
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
 
     if (isDrivetrainAtTarget()) {
@@ -648,7 +670,11 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
 
-    applyDrive(!manipulator.hasCoral() ? getBeforeReadyToGrabAlgaePose() : getTargetPose());
+    currentAlignTarget = AlignTarget.REEF;
+    applyDrive(
+        (!manipulator.hasCoral() || targetFace.inverted)
+            ? getBeforeReadyToGrabAlgaePose()
+            : getTargetPose());
 
     if (isDrivetrainNearTarget()) {
       setWantedState(
@@ -679,6 +705,7 @@ public class Superstructure extends SubsystemBase {
       driver.setRumble(RumbleType.kBothRumble, 1);
     }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
+    currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
       if (Constants.currentMode == Mode.SIM) {
@@ -704,6 +731,7 @@ public class Superstructure extends SubsystemBase {
       driver.setRumble(RumbleType.kBothRumble, 1);
     }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
+    currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
       if (Constants.currentMode == Mode.SIM) {
@@ -730,8 +758,10 @@ public class Superstructure extends SubsystemBase {
     }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     if (ejectTimer.hasElapsed(0.5)) {
+      currentAlignTarget = AlignTarget.AP;
       applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
     } else {
+      currentAlignTarget = AlignTarget.REEF;
       applyDrive(getTargetPose());
     }
     if (!manipulator.detectsCoral()) {
@@ -752,6 +782,7 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
+    currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
@@ -771,6 +802,7 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
+    currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
@@ -791,8 +823,10 @@ public class Superstructure extends SubsystemBase {
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     if (ejectTimer.hasElapsed(0.5)) {
+      currentAlignTarget = AlignTarget.AP;
       applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
     } else {
+      currentAlignTarget = AlignTarget.REEF;
       applyDrive(getTargetPose());
     }
     if (!manipulator.detectsCoral()) {
@@ -883,8 +917,10 @@ public class Superstructure extends SubsystemBase {
         claw.setState(ClawStates.GRAB);
       }
     } else if (!claw.hasAlgae()) {
+      currentAlignTarget = AlignTarget.REEF;
       applyDrive(getReadyToGrabAlgaePose());
     } else if (claw.hasAlgae()) {
+      currentAlignTarget = AlignTarget.AP;
       applyDrive(getBeforeReadyToGrabAlgaePose());
       if (drivetrain
               .getPose()
@@ -1022,41 +1058,73 @@ public class Superstructure extends SubsystemBase {
     manipulator.setState(ManipulatorStates.OFF);
   }
 
-  /** Uses AP to snap to specified pose */
+  /** Uses AP and PP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
-    Pose2d newPose =
-        new Pose2d(pose.getTranslation(), Rotation2d.kZero)
-            .plus(
-                new Transform2d(
-                    (-driver.customLeft().getY()
-                        * driverOverideAllignment
-                        * (isRedAlliance ? -1 : 1)),
-                    (-driver.customLeft().getX()
-                        * driverOverideAllignment
-                        * (isRedAlliance ? -1 : 1)),
-                    Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)
-                        .plus(pose.getRotation())));
-    if (currentState == CurrentState.AUTO_DRIVE_TO_REEF && isRobotOnWrongHalfOfReefFace(pose)) {
-      currentTarget =
-          new APTarget(newPose)
-              .withEntryAngle(
-                  pose.getRotation()
-                      .plus(Rotation2d.fromDegrees(isRobotOnLeftHalfOfReefFace(pose) ? -90 : 90)));
+    Logger.recordOutput(
+        "AP/distanceee",
+        Math.abs(pose.getTranslation().getDistance(drivetrain.getPose().getTranslation())) > 1.5);
+    if (currentAlignTarget != AlignTarget.AP
+        && (
+        // Math.abs(pose.getTranslation().getDistance(drivetrain.getPose().getTranslation())) > 1 ||
+        (currentAlignTarget == AlignTarget.REEF
+            && isRobotOnWrongHalfOfReefFace(getTargetPose())))) {
+      currentAutoDriveType = AutoAlignType.PP;
     } else {
-      currentTarget = new APTarget(newPose).withoutEntryAngle();
+      currentAutoDriveType = AutoAlignType.AP;
     }
+    switch (currentAutoDriveType) {
+      case AP:
+        if (currentPathFindingCommand.isScheduled()) {
+          currentPathFindingCommand.cancel();
+        }
+        Pose2d newPose =
+            new Pose2d(pose.getTranslation(), Rotation2d.kZero)
+                .plus(
+                    new Transform2d(
+                        (-driver.customLeft().getY()
+                            * driverOverideAllignment
+                            * (isRedAlliance ? -1 : 1)),
+                        (-driver.customLeft().getX()
+                            * driverOverideAllignment
+                            * (isRedAlliance ? -1 : 1)),
+                        Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)
+                            .plus(pose.getRotation())));
+        if (currentState == CurrentState.AUTO_DRIVE_TO_REEF && isRobotOnWrongHalfOfReefFace(pose)) {
+          currentTarget =
+              new APTarget(newPose)
+                  .withEntryAngle(
+                      pose.getRotation()
+                          .plus(
+                              Rotation2d.fromDegrees(
+                                  isRobotOnLeftHalfOfReefFace(pose) ? -90 : 90)));
+        } else {
+          currentTarget = new APTarget(newPose).withoutEntryAngle();
+        }
 
-    var output =
-        autopilot.calculate(drivetrain.getPose(), drivetrain.getChassisSpeeds(), currentTarget);
+        var output =
+            autopilot.calculate(drivetrain.getPose(), drivetrain.getChassisSpeeds(), currentTarget);
 
-    Logger.recordOutput("AP/AppliedX%", clamp(output.vx().in(MetersPerSecond)));
-    Logger.recordOutput("AP/AppliedY%", clamp(output.vx().in(MetersPerSecond)));
+        Logger.recordOutput("AP/AppliedX%", clamp(output.vx().in(MetersPerSecond)));
+        Logger.recordOutput("AP/AppliedY%", clamp(output.vx().in(MetersPerSecond)));
 
-    applyDrive(
-        clamp(output.vx().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
-        clamp(output.vy().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
-        output.targetAngle(),
-        false);
+        applyDrive(
+            clamp(output.vx().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
+            clamp(output.vy().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
+            output.targetAngle(),
+            false);
+        break;
+      case PP:
+        if (!currentPathFindingCommand.isScheduled()) {
+          // end at 100 to make sure it goes as fast as possible
+          currentPathFindingCommand = AutoBuilder.pathfindToPose(pose, pathfindingConstraints, 100);
+          currentPathFindingCommand.schedule();
+        }
+    }
+  }
+
+  public enum AutoAlignType {
+    PP(),
+    AP()
   }
 
   /**
@@ -1071,10 +1139,10 @@ public class Superstructure extends SubsystemBase {
               () ->
                   fieldCentric
                       .withVelocityX(
-                          MaxSpeed.times(
+                          maxSpeed.times(
                               clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
                       .withVelocityY(
-                          MaxSpeed.times(
+                          maxSpeed.times(
                               clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
                       .withRotationalRate(
                           maxAngularRate.times(
@@ -1093,8 +1161,8 @@ public class Superstructure extends SubsystemBase {
           .applyRequest(
               () ->
                   fieldCentric
-                      .withVelocityX(MaxSpeed.times(x))
-                      .withVelocityY(MaxSpeed.times(y))
+                      .withVelocityX(maxSpeed.times(x))
+                      .withVelocityY(maxSpeed.times(y))
                       .withRotationalRate(
                           maxAngularRate.times(
                               clamp(
@@ -1117,8 +1185,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(rotation)
@@ -1132,8 +1200,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())))
         .schedule();
   }
@@ -1144,8 +1212,8 @@ public class Superstructure extends SubsystemBase {
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(MaxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(MaxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
@@ -1594,6 +1662,12 @@ public class Superstructure extends SubsystemBase {
   public enum TargetType {
     CORAL(),
     ALGAE()
+  }
+
+  public enum AlignTarget {
+    SOURCE(),
+    REEF(),
+    AP()
   }
 
   private int getTagForFace() {
