@@ -196,6 +196,10 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (Constants.currentMode == Mode.SIM && hasAlgae() && manipulator.detectsCoral()) {
+      manipulator.advanceGamePiece();
+    }
+
     automationLevel = automationLevelChooser.getAutomationLevel();
     simCoralAutomation = simCoralAutomationChooser.getAutomationLevel();
 
@@ -1060,14 +1064,15 @@ public class Superstructure extends SubsystemBase {
 
   /** Uses AP and PP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
-    Logger.recordOutput(
-        "AP/distanceee",
-        Math.abs(pose.getTranslation().getDistance(drivetrain.getPose().getTranslation())) > 1.5);
     if (currentAlignTarget != AlignTarget.AP
-        && (
-        // Math.abs(pose.getTranslation().getDistance(drivetrain.getPose().getTranslation())) > 1 ||
-        (currentAlignTarget == AlignTarget.REEF
-            && isRobotOnWrongHalfOfReefFace(getTargetPose())))) {
+        && ((currentAlignTarget == AlignTarget.REEF
+            && isRobotOnWrongHalfOfReefFace(getTargetPose())
+            && Math.abs(
+                    drivetrain
+                        .getPose()
+                        .getTranslation()
+                        .getDistance(getTargetPose().getTranslation()))
+                > 0.5))) {
       currentAutoDriveType = AutoAlignType.PP;
     } else {
       currentAutoDriveType = AutoAlignType.AP;
@@ -1110,14 +1115,16 @@ public class Superstructure extends SubsystemBase {
         applyDrive(
             clamp(output.vx().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
             clamp(output.vy().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
-            output.targetAngle(),
-            false);
+            output.targetAngle());
         break;
       case PP:
         if (!currentPathFindingCommand.isScheduled()) {
           // end at 100 to make sure it goes as fast as possible
           currentPathFindingCommand = AutoBuilder.pathfindToPose(pose, pathfindingConstraints, 100);
           currentPathFindingCommand.schedule();
+
+          // when PP is in a wall it tweaks so driver has to correct it
+          applyDrive();
         }
     }
   }
@@ -1131,50 +1138,29 @@ public class Superstructure extends SubsystemBase {
    * Uses custom x and y velocities with rotation snap and the option to automatically add user
    * input
    */
-  private void applyDrive(
-      double x, double y, Rotation2d rotationSnap, boolean shouldAddUserAllignment) {
-    if (shouldAddUserAllignment) {
-      drivetrain
-          .applyRequest(
-              () ->
-                  fieldCentric
-                      .withVelocityX(
-                          maxSpeed.times(
-                              clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
-                      .withVelocityY(
-                          maxSpeed.times(
-                              clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
-                      .withRotationalRate(
-                          maxAngularRate.times(
-                              clamp(
-                                  movingRotation.calculate(
-                                          drivetrain
-                                              .getPose()
-                                              .getRotation()
-                                              .minus(rotationSnap)
-                                              .getDegrees(),
-                                          0)
-                                      - (driver.customRight().getX() * driverOverideAllignment)))))
-          .schedule();
-    } else {
-      drivetrain
-          .applyRequest(
-              () ->
-                  fieldCentric
-                      .withVelocityX(maxSpeed.times(x))
-                      .withVelocityY(maxSpeed.times(y))
-                      .withRotationalRate(
-                          maxAngularRate.times(
-                              clamp(
-                                  movingRotation.calculate(
-                                      drivetrain
-                                          .getPose()
-                                          .getRotation()
-                                          .minus(rotationSnap)
-                                          .getDegrees(),
-                                      0)))))
-          .schedule();
-    }
+  private void applyDrive(double x, double y, Rotation2d rotationSnap) {
+    drivetrain
+        .applyRequest(
+            () ->
+                fieldCentric
+                    .withVelocityX(
+                        maxSpeed.times(
+                            clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
+                    .withVelocityY(
+                        maxSpeed.times(
+                            clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
+                    .withRotationalRate(
+                        maxAngularRate.times(
+                            clamp(
+                                movingRotation.calculate(
+                                        drivetrain
+                                            .getPose()
+                                            .getRotation()
+                                            .minus(rotationSnap)
+                                            .getDegrees(),
+                                        0)
+                                    - (driver.customRight().getX() * driverOverideAllignment)))))
+        .schedule();
   }
 
   /**
