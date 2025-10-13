@@ -12,6 +12,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.path.PathConstraints;
 import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
@@ -128,6 +130,8 @@ public class Superstructure extends SubsystemBase {
 
   private boolean compressMaxSpeed = true;
 
+  private boolean ppReady = false;
+
   private final double offsetX = Units.inchesToMeters(17.5);
   private final double offsetY = Units.inchesToMeters(7);
 
@@ -147,6 +151,9 @@ public class Superstructure extends SubsystemBase {
 
   private Command currentPathFindingCommand = Commands.none();
   private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
+
+  private Command ppWUp =
+      FollowPathCommand.warmupCommand().andThen(PathfindingCommand.warmupCommand());
 
   // new PathConstraints(
   //     maxSpeed,
@@ -178,6 +185,8 @@ public class Superstructure extends SubsystemBase {
     this.automationLevelChooser = new AutomationLevelChooser();
     this.simCoralAutomationChooser = new SimCoralAutomationChooser();
 
+    ppWUp.schedule();
+
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
     SmartDashboard.putNumber("Acceleration", 50);
@@ -196,6 +205,8 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    ppReady = (!ppWUp.isScheduled());
+
     if (Constants.currentMode == Mode.SIM && hasAlgae() && manipulator.detectsCoral()) {
       manipulator.advanceGamePiece();
     }
@@ -263,6 +274,8 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Superstructure/TargetLevel", targetLevel);
     Logger.recordOutput("Superstructure/TargetSourceAutoIsLeft", autoSourceIsLeft);
     Logger.recordOutput("Superstructure/TargetSourceDistance", targetSourceSide);
+
+    Logger.recordOutput("Superstructure/PPReady", ppReady);
 
     if (!scoreCoralFlag) {
       ejectTimer.reset();
@@ -452,7 +465,7 @@ public class Superstructure extends SubsystemBase {
         break;
       case AUTO_DRIVE_TO_CORAL_STATION:
         if (DriverStation.isAutonomous()) {
-          autoDriveToCoralStation();
+          intakeCoralFromStationAuto();
         } else {
           intakeCoralFromStation();
         }
@@ -617,20 +630,6 @@ public class Superstructure extends SubsystemBase {
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
     if (manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
-    }
-  }
-
-  private void autoDriveToCoralStation() {
-    claw.setState(ClawStates.IDLE);
-    climber.setState(ClimberStates.STOWED);
-    elevator.setState(ElevatorStates.INTAKE);
-    funnel.setState(FunnelState.OFF);
-    manipulator.setState(ManipulatorStates.OFF);
-    currentAlignTarget = AlignTarget.SOURCE;
-    applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
-
-    if (isDrivetrainAtTarget()) {
-      setWantedState(WantedState.INTAKE_CORAL_FROM_STATION);
     }
   }
 
@@ -1064,15 +1063,26 @@ public class Superstructure extends SubsystemBase {
 
   /** Uses AP and PP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
-    if (currentAlignTarget != AlignTarget.AP
+    Logger.recordOutput(
+        "Superstructure/DistanceToRequestedPose",
+        Math.abs(drivetrain.getPose().getTranslation().getDistance(pose.getTranslation())));
+    if (ppReady
+        && currentAlignTarget != AlignTarget.AP
         && ((currentAlignTarget == AlignTarget.REEF
-            && isRobotOnWrongHalfOfReefFace(getTargetPose())
-            && Math.abs(
-                    drivetrain
-                        .getPose()
-                        .getTranslation()
-                        .getDistance(getTargetPose().getTranslation()))
-                > 0.5))) {
+                && isRobotOnWrongHalfOfReefFace(getTargetPose())
+                && Math.abs(
+                        drivetrain
+                            .getPose()
+                            .getTranslation()
+                            .getDistance(getTargetPose().getTranslation()))
+                    > 0.5)
+            || (currentAlignTarget == AlignTarget.SOURCE
+                && (targetFace == ReefFaces.ef
+                    || targetFace == ReefFaces.gh
+                    || targetFace == ReefFaces.ij)
+                && Math.abs(
+                        drivetrain.getPose().getTranslation().getDistance(pose.getTranslation()))
+                    > 3.5))) {
       currentAutoDriveType = AutoAlignType.PP;
     } else {
       currentAutoDriveType = AutoAlignType.AP;
@@ -1119,12 +1129,13 @@ public class Superstructure extends SubsystemBase {
         break;
       case PP:
         if (!currentPathFindingCommand.isScheduled()) {
+          // when PP is in a wall it tweaks so AP take over for a little
+          // currentAlignTarget = AlignTarget.AP;
+          // applyDrive(pose);
+
           // end at 100 to make sure it goes as fast as possible
           currentPathFindingCommand = AutoBuilder.pathfindToPose(pose, pathfindingConstraints, 100);
           currentPathFindingCommand.schedule();
-
-          // when PP is in a wall it tweaks so driver has to correct it
-          applyDrive();
         }
     }
   }
@@ -1808,7 +1819,7 @@ public class Superstructure extends SubsystemBase {
   public void stopGamePieceScore() {
     switch (currentState) {
       case SCORE_ALGAE_IN_NET, SCORE_ALGAE_IN_PROCESSOR:
-        setWantedState(WantedState.DEFAULT_STATE);
+        setWantedState(WantedState.SCORE_ALGAE);
         break;
       default:
         scoreCoralFlag = false;

@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -83,11 +81,6 @@ public class Robot extends LoggedRobot {
     // Set Pathfinding to the default AdvantageKit Pathfinder
 
     Pathfinding.setPathfinder(new LocalADStarAK());
-
-    // Warmup the PPLib library
-
-    FollowPathCommand.warmupCommand().schedule();
-    PathfindingCommand.warmupCommand().schedule();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
