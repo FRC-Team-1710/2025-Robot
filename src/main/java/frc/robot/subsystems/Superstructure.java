@@ -108,7 +108,7 @@ public class Superstructure extends SubsystemBase {
 
   private GamePiecePositions currentGamePiecePosition = GamePiecePositions.NONE;
 
-  private AutomationLevel automationLevel = AutomationLevel.AUTO_RELEASE;
+  private AutomationLevel automationLevel = AutomationLevel.AUTO_DRIVE;
   private SimCoralAutomation simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
 
   private final AutomationLevelChooser automationLevelChooser;
@@ -190,6 +190,13 @@ public class Superstructure extends SubsystemBase {
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
     SmartDashboard.putNumber("Acceleration", 50);
+  }
+
+  public boolean driverRumble() {
+    return elevator.isAtTarget()
+        && elevator.getState() != ElevatorStates.INTAKE
+        && isDrivetrainAtTarget()
+        && manipulator.hasCoral();
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -276,6 +283,10 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Superstructure/TargetSourceDistance", targetSourceSide);
 
     Logger.recordOutput("Superstructure/PPReady", ppReady);
+
+    Logger.recordOutput("Superstructure/DriverRumble", driverRumble());
+
+    driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
 
     if (!scoreCoralFlag) {
       ejectTimer.reset();
@@ -696,17 +707,6 @@ public class Superstructure extends SubsystemBase {
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.L2);
     funnel.setState(FunnelState.OFF);
-    scoreCoralFlag =
-        ((isDrivetrainAtTarget()
-                && automationLevel == AutomationLevel.AUTO_RELEASE
-                && elevator.isAtTarget())
-            || scoreCoralFlag);
-    if (automationLevel != AutomationLevel.AUTO_RELEASE
-        && elevator.isAtTarget()
-        && isDrivetrainAtTarget()
-        && !scoreCoralFlag) {
-      driver.setRumble(RumbleType.kBothRumble, 1);
-    }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
@@ -722,17 +722,6 @@ public class Superstructure extends SubsystemBase {
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.L3);
     funnel.setState(FunnelState.OFF);
-    scoreCoralFlag =
-        ((isDrivetrainAtTarget()
-                && automationLevel == AutomationLevel.AUTO_RELEASE
-                && elevator.isAtTarget())
-            || scoreCoralFlag);
-    if (automationLevel != AutomationLevel.AUTO_RELEASE
-        && elevator.isAtTarget()
-        && isDrivetrainAtTarget()
-        && !scoreCoralFlag) {
-      driver.setRumble(RumbleType.kBothRumble, 1);
-    }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
@@ -748,32 +737,12 @@ public class Superstructure extends SubsystemBase {
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
-    scoreCoralFlag =
-        ((isDrivetrainAtTarget()
-                && automationLevel == AutomationLevel.AUTO_RELEASE
-                && elevator.isAtTarget())
-            || scoreCoralFlag);
-    if (automationLevel != AutomationLevel.AUTO_RELEASE
-        && elevator.isAtTarget()
-        && isDrivetrainAtTarget()
-        && !scoreCoralFlag) {
-      driver.setRumble(RumbleType.kBothRumble, 1);
-    }
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
-    if (ejectTimer.hasElapsed(0.5)) {
-      currentAlignTarget = AlignTarget.AP;
-      applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
-    } else {
-      currentAlignTarget = AlignTarget.REEF;
-      applyDrive(getTargetPose());
-    }
+    currentAlignTarget = AlignTarget.REEF;
+    applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
-      ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
-      }
-      if (ejectTimer.hasElapsed(1)) {
-        setWantedState(WantedState.DEFAULT_STATE);
       }
     }
   }
@@ -1284,6 +1253,7 @@ public class Superstructure extends SubsystemBase {
                       : targetSourceSide == TargetSourceSide.MIDDLE ? 0 : -0.6,
                   new Rotation2d()));
     }
+
     return new Pose2d(
             FieldConstants.aprilTags
                 .getTagPose(
@@ -1295,8 +1265,8 @@ public class Superstructure extends SubsystemBase {
                 .toTranslation2d(),
             Rotation2d.fromDegrees(
                 pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2
-                    ? isRedAlliance ? 126 : 306
-                    : isRedAlliance ? 234 : 54))
+                    ? isRedAlliance ? 234 : 306
+                    : isRedAlliance ? 126 : 54))
         .plus(
             new Transform2d(
                 0.5,

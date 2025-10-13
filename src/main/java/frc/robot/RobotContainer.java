@@ -324,37 +324,61 @@ public class RobotContainer {
     driver
         .y()
         .and(driver.rightTrigger().or(driver.rightBumper()))
-        .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L4).ignoringDisable(true));
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.SCORE_L4)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L4)))
+                .ignoringDisable(true));
 
     driver
         .x()
         .and(driver.rightTrigger().or(driver.rightBumper()))
-        .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L3).ignoringDisable(true));
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.SCORE_L3)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L3)))
+                .ignoringDisable(true));
 
     driver
         .a()
         .and(driver.rightTrigger().or(driver.rightBumper()))
-        .onTrue(superstructure.setWantedStateCommand(WantedState.SCORE_L2).ignoringDisable(true));
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.SCORE_L2)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)))
+                .ignoringDisable(true));
 
     driver
         .y()
         .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
         .and(superstructure::doesntHaveAlgae)
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L4).ignoringDisable(true))
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.MANUAL_L4)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L4)))
+                .ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .x()
         .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L3).ignoringDisable(true))
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.MANUAL_L3)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L3)))
+                .ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .a()
         .and(driver.rightTrigger().negate().and(driver.rightBumper().negate()))
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L2).ignoringDisable(true))
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedState.MANUAL_L2)
+                .alongWith(Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)))
+                .ignoringDisable(true))
         .onFalse(
             superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 

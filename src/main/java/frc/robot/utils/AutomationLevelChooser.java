@@ -9,9 +9,7 @@ public class AutomationLevelChooser {
   public AutomationLevelChooser() {
     automationLevelChooser = new LoggedDashboardChooser<>("Automation Choises");
 
-    automationLevelChooser.addDefaultOption("Auto Release", AutomationLevel.AUTO_RELEASE);
-    automationLevelChooser.addOption(
-        "Auto Drive, Manual Release", AutomationLevel.AUTO_DRIVE_AND_MANUAL_RELEASE);
+    automationLevelChooser.addOption("Auto Drive", AutomationLevel.AUTO_DRIVE);
     automationLevelChooser.addOption("No Auto Drive", AutomationLevel.NO_AUTO_DRIVE);
   }
 
