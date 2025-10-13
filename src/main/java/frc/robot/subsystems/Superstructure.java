@@ -79,7 +79,11 @@ public class Superstructure extends SubsystemBase {
   private final TunableController driver;
   private final TunableController mech;
 
-  private final APConstraints constraints = new APConstraints().withAcceleration(50).withJerk(0.1);
+  private final APConstraints constraints =
+      new APConstraints()
+          .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 75)
+          .withVelocity(Constants.currentMode == Mode.SIM ? 0 : 3)
+          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.02);
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
@@ -147,7 +151,11 @@ public class Superstructure extends SubsystemBase {
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-  private final PIDController movingRotation = new PIDController(0.03, 0, 0.00175);
+  private final PIDController movingRotation =
+      new PIDController(
+          Constants.currentMode == Mode.SIM ? 0.03 : 0.01,
+          0,
+          Constants.currentMode == Mode.SIM ? 0.00175 : 0);
 
   private Command currentPathFindingCommand = Commands.none();
   private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
@@ -189,7 +197,9 @@ public class Superstructure extends SubsystemBase {
 
     SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
 
-    SmartDashboard.putNumber("Acceleration", 50);
+    // SmartDashboard.putNumber("Acceleration", 0);
+    // SmartDashboard.putNumber("Jerk", 0);
+    // SmartDashboard.putNumber("Velocity", 0);
   }
 
   public boolean driverRumble() {
@@ -212,6 +222,14 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // autopilot =
+    //     new Autopilot(
+    //         profile.withConstraints(
+    //             constraints
+    //                 .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
+    //                 .withVelocity(SmartDashboard.getNumber("Velocity", 0))
+    //                 .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+
     ppReady = (!ppWUp.isScheduled());
 
     if (Constants.currentMode == Mode.SIM && hasAlgae() && manipulator.detectsCoral()) {
