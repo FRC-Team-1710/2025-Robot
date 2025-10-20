@@ -40,15 +40,27 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
-  private double kP = 0; // 0.1 // 0.75
+  // FAST
+  // private double kP = 0.1; // 0.1 // 0.75
+  // private double kI = 0; // 0.0 // 0.0
+  // private double kD = 0; // 0.0 // 0.0
+  // private double kS = 0.1875; // 0.0 // 0.1
+  // private double kG = 0.315; // 0.3375 // 0.375
+  // private double kV = 0.126; // 0.0 // 0.075
+  // private double kA = 0; // 0.0 // 0.0
+  // private double kAcel = 125; // 200
+  // private double kVel = 175;
+
+  // slow
+  private double kP = 0.05; // 0.1 // 0.75
   private double kI = 0; // 0.0 // 0.0
   private double kD = 0; // 0.0 // 0.0
-  private double kS = 0; // 0.0 // 0.1
-  private double kG = 0; // 0.3375 // 0.375
-  private double kV = 0; // 0.0 // 0.075
+  private double kS = 0.1875; // 0.0 // 0.1
+  private double kG = 0.31; // 0.3375 // 0.375
+  private double kV = 0.1275; // 0.0 // 0.075
   private double kA = 0; // 0.0 // 0.0
-  private double kAcel = 0; // 200
-  private double kVel = 0;
+  private double kAcel = 65; // 200
+  private double kVel = 175;
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
@@ -65,6 +77,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
   private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
   private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+  private final StatusSignal<Double> leaderSetpoint = leader.getClosedLoopReference();
 
   // Debouncers for connection status (filters out brief disconnections)
   private final Debouncer leaderDebounce = new Debouncer(0.5);
@@ -123,7 +136,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
         leaderStatorCurrent,
         followerStatorCurrent,
         leaderSupplyCurrent,
-        followerSupplyCurrent);
+        followerSupplyCurrent,
+        leaderSetpoint);
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
@@ -146,8 +160,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
       config.Slot0.kI = SmartDashboard.getNumber("Elevator/PID/I", kI);
       config.Slot0.kD = SmartDashboard.getNumber("Elevator/PID/D", kD);
       config.Slot0.kS = SmartDashboard.getNumber("Elevator/PID/S", kS);
-      config.Slot0.kV = SmartDashboard.getNumber("Elevator/PID/G", kG);
-      config.Slot0.kG = SmartDashboard.getNumber("Elevator/PID/V", kV);
+      config.Slot0.kG = SmartDashboard.getNumber("Elevator/PID/G", kG);
+      config.Slot0.kV = SmartDashboard.getNumber("Elevator/PID/V", kV);
       config.Slot0.kA = SmartDashboard.getNumber("Elevator/PID/A", kA);
       config.MotionMagic.MotionMagicAcceleration =
           SmartDashboard.getNumber("Elevator/PID/Acel", kAcel);
@@ -158,8 +172,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
       config.Slot0.kI = kI;
       config.Slot0.kD = kD;
       config.Slot0.kS = kS;
-      config.Slot0.kV = kG;
-      config.Slot0.kG = kV;
+      config.Slot0.kG = kG;
+      config.Slot0.kV = kV;
       config.Slot0.kA = kA;
       config.MotionMagic.MotionMagicAcceleration = kAcel;
       config.MotionMagic.MotionMagicCruiseVelocity = kVel;
@@ -186,7 +200,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
             leaderRotorVelocity,
             leaderAppliedVolts,
             leaderStatorCurrent,
-            leaderSupplyCurrent);
+            leaderSupplyCurrent,
+            leaderSetpoint);
 
     StatusCode followerStatus =
         BaseStatusSignal.refreshAll(
@@ -215,7 +230,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    inputs.setpoint = setpoint;
+    inputs.goal = setpoint;
+    inputs.setpoint = leaderSetpoint.getValue();
 
     inputs.locked = locked;
 

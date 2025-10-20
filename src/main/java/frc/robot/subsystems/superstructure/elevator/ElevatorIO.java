@@ -52,7 +52,8 @@ public interface ElevatorIO {
     public Current followerSupplyCurrent = Amps.of(0);
 
     public Distance distance = Inches.of(0);
-    public Distance setpoint = Inches.of(0);
+    public Distance goal = Inches.of(0);
+    public double setpoint = 0;
 
     public double manual = 0.0;
   }

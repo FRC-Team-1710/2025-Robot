@@ -63,7 +63,7 @@ public class Elevator extends SubsystemBase {
         io.setManual(-0.1);
       }
     }
-    
+
     Logger.processInputs("Elevator", inputs);
   }
 
