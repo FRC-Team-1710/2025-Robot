@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.Constants;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -95,15 +96,17 @@ public class ClawIOSIM extends ClawIOCTRE {
     //               16.5,
     //               new Color8Bit(Color.kAquamarine)));
     // }
-    SmartDashboard.putNumber("Claw/p", kp);
-    SmartDashboard.putNumber("Claw/i", ki);
-    SmartDashboard.putNumber("Claw/d", kd);
-    SmartDashboard.putNumber("Claw/s", ks);
-    SmartDashboard.putNumber("Claw/g", kg);
-    SmartDashboard.putNumber("Claw/v", kv);
-    SmartDashboard.putNumber("Claw/a", ka);
-    SmartDashboard.putNumber("Claw/maxacel", maxacel);
-    SmartDashboard.putNumber("Claw/maxvel", maxvel);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Claw/p", kp);
+      SmartDashboard.putNumber("Claw/i", ki);
+      SmartDashboard.putNumber("Claw/d", kd);
+      SmartDashboard.putNumber("Claw/s", ks);
+      SmartDashboard.putNumber("Claw/g", kg);
+      SmartDashboard.putNumber("Claw/v", kv);
+      SmartDashboard.putNumber("Claw/a", ka);
+      SmartDashboard.putNumber("Claw/maxacel", maxacel);
+      SmartDashboard.putNumber("Claw/maxvel", maxvel);
+    }
   }
 
   @Override
@@ -123,9 +126,11 @@ public class ClawIOSIM extends ClawIOCTRE {
                   Units.radiansToDegrees(m_arm_topSim.getAngleRads()), 170 - sp.magnitude() + 280)
               + wristff.calculate(
                   m_arm_topSim.getAngleRads(), m_bottomController.getSetpoint().velocity));
-      SmartDashboard.putNumber("position", Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
-      SmartDashboard.putNumber("setpoint", 170 - sp.magnitude() + 280);
-      SmartDashboard.putNumber("goal", m_bottomController.getSetpoint().position);
+      if (Constants.useSmartDashboard) {
+        SmartDashboard.putNumber("position", Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
+        SmartDashboard.putNumber("setpoint", 170 - sp.magnitude() + 280);
+        SmartDashboard.putNumber("goal", m_bottomController.getSetpoint().position);
+      }
     } else {
       pwmTalonFX.set(inputs.wristManual);
     }
@@ -139,49 +144,51 @@ public class ClawIOSIM extends ClawIOCTRE {
             Units.degreesToRadians(90) - (m_arm_topSim.getAngleRads() - (2 * Math.PI))));
     m_arm_topSim.update(0.02);
 
-    if (kp != SmartDashboard.getNumber("Claw/p", kp)) {
-      kp = SmartDashboard.getNumber("Claw/p", kp);
-      m_bottomController.setP(kp);
-    }
+    if (Constants.useSmartDashboard) {
+      if (kp != SmartDashboard.getNumber("Claw/p", kp)) {
+        kp = SmartDashboard.getNumber("Claw/p", kp);
+        m_bottomController.setP(kp);
+      }
 
-    if (ki != SmartDashboard.getNumber("Claw/i", ki)) {
-      ki = SmartDashboard.getNumber("Claw/i", ki);
-      m_bottomController.setI(ki);
-    }
+      if (ki != SmartDashboard.getNumber("Claw/i", ki)) {
+        ki = SmartDashboard.getNumber("Claw/i", ki);
+        m_bottomController.setI(ki);
+      }
 
-    if (kd != SmartDashboard.getNumber("Claw/d", kd)) {
-      kd = SmartDashboard.getNumber("Claw/d", kd);
-      m_bottomController.setD(kd);
-    }
+      if (kd != SmartDashboard.getNumber("Claw/d", kd)) {
+        kd = SmartDashboard.getNumber("Claw/d", kd);
+        m_bottomController.setD(kd);
+      }
 
-    if (ks != SmartDashboard.getNumber("Claw/s", ks)) {
-      ks = SmartDashboard.getNumber("Claw/s", ks);
-      wristff = new ArmFeedforward(ks, kg, kv, ka);
-    }
+      if (ks != SmartDashboard.getNumber("Claw/s", ks)) {
+        ks = SmartDashboard.getNumber("Claw/s", ks);
+        wristff = new ArmFeedforward(ks, kg, kv, ka);
+      }
 
-    if (kg != SmartDashboard.getNumber("Claw/g", kg)) {
-      kg = SmartDashboard.getNumber("Claw/g", kg);
-      wristff = new ArmFeedforward(ks, kg, kv, ka);
-    }
+      if (kg != SmartDashboard.getNumber("Claw/g", kg)) {
+        kg = SmartDashboard.getNumber("Claw/g", kg);
+        wristff = new ArmFeedforward(ks, kg, kv, ka);
+      }
 
-    if (kv != SmartDashboard.getNumber("Claw/v", kv)) {
-      kv = SmartDashboard.getNumber("Claw/v", kv);
-      wristff = new ArmFeedforward(ks, kg, kv, ka);
-    }
+      if (kv != SmartDashboard.getNumber("Claw/v", kv)) {
+        kv = SmartDashboard.getNumber("Claw/v", kv);
+        wristff = new ArmFeedforward(ks, kg, kv, ka);
+      }
 
-    if (ka != SmartDashboard.getNumber("Claw/a", ka)) {
-      ka = SmartDashboard.getNumber("Claw/a", ka);
-      wristff = new ArmFeedforward(ks, kg, kv, ka);
-    }
+      if (ka != SmartDashboard.getNumber("Claw/a", ka)) {
+        ka = SmartDashboard.getNumber("Claw/a", ka);
+        wristff = new ArmFeedforward(ks, kg, kv, ka);
+      }
 
-    if (maxacel != SmartDashboard.getNumber("Claw/maxacel", maxacel)) {
-      maxacel = SmartDashboard.getNumber("Claw/maxacel", maxacel);
-      m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
-    }
+      if (maxacel != SmartDashboard.getNumber("Claw/maxacel", maxacel)) {
+        maxacel = SmartDashboard.getNumber("Claw/maxacel", maxacel);
+        m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+      }
 
-    if (maxvel != SmartDashboard.getNumber("Claw/maxvel", maxvel)) {
-      maxvel = SmartDashboard.getNumber("Claw/maxvel", maxvel);
-      m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+      if (maxvel != SmartDashboard.getNumber("Claw/maxvel", maxvel)) {
+        maxvel = SmartDashboard.getNumber("Claw/maxvel", maxvel);
+        m_bottomController.setConstraints(new TrapezoidProfile.Constraints(maxvel, maxacel));
+      }
     }
 
     if (inputs.hasAlgae) {

@@ -33,7 +33,7 @@ public class Manipulator extends SubsystemBase {
     Logger.processInputs("Manipulator", inputs);
 
     if (bumpBoolean.getAsBoolean()) {
-      io.setVoltage(-0.075 * 12);
+      io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
     } else {
       switch (currentState) {
         case OFF:

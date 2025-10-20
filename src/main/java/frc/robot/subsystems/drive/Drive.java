@@ -266,7 +266,9 @@ public class Drive extends SubsystemBase {
     updateWithTime();
 
     m_field.setRobotPose(getPose());
-    SmartDashboard.putData("field", m_field);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putData("field", m_field);
+    }
   }
 
   public void resetPose(Pose2d pose) {

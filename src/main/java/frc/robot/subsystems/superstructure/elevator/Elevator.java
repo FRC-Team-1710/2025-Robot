@@ -3,12 +3,8 @@ package frc.robot.subsystems.superstructure.elevator;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.Conversions;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -30,12 +26,6 @@ public class Elevator extends SubsystemBase {
 
   private final DoubleSupplier manualSupplier;
 
-  // Alerts for motor connection status
-  private final Alert leaderMotorAlert =
-      new Alert("Elevator leader motor isn't connected", AlertType.kError);
-  private final Alert followerMotorAlert =
-      new Alert("Elevator follower motor isn't connected", AlertType.kError);
-
   /**
    * Creates a new Elevator subsystem with the specified hardware interface.
    *
@@ -45,21 +35,12 @@ public class Elevator extends SubsystemBase {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
     this.manualSupplier = manualSupplier;
-    SmartDashboard.putData(this);
   }
 
   @Override
   public void periodic() {
     // Update and log inputs from hardware
     io.updateInputs(inputs);
-    Logger.processInputs("Elevator", inputs);
-
-    // Update motor connection status alerts
-    leaderMotorAlert.set(!inputs.leaderConnected);
-    followerMotorAlert.set(!inputs.followerConnected);
-    Logger.recordOutput(
-        "motor encoder dist",
-        Conversions.rotationsToDistance(inputs.leaderRotorPosition, 6, Inches.of(1.105)));
 
     if (currentState != ElevatorStates.STOP && currentState != ElevatorStates.ZERO) {
       if (manualSupplier.getAsDouble() != 0) {
@@ -82,6 +63,8 @@ public class Elevator extends SubsystemBase {
         io.setManual(-0.1);
       }
     }
+    
+    Logger.processInputs("Elevator", inputs);
   }
 
   public enum ElevatorStates {
@@ -110,7 +93,7 @@ public class Elevator extends SubsystemBase {
 
   @AutoLogOutput
   public Distance getPosition() {
-    return inputs.elevatorDistance;
+    return inputs.distance;
   }
 
   public ElevatorStates getState() {

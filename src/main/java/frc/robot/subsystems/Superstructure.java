@@ -73,7 +73,7 @@ public class Superstructure extends SubsystemBase {
   private final Manipulator manipulator;
   private final Vision vision;
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings("unused") // Sorry Gavin
   private final LEDSubsystem ledSubsystem;
 
   private final TunableController driver;
@@ -82,7 +82,7 @@ public class Superstructure extends SubsystemBase {
   private final APConstraints constraints =
       new APConstraints()
           .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 75)
-          .withVelocity(Constants.currentMode == Mode.SIM ? 0 : 3)
+          .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 3)
           .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.02);
   private final APProfile profile =
       new APProfile(constraints)
@@ -195,11 +195,12 @@ public class Superstructure extends SubsystemBase {
 
     ppWUp.schedule();
 
-    SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-
-    // SmartDashboard.putNumber("Acceleration", 0);
-    // SmartDashboard.putNumber("Jerk", 0);
-    // SmartDashboard.putNumber("Velocity", 0);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
+      SmartDashboard.putNumber("Acceleration", 0);
+      SmartDashboard.putNumber("Jerk", 0);
+      SmartDashboard.putNumber("Velocity", 0);
+    }
   }
 
   public boolean driverRumble() {
@@ -222,13 +223,15 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // autopilot =
-    //     new Autopilot(
-    //         profile.withConstraints(
-    //             constraints
-    //                 .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
-    //                 .withVelocity(SmartDashboard.getNumber("Velocity", 0))
-    //                 .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+    if (Constants.useSmartDashboard) {
+      autopilot =
+          new Autopilot(
+              profile.withConstraints(
+                  constraints
+                      .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
+                      .withVelocity(SmartDashboard.getNumber("Velocity", 0))
+                      .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+    }
 
     ppReady = (!ppWUp.isScheduled());
 
@@ -1106,12 +1109,23 @@ public class Superstructure extends SubsystemBase {
         var output =
             autopilot.calculate(drivetrain.getPose(), drivetrain.getChassisSpeeds(), currentTarget);
 
-        Logger.recordOutput("AP/AppliedX%", clamp(output.vx().in(MetersPerSecond)));
-        Logger.recordOutput("AP/AppliedY%", clamp(output.vx().in(MetersPerSecond)));
+        double vx = output.vx().in(MetersPerSecond);
+        double vy = output.vy().in(MetersPerSecond);
+
+        double mx = Math.max(Math.abs(vx), Math.abs(vy));
+
+        // clamp both while keeping direction
+        if (mx > 1) {
+          vx *= mx;
+          vy *= mx;
+        }
+
+        Logger.recordOutput("AP/AppliedX%", clamp(vx));
+        Logger.recordOutput("AP/AppliedY%", clamp(vx));
 
         applyDrive(
-            clamp(output.vx().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
-            clamp(output.vy().in(MetersPerSecond) * (isRedAlliance ? -1 : 1)),
+            clamp(vx * (isRedAlliance ? -1 : 1)),
+            clamp(vy * (isRedAlliance ? -1 : 1)),
             output.targetAngle());
         break;
       case PP:
@@ -1135,34 +1149,33 @@ public class Superstructure extends SubsystemBase {
   /**
    * Uses custom x and y velocities with rotation snap and the option to automatically add user
    * input
+   *
+   * <p>DOESN'T APPLY DRIVER CORRECTION!!!
+   *
+   * <p>ALSO DOESN'T CLAMP TRANSLATION!!!
    */
   private void applyDrive(double x, double y, Rotation2d rotationSnap) {
     drivetrain
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(
-                        maxSpeed.times(
-                            clamp(x + (-driver.customLeft().getY() * driverOverideAllignment))))
-                    .withVelocityY(
-                        maxSpeed.times(
-                            clamp(y + (-driver.customLeft().getX() * driverOverideAllignment))))
+                    .withVelocityX(maxSpeed.times(x))
+                    .withVelocityY(maxSpeed.times(y))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
                                 movingRotation.calculate(
-                                        drivetrain
-                                            .getPose()
-                                            .getRotation()
-                                            .minus(rotationSnap)
-                                            .getDegrees(),
-                                        0)
-                                    - (driver.customRight().getX() * driverOverideAllignment)))))
+                                    drivetrain
+                                        .getPose()
+                                        .getRotation()
+                                        .minus(rotationSnap)
+                                        .getDegrees(),
+                                    0)))))
         .schedule();
   }
 
   /**
-   * @param rotation uses this + driver for rotation
+   * @param rotation uses this for rotation + driver
    */
   private void applyDrive(double rotation) {
     drivetrain

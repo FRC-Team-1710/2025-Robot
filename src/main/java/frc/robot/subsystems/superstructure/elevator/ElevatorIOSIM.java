@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.*;
 
@@ -97,15 +98,17 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_secondStage2d.setColor(new Color8Bit(Color.kSteelBlue));
     enc.setDistancePerPulse((2 * Math.PI * Units.inchesToMeters(2.383)) / 4096);
     Logger.recordOutput("Elevator Sim", m_mech2d);
-    SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
-    SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
-    SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
-    SmartDashboard.putNumber("ElevatorSIM/PID/S", kS);
-    SmartDashboard.putNumber("ElevatorSIM/PID/G", kG);
-    SmartDashboard.putNumber("ElevatorSIM/PID/V", kV);
-    SmartDashboard.putNumber("ElevatorSIM/PID/A", kA);
-    SmartDashboard.putNumber("ElevatorSIM/PID/Acel", kAcel);
-    SmartDashboard.putNumber("ElevatorSIM/PID/Vel", kVel);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
+      SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
+      SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
+      SmartDashboard.putNumber("ElevatorSIM/PID/S", kS);
+      SmartDashboard.putNumber("ElevatorSIM/PID/G", kG);
+      SmartDashboard.putNumber("ElevatorSIM/PID/V", kV);
+      SmartDashboard.putNumber("ElevatorSIM/PID/A", kA);
+      SmartDashboard.putNumber("ElevatorSIM/PID/Acel", kAcel);
+      SmartDashboard.putNumber("ElevatorSIM/PID/Vel", kVel);
+    }
   }
 
   /**
@@ -116,9 +119,10 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     super.updateInputs(inputs);
-    inputs.elevatorDistance =
-        Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
-    tempPIDTuning();
+    inputs.distance = Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
+    if (Constants.useSmartDashboard) {
+      tempPIDTuning();
+    }
     m_elevatorMechSecondStage2d.setLength(
         enc.getDistance() > 0
             ? Units.inchesToMeters(enc.getDistance())
@@ -130,7 +134,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
-    elevatorPID.setGoal(inputs.elevatorSetpoint.magnitude());
+    elevatorPID.setGoal(inputs.setpoint.magnitude());
     if (inputs.manual != 0) {
       pwmTalonFX.set(inputs.manual);
     } else {

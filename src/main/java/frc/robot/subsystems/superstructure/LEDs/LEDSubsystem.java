@@ -5,6 +5,8 @@
 // Collin (King) Arthur
 // Gavin (The Goat) Bigham   <--- Vs code autofilled The Goat for me :)
 
+// LEDs WILL be on the robot next year
+
 package frc.robot.subsystems.superstructure.LEDs;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;

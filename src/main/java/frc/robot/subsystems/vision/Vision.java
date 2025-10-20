@@ -91,10 +91,12 @@ public class Vision extends SubsystemBase {
           new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
     }
 
-    SmartDashboard.putBoolean("Disable Front Left Cam", false);
-    SmartDashboard.putBoolean("Disable Front Right Cam", false);
-    SmartDashboard.putBoolean("Disable Back Left Cam", false);
-    SmartDashboard.putBoolean("Disable Back Right Cam", false);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("Disable Front Left Cam", false);
+      SmartDashboard.putBoolean("Disable Front Right Cam", false);
+      SmartDashboard.putBoolean("Disable Back Left Cam", false);
+      SmartDashboard.putBoolean("Disable Back Right Cam", false);
+    }
   }
 
   @Override
@@ -343,10 +345,12 @@ public class Vision extends SubsystemBase {
    * @return Processed VisionData for this camera
    */
   private VisionData processCamera(int cameraIndex, VisionIOInputs input) {
-    rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
-    rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
-    rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
-    rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
+    if (Constants.useSmartDashboard) {
+      rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
+      rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
+      rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
+      rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
+    }
 
     if (rejectCamera[cameraIndex]) return VisionData.empty();
 

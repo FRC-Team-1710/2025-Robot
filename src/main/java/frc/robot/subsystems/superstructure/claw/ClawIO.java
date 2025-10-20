@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.subsystems.superstructure.claw.Claw.ClawStates;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ClawIO {
@@ -55,6 +56,8 @@ public interface ClawIO {
     public Current rollerSupplyCurrent = Amps.of(0);
     public Voltage rollerAppliedVoltage = Volts.of(0.0);
     public double rollerPosition = 0.0;
+
+    public ClawStates state = ClawStates.IDLE;
   }
 
   /** Updates the set of loggable inputs. */

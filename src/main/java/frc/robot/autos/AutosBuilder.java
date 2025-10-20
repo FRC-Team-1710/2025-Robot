@@ -33,6 +33,8 @@ public class AutosBuilder {
 
   private String customString = "";
 
+  private Command preBuiltAuto = Commands.none();
+
   public AutosBuilder(Superstructure superstructure) {
     this.superstructure = superstructure;
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
@@ -51,11 +53,12 @@ public class AutosBuilder {
         && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
       customString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
       String output = validateAuto(customString);
-      SmartDashboard.putBoolean("Is Auto Valid", output == "");
-      SmartDashboard.putString("Auto Validation Error", output);
+      Logger.recordOutput("Is Auto Valid", output == "");
+      Logger.recordOutput("Auto Validation Error", output);
+      preBuiltAuto = buildAuto();
     } else if (autoChooser.get() != Auto.CUSTOM) {
-      SmartDashboard.putBoolean("Is Auto Valid", true);
-      SmartDashboard.putString("Auto Validation Error", "");
+      Logger.recordOutput("Is Auto Valid", true);
+      Logger.recordOutput("Auto Validation Error", "");
     }
   }
 
@@ -154,6 +157,10 @@ public class AutosBuilder {
   }
 
   public Command getAuto() {
+    return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto();
+  }
+
+  public Command buildAuto() {
     commandList = new ArrayList<>();
     if (Constants.currentMode == Mode.SIM) {
       commandList.add(Commands.runOnce(() -> superstructure.beginSimAuto()));

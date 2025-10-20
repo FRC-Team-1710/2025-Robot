@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Climber extends SubsystemBase {
   private TalonFX climber;
@@ -34,7 +35,9 @@ public class Climber extends SubsystemBase {
 
     climber.setPosition(0);
 
-    SmartDashboard.putBoolean("safe to retract", safeToRetract);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("safe to retract", safeToRetract);
+    }
   }
 
   public void SetClimberPower(double power) {
@@ -48,11 +51,12 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Climber Position", getPosition());
-    if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
-      safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Climber Position", getPosition());
+      if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
+        safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
+      }
     }
-    SmartDashboard.putBoolean("safe to retract", safeToRetract);
 
     switch (currentState) {
       case STOWED:

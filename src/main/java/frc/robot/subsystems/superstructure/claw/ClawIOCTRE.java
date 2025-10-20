@@ -1,14 +1,3 @@
-// Copyright FRC 5712
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -32,6 +21,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class ClawIOCTRE implements ClawIO {
@@ -75,7 +65,7 @@ public class ClawIOCTRE implements ClawIO {
   private final Debouncer clawDebounce = new Debouncer(0.5);
   private final Debouncer wristDebounce = new Debouncer(0.5);
 
-  private Angle SetAngle = Degrees.of(0);
+  private Angle setAngle = Degrees.of(0);
   private double wristManual = 0.0;
   private double runPercent = 0.0;
 
@@ -89,13 +79,15 @@ public class ClawIOCTRE implements ClawIO {
 
     wrist.setPosition(0);
 
-    SmartDashboard.putNumber("Claw/PID/P", kP);
-    SmartDashboard.putNumber("Claw/PID/I", kI);
-    SmartDashboard.putNumber("Claw/PID/D", kD);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Claw/PID/P", kP);
+      SmartDashboard.putNumber("Claw/PID/I", kI);
+      SmartDashboard.putNumber("Claw/PID/D", kD);
 
-    SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
-    SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
-    SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
+      SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
+      SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
+      SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
+    }
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
@@ -104,6 +96,7 @@ public class ClawIOCTRE implements ClawIO {
         wristStatorCurrent,
         wristSupplyCurrent,
         intakeVelocity,
+        intakeAppliedVolts,
         intakeStatorCurrent,
         intakeSupplyCurrent);
 
@@ -144,7 +137,7 @@ public class ClawIOCTRE implements ClawIO {
     inputs.rollerSupplyCurrent = intakeSupplyCurrent.getValue();
     inputs.rollerPosition = rollers.getPosition().getValueAsDouble();
 
-    inputs.setpoint = SetAngle;
+    inputs.setpoint = setAngle;
     inputs.wristManual = wristManual;
     inputs.intakePercent = runPercent;
 
@@ -153,11 +146,13 @@ public class ClawIOCTRE implements ClawIO {
 
     inputs.hasZeroed = hasZeroed;
 
-    tempPIDTuning();
+    if (Constants.useSmartDashboard) {
+      tempPIDTuning();
 
-    SmartDashboard.putNumber("Claw/PIDSetpoint", wristPID.getSetpoint().position);
-    SmartDashboard.putNumber("Claw/PIDGoal", wristPID.getGoal().position);
-    SmartDashboard.putNumber("Claw/PIDPosition", inputs.angle.magnitude());
+      SmartDashboard.putNumber("Claw/PIDSetpoint", wristPID.getSetpoint().position);
+      SmartDashboard.putNumber("Claw/PIDGoal", wristPID.getGoal().position);
+      SmartDashboard.putNumber("Claw/PIDPosition", inputs.angle.magnitude());
+    }
 
     if (locked) {
       if (inputs.killSwich) {
@@ -178,7 +173,7 @@ public class ClawIOCTRE implements ClawIO {
 
   @Override
   public void setAngle(Angle angle) {
-    SetAngle = angle;
+    setAngle = angle;
     wristPID.setGoal(angle.magnitude());
     locked = true;
   }
@@ -205,7 +200,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void stopHere() {
     wristPID.reset(((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO)), 0);
-    SetAngle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
+    setAngle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
     locked = true;
   }
 

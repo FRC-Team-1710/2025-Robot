@@ -111,7 +111,11 @@ public class RobotContainer {
       case REAL:
         drivetrain = new Drive(currentDriveTrain);
         manipulator =
-            new Manipulator(new ManipulatorIOCTRE(), () -> mech.leftBumper().getAsBoolean());
+            new Manipulator(new ManipulatorIOCTRE(), () -> driver.leftBumper().getAsBoolean());
+        // elevator =
+        //     new Elevator(
+        //         new ElevatorIO() {},
+        //         () -> mech.getLeftY());
         elevator = new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY());
         claw = new Claw(new ClawIOCTRE(), () -> mech.getRightY());
         funnel = new Funnel(new FunnelIOCTRE(), () -> mech.leftBumper().getAsBoolean());

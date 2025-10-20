@@ -42,7 +42,7 @@ public interface FunnelIO {
     public Current followerSupplyCurrent = Amps.of(0);
     public Current angleMotorSupplyCurrent = Amps.of(0);
 
-    public double funnelAngle = (0);
+    public double funnelAngle = 0;
   }
 
   /** Updates the set of loggable inputs. */

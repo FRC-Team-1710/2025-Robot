@@ -9,8 +9,6 @@ package frc.robot.subsystems.superstructure.funnel;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -29,14 +27,6 @@ public class Funnel extends SubsystemBase {
   private FunnelState currentState = FunnelState.INTAKE;
   private final BooleanSupplier bumpBoolean;
 
-  // Alerts for motor connection status
-  private final Alert leaderMotorAlert =
-      new Alert("Arm funnelLeader motor isn't connected", AlertType.kError);
-  private final Alert followerMotorAlert =
-      new Alert("Arm funnelFollower motor isn't connected", AlertType.kError);
-  private final Alert angleMotorAlert =
-      new Alert("Arm funnelAngleMotor motor isn't connected", AlertType.kError);
-
   public Funnel(FunnelIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
     this.inputs = new FunnelIOInputsAutoLogged();
@@ -47,10 +37,6 @@ public class Funnel extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Funnel", inputs);
-
-    leaderMotorAlert.set(!inputs.leaderConnected);
-    followerMotorAlert.set(!inputs.followerConnected);
-    angleMotorAlert.set(!inputs.angleMotorConnected);
 
     io.setPosition(currentState.targetAngle);
 

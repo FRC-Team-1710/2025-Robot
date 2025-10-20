@@ -9,6 +9,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 
 /** Add your docs here. */
 public class ManipulatorIOSim implements ManipulatorIO {
@@ -31,7 +32,9 @@ public class ManipulatorIOSim implements ManipulatorIO {
 
   @Override
   public void setVoltage(double volts) {
-    SmartDashboard.putNumber("Manipulator/setVoltage", volts);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Manipulator/setVoltage", volts);
+    }
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
   }
 }
