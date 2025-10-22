@@ -41,7 +41,7 @@ public class Funnel extends SubsystemBase {
     io.setPosition(currentState.targetAngle);
 
     if (bumpBoolean.getAsBoolean()) {
-      io.setRoller(-0.075);
+      io.setRoller(-0.125);
     } else {
       switch (currentState) {
         case CLIMB:

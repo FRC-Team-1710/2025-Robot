@@ -251,9 +251,20 @@ public class ElevatorIOCTRE implements ElevatorIO {
    */
   @Override
   public void setDistance(Distance distance) {
-    leader.setControl(
-        request.withPosition(Conversions.metersToRotations(distance, GEAR_RATIO, elevatorRadius)));
     locked = true;
+    if (distance.in(Inches) == 0
+        && Conversions.rotationsToDistance(
+                leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
+            .isNear(Inches.of(0), Inches.of(2.5))
+        && !Conversions.rotationsToDistance(
+                leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
+            .isNear(Inches.of(0), Inches.of(0.125))) {
+      leader.setControl(new VoltageOut(-0.75));
+    } else {
+      leader.setControl(
+          request.withPosition(
+              Conversions.metersToRotations(distance, GEAR_RATIO, elevatorRadius)));
+    }
   }
 
   @Override

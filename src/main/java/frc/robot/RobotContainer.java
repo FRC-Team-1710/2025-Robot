@@ -109,8 +109,8 @@ public class RobotContainer {
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
-        drivetrain = new Drive(new DriveIO() {});
-        // drivetrain = new Drive(currentDriveTrain);
+        // drivetrain = new Drive(new DriveIO() {});
+        drivetrain = new Drive(currentDriveTrain);
         manipulator =
             new Manipulator(new ManipulatorIOCTRE(), () -> driver.leftBumper().getAsBoolean());
         // elevator =
@@ -119,7 +119,7 @@ public class RobotContainer {
         //         () -> mech.getLeftY());
         elevator = new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY());
         claw = new Claw(new ClawIOCTRE(), () -> mech.getRightY());
-        funnel = new Funnel(new FunnelIOCTRE(), () -> mech.leftBumper().getAsBoolean());
+        funnel = new Funnel(new FunnelIOCTRE(), () -> driver.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
         algaeCam = new VisionIOAlgae("AlgaeCam");
         vision =
