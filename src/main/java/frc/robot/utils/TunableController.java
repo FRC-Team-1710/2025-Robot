@@ -53,7 +53,9 @@ public class TunableController extends CommandXboxController {
    *     magnitude is guaranteed to be between 0 and 1.
    */
   public Translation2d customLeft() {
-    return getCustom(getLeftX() * (Constants.babyControlMode ? 0.75 : 1), getLeftY() * (Constants.babyControlMode ? 0.75 : 1));
+    return getCustom(
+        getLeftX() * (Constants.babyControlMode ? 0.75 : 1),
+        getLeftY() * (Constants.babyControlMode ? 0.75 : 1));
   }
 
   /**
@@ -63,7 +65,9 @@ public class TunableController extends CommandXboxController {
    *     magnitude is guaranteed to be between 0 and 1.
    */
   public Translation2d customRight() {
-    return getCustom(getRightX() * (Constants.babyControlMode ? 0.75 : 1), getRightY() * (Constants.babyControlMode ? 0.75 : 1));
+    return getCustom(
+        getRightX() * (Constants.babyControlMode ? 0.75 : 1),
+        getRightY() * (Constants.babyControlMode ? 0.75 : 1));
   }
 
   /**

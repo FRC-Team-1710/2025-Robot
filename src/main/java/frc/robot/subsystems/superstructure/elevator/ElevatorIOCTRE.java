@@ -230,6 +230,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
+    inputs.distance =
+        Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
+
     inputs.goal = setpoint;
     inputs.setpoint = leaderSetpoint.getValue();
 

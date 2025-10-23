@@ -36,7 +36,7 @@ public class VisionIOAlgae {
       boolean targetVisible = false;
       double targetYaw = 0.0;
       double lowestPitch = 180.0;
-      if (!cameraResults.isEmpty() || !(cameraResults == null)) {
+      if ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult != null) {
         // Camera processed a new frame since last
         // Get the last one in the list.
         Boolean hasResults = currentResult.hasTargets();

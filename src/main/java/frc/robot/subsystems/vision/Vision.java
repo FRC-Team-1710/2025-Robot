@@ -51,7 +51,7 @@ public class Vision extends SubsystemBase {
           2.0); // Pitch and roll of a reading before a camera needs to be flagged. IN RADIANS FOR
   // GODS SAKE
 
-  private boolean[] rejectCamera = {false, false, false, false};
+  private boolean[] rejectCamera = {false, false, true, true};
 
   /**
    * Lists to store vision measurements and poses. These are maintained at the class level to allow

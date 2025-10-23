@@ -256,7 +256,7 @@ public class Superstructure extends SubsystemBase {
                     ? GamePiecePositions.CORAL_IN_FUNNEL
                     : claw.hasAlgae() ? GamePiecePositions.ALGAE_IN_CLAW : GamePiecePositions.NONE;
 
-    maxAngularRate = Constants.MaxAngularRate.times(claw.hasAlgae() ? 0.5 : 1);
+    maxAngularRate = Constants.MaxAngularRate; // .times(claw.hasAlgae() ? 0.5 : 1);
 
     if (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed) {
       maxSpeed = TunerConstants.kSpeedAt12Volts;
@@ -931,16 +931,16 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void intakeAlgaeFromGround() {
-    claw.setState(ClawStates.GRAB);
+    claw.setState(ClawStates.FLOOR);
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.INTAKE);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
-    if (vision.algaeIsVisible()) {
-      applyDrive(vision.getAlgaeYaw() * 0.4);
-    } else {
-      applyDrive();
-    }
+    // if (vision.algaeIsVisible()) {
+    //   applyDrive(vision.getAlgaeYaw() * 0.4);
+    // } else {
+    applyDrive();
+    // }
     if (claw.hasAlgae()) {
       setWantedState(WantedState.DEFAULT_STATE);
     }
