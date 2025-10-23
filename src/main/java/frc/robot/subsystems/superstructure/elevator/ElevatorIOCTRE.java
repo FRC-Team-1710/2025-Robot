@@ -89,7 +89,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
    * The radius of the elevator pulley/drum, used for converting between rotations and linear
    * distance
    */
-  protected final Distance elevatorRadius = Inches.of(1.1338619402985);
+  public static final Distance elevatorRadius = Inches.of(1.1338619402985);
 
   protected final Distance cancoderTripThreshold = Inches.of(15);
 

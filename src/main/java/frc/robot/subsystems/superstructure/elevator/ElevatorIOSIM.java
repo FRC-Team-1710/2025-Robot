@@ -1,5 +1,8 @@
 package frc.robot.subsystems.superstructure.elevator;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
+
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.LinearSystem;
@@ -20,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
+import frc.robot.utils.Conversions;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.*;
 
@@ -134,7 +138,10 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
-    elevatorPID.setGoal(inputs.setpoint);
+    elevatorPID.setGoal(
+        Conversions.rotationsToDistance(
+                Rotations.of(inputs.setpoint), GEAR_RATIO, ElevatorIOCTRE.elevatorRadius)
+            .in(Inches));
     if (inputs.manual != 0) {
       pwmTalonFX.set(inputs.manual);
     } else {

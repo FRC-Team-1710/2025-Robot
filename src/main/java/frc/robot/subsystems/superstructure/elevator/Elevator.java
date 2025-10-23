@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -118,7 +120,11 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput
   public boolean isAtTarget() {
     if (currentState == ElevatorStates.STOP) return true;
-    return getPosition().isNear(currentState.targetDistance, currentState.angleTolerance);
+    Logger.recordOutput("Im going insane", currentState.targetDistance);
+    return getPosition()
+        .isNear(
+            currentState.targetDistance,
+            Constants.currentMode == Mode.SIM ? Inches.of(2.5) : currentState.angleTolerance);
   }
 
   @AutoLogOutput
