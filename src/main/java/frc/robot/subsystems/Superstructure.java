@@ -224,13 +224,18 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
     if (Constants.useSmartDashboard) {
-      autopilot =
-          new Autopilot(
-              profile.withConstraints(
-                  constraints
-                      .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
-                      .withVelocity(SmartDashboard.getNumber("Velocity", 0))
-                      .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+      // autopilot =
+      //     new Autopilot(
+      //         profile.withConstraints(
+      //             constraints
+      //                 .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
+      //                 .withVelocity(SmartDashboard.getNumber("Velocity", 0))
+      //                 .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+    }
+
+    if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
+      SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
+      manipulator.advanceGamePiece();
     }
 
     ppReady = (!ppWUp.isScheduled());
@@ -425,7 +430,7 @@ public class Superstructure extends SubsystemBase {
           currentState =
               targetingType == TargetType.CORAL
                   ? CurrentState.INTAKE_CORAL_FROM_STATION
-                  : CurrentState.INTAKE_ALGAE_FROM_REEF;
+                  : CurrentState.INTAKE_ALGAE_FROM_GROUND;
           break;
         case INTAKE_ALGAE_FROM_REEF:
           currentState = CurrentState.INTAKE_ALGAE_FROM_REEF;

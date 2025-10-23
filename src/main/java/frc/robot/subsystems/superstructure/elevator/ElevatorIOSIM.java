@@ -134,7 +134,7 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
-    elevatorPID.setGoal(inputs.goal.magnitude());
+    elevatorPID.setGoal(inputs.setpoint);
     if (inputs.manual != 0) {
       pwmTalonFX.set(inputs.manual);
     } else {

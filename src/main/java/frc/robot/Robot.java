@@ -91,6 +91,9 @@ public class Robot extends LoggedRobot {
 
     SimCoral.setRedAlliance(redAlliance);
 
+    // Logging for watching logs
+    Logger.recordOutput("Control Mode", Constants.babyControlMode ? "Bummy baby controls" : "Full speed straight into the reef");
+
     m_gcTimer.start();
   }
 
