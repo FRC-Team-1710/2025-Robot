@@ -466,11 +466,33 @@ public class Drive extends SubsystemBase {
 
   public record VisionParameters(Pose2d robotPose, AngularVelocity gyroRate) {}
 
-  public void resetToVisionMeasurement() {
+  public void poseWithVisionTranslation() {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
         poseEstimator.resetTranslation(recentVisionMeasurement.poseEstimate().robotPose().getTranslation());
+      }
+    } catch (Error e) {
+      Logger.recordOutput("Translation Reset Error", e.toString());
+    }
+  }
+
+  public void poseWithVisionRotation() {
+    // Just in case this doesn't work (it should)
+    try {
+      if (recentVisionMeasurement != null) {
+        poseEstimator.resetRotation(recentVisionMeasurement.poseEstimate().robotPose().getRotation());
+      }
+    } catch (Error e) {
+      Logger.recordOutput("Rotation Reset Error", e.toString());
+    }
+  }
+
+  public void poseWithVisionPose() {
+    // Just in case this doesn't work (it should)
+    try {
+      if (recentVisionMeasurement != null) {
+        poseEstimator.resetPose(recentVisionMeasurement.poseEstimate().robotPose());
       }
     } catch (Error e) {
       Logger.recordOutput("Pose Reset Error", e.toString());
