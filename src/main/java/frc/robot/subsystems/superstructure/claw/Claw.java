@@ -18,7 +18,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import java.util.function.DoubleSupplier;
+
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -37,7 +38,7 @@ public class Claw extends SubsystemBase {
   private boolean doneZeroing = false;
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
-  private final DoubleSupplier manualSupplier;
+  private final BooleanSupplier ejectSupplier;
 
   private Timer timer = new Timer();
 
@@ -46,10 +47,10 @@ public class Claw extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the claw
    */
-  public Claw(ClawIO io, DoubleSupplier manualSupplier) {
+  public Claw(ClawIO io, BooleanSupplier ejectSupplier) {
     this.io = io;
     this.inputs = new ClawIOInputsAutoLogged();
-    this.manualSupplier = manualSupplier;
+    this.ejectSupplier = ejectSupplier;
   }
 
   @Override
@@ -68,6 +69,7 @@ public class Claw extends SubsystemBase {
     }
 
     if (!inputs.hasAlgae
+        && !ejectSupplier.getAsBoolean()
         && currentState != ClawStates.GRAB
         && currentState != ClawStates.FLOOR
         && currentState != ClawStates.SCORE_NET
@@ -75,8 +77,8 @@ public class Claw extends SubsystemBase {
       io.setRollers(0);
     }
 
-    if (manualSupplier.getAsDouble() != 0) {
-      io.wristManual(manualSupplier.getAsDouble());
+    if (ejectSupplier.getAsBoolean()) {
+      io.setRollers(-0.2);
     } else {
       switch (currentState) {
         case STOP:
@@ -204,7 +206,7 @@ public class Claw extends SubsystemBase {
           case NONE -> CurrentAlgaeState.HAS_ALGAE;
           case HAS_ALGAE -> CurrentAlgaeState.NONE;
         };
-  } // change
+  }
 
   public enum CurrentAlgaeState {
     NONE(),
