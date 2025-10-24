@@ -312,6 +312,9 @@ public class Superstructure extends SubsystemBase {
 
     Logger.recordOutput("Superstructure/DriverRumble", driverRumble());
 
+    Logger.recordOutput("Superstructure/WrongHalf", isRobotOnWrongHalfOfReefFace(getTargetPose()));
+    Logger.recordOutput("Superstructure/LeftHalf", isRobotOnLeftHalfOfReefFace(getTargetPose()));
+
     driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
 
     if (!scoreCoralFlag) {
@@ -712,7 +715,7 @@ public class Superstructure extends SubsystemBase {
 
     currentAlignTarget = AlignTarget.REEF;
     applyDrive(
-        (!manipulator.hasCoral() || targetFace.inverted)
+        (!manipulator.hasCoral() || isRobotOnWrongHalfOfReefFace(getTargetPose()))
             ? getBeforeReadyToGrabAlgaePose()
             : getTargetPose());
 
@@ -904,6 +907,7 @@ public class Superstructure extends SubsystemBase {
         || elevator.getState()
             != (targetFace.isHighAlgae() ? ElevatorStates.ALGAE_HIGH : ElevatorStates.ALGAE_LOW)
         || !elevator.isAtTarget()) {
+      currentAlignTarget = AlignTarget.REEF;
       applyDrive(getBeforeReadyToGrabAlgaePose());
       if (drivetrain
               .getPose()
@@ -1061,6 +1065,7 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput(
         "Superstructure/DistanceToRequestedPose",
         Math.abs(drivetrain.getPose().getTranslation().getDistance(pose.getTranslation())));
+    Logger.recordOutput("Superstructure/AlignType", currentAlignTarget);
     if (ppReady
         && currentAlignTarget != AlignTarget.AP
         && ((currentAlignTarget == AlignTarget.REEF
@@ -1241,6 +1246,7 @@ public class Superstructure extends SubsystemBase {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
+  @AutoLogOutput
   public boolean isRobotOnWrongHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1253,6 +1259,7 @@ public class Superstructure extends SubsystemBase {
     return dotProduct > 0;
   }
 
+  @AutoLogOutput
   public boolean isRobotOnLeftHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());

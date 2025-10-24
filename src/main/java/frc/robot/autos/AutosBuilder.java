@@ -55,7 +55,7 @@ public class AutosBuilder {
       String output = validateAuto(customString);
       Logger.recordOutput("Is Auto Valid", output == "");
       Logger.recordOutput("Auto Validation Error", output);
-      preBuiltAuto = buildAuto();
+      preBuiltAuto = output == "" ? buildAuto() : Commands.none();
     } else if (autoChooser.get() != Auto.CUSTOM) {
       Logger.recordOutput("Is Auto Valid", true);
       Logger.recordOutput("Auto Validation Error", "");
@@ -169,12 +169,12 @@ public class AutosBuilder {
       case CUSTOM:
         if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
             == "(insert auto here)") {
-          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
+          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE));
         } else {
           return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)"));
         }
       case IDLE:
-        return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
+        return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE));
       default:
         return buildAuto(autoChooser.get().toString());
     }

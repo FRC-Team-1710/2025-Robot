@@ -204,7 +204,7 @@ public class Claw extends SubsystemBase {
           case NONE -> CurrentAlgaeState.HAS_ALGAE;
           case HAS_ALGAE -> CurrentAlgaeState.NONE;
         };
-  }//change
+  } // change
 
   public enum CurrentAlgaeState {
     NONE(),
