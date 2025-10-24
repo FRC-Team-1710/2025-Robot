@@ -270,7 +270,10 @@ public class RobotContainer {
 
     autosBuilder = new AutosBuilder(superstructure);
 
-    driver.rightStick().and(driver.leftStick()).onTrue(Commands.runOnce(() -> drivetrain.poseWithVisionRotation()));
+    driver
+        .rightStick()
+        .and(driver.leftStick())
+        .onTrue(Commands.runOnce(() -> drivetrain.poseWithVisionRotation()).ignoringDisable(true));
 
     if (Constants.babyControlMode) {
       configureBabyBindings();

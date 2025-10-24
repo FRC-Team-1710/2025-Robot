@@ -24,7 +24,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -150,6 +149,8 @@ public class Drive extends SubsystemBase {
         (targetPose) -> {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
+
+    SmartDashboard.putBoolean("WEIRD GYRO ACTIVITIES", false);
   }
 
   private void configureAutoBuilder() {
@@ -241,6 +242,10 @@ public class Drive extends SubsystemBase {
      * Otherwise, only check and apply the operator perspective if the DS is disabled.
      * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
      */
+    if (SmartDashboard.getBoolean("WEIRD GYRO ACTIVITIES", false)) {
+      poseWithVisionRotation();
+      SmartDashboard.putBoolean("WEIRD GYRO ACTIVITIES", false);
+    }
 
     io.updateInputs(inputs);
     Logger.processInputs("Drive", inputs);
@@ -426,11 +431,12 @@ public class Drive extends SubsystemBase {
         "Odom minus Vision",
         this.getRotation().getRadians()
             - visionMeasurement.poseEstimate().pose().getRotation().getZ());
-    Pose2d poseEstimate = new Pose2d(
-      new Translation2d(
-          visionMeasurement.poseEstimate().pose().toPose2d().getX(),
-          visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-      visionMeasurement.poseEstimate().pose().toPose2d().getRotation());
+    Pose2d poseEstimate =
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            visionMeasurement.poseEstimate().pose().toPose2d().getRotation());
     this.addVisionMeasurement(
         poseEstimate,
         visionMeasurement.poseEstimate().timestampSeconds(),
@@ -445,7 +451,8 @@ public class Drive extends SubsystemBase {
     try {
       double timestamp = this.recentVisionMeasurement.poseEstimate().timestampSeconds();
       if (visionMeasurement.poseEstimate().timestampSeconds() < timestamp + 0.01) {
-        if (visionMeasurement.poseEstimate().ambiguity() < this.recentVisionMeasurement.poseEstimate().ambiguity()) {
+        if (visionMeasurement.poseEstimate().ambiguity()
+            < this.recentVisionMeasurement.poseEstimate().ambiguity()) {
           this.recentVisionMeasurement = visionMeasurement;
         }
       } else {
@@ -470,7 +477,8 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetTranslation(recentVisionMeasurement.poseEstimate().robotPose().getTranslation());
+        poseEstimator.resetTranslation(
+            recentVisionMeasurement.poseEstimate().robotPose().getTranslation());
       }
     } catch (Error e) {
       Logger.recordOutput("Translation Reset Error", e.toString());
@@ -481,7 +489,8 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetRotation(recentVisionMeasurement.poseEstimate().robotPose().getRotation());
+        poseEstimator.resetRotation(
+            recentVisionMeasurement.poseEstimate().robotPose().getRotation());
       }
     } catch (Error e) {
       Logger.recordOutput("Rotation Reset Error", e.toString());

@@ -134,7 +134,7 @@ public class Superstructure extends SubsystemBase {
 
   private boolean isRedAlliance = false;
 
-  private boolean compressMaxSpeed = true;
+  private boolean compressMaxSpeed = false;
 
   private boolean ppReady = false;
 
