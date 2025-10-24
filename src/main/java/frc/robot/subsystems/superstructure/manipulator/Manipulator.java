@@ -18,13 +18,13 @@ public class Manipulator extends SubsystemBase {
   private ManipulatorStates currentState = ManipulatorStates.OFF;
   private CurrentCoralState currentCoralState = CurrentCoralState.NONE;
 
-  private final BooleanSupplier bumpBoolean;
+  private final BooleanSupplier ejectBoolean;
 
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
-    this.bumpBoolean = bumpBoolean;
+    this.ejectBoolean = bumpBoolean;
   }
 
   @Override
@@ -32,7 +32,7 @@ public class Manipulator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Manipulator", inputs);
 
-    if (bumpBoolean.getAsBoolean()) {
+    if (ejectBoolean.getAsBoolean()) {
       io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
     } else {
       switch (currentState) {

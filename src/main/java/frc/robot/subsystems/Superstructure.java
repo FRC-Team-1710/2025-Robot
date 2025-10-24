@@ -71,9 +71,11 @@ public class Superstructure extends SubsystemBase {
   private final Elevator elevator;
   private final Funnel funnel;
   private final Manipulator manipulator;
-  private final Vision vision;
 
   @SuppressWarnings("unused") // Sorry Gavin
+  private final Vision vision;
+
+  @SuppressWarnings("unused") // Sorry Again
   private final LEDSubsystem ledSubsystem;
 
   private final TunableController driver;
@@ -1187,19 +1189,19 @@ public class Superstructure extends SubsystemBase {
   /**
    * @param rotation uses this for rotation + driver
    */
-  private void applyDrive(double rotation) {
-    drivetrain
-        .applyRequest(
-            () ->
-                fieldCentric
-                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
-                    .withRotationalRate(
-                        maxAngularRate.times(
-                            clamp(rotation)
-                                - (driver.customRight().getX() * driverOverideAllignment))))
-        .schedule();
-  }
+  // private void applyDrive(double rotation) {
+  //   drivetrain
+  //       .applyRequest(
+  //           () ->
+  //               fieldCentric
+  //                   .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+  //                   .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
+  //                   .withRotationalRate(
+  //                       maxAngularRate.times(
+  //                           clamp(rotation)
+  //                               - (driver.customRight().getX() * driverOverideAllignment))))
+  //       .schedule();
+  // }
 
   /** Uses normal driver controlls */
   private void applyDrive() {
