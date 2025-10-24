@@ -470,7 +470,7 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetPose(recentVisionMeasurement.poseEstimate().robotPose());
+        poseEstimator.resetTranslation(recentVisionMeasurement.poseEstimate().robotPose().getTranslation());
       }
     } catch (Error e) {
       Logger.recordOutput("Pose Reset Error", e.toString());
