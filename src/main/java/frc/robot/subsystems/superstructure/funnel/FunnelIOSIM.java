@@ -65,7 +65,7 @@ public class FunnelIOSIM extends FunnelIOCTRE {
   //   private final LoggedMechanismLigament2d m_wristEXTENSION;
 
   public FunnelIOSIM() {
-    //     m_topEncoderSim.setDistancePerPulse(kArmEncoderDistPerPulse);
+        // m_topEncoderSim.setDistancePerPulse(kArmEncoderDistPerPulse);
     //     m_wristEXTENSION =
     //         elevator.m_secondStage2d.append(
     //             new LoggedMechanismLigament2d("Extension", Units.inchesToMeters(9.643), 230));

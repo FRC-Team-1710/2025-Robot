@@ -24,6 +24,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -71,6 +72,7 @@ public class Drive extends SubsystemBase {
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(Constants.SWERVE_MODULE_OFFSETS);
   private SwerveDrivePoseEstimator poseEstimator = null;
+  private VisionMeasurement recentVisionMeasurement = null;
   private Trigger estimatorTrigger =
       new Trigger(() -> poseEstimator != null).and(() -> Constants.currentMode == Mode.REPLAY);
   private SwerveModulePosition[] currentPositions = ArrayBuilder.buildSwerveModulePosition();
@@ -424,15 +426,34 @@ public class Drive extends SubsystemBase {
         "Odom minus Vision",
         this.getRotation().getRadians()
             - visionMeasurement.poseEstimate().pose().getRotation().getZ());
+    Pose2d poseEstimate = new Pose2d(
+      new Translation2d(
+          visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+          visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+      visionMeasurement.poseEstimate().pose().toPose2d().getRotation());
     this.addVisionMeasurement(
-        new Pose2d(
-            new Translation2d(
-                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
-                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-            // this.getRotation()),
-            visionMeasurement.poseEstimate().pose().toPose2d().getRotation()),
+        poseEstimate,
         visionMeasurement.poseEstimate().timestampSeconds(),
         visionMeasurement.visionMeasurementStdDevs());
+
+    // Add the most accurate and recent vision measurement
+    if (this.recentVisionMeasurement == null) {
+      this.recentVisionMeasurement = visionMeasurement;
+    }
+
+    // Just in case this doesn't work at all (which it should)
+    try {
+      double timestamp = this.recentVisionMeasurement.poseEstimate().timestampSeconds();
+      if (visionMeasurement.poseEstimate().timestampSeconds() < timestamp + 0.01) {
+        if (visionMeasurement.poseEstimate().ambiguity() < this.recentVisionMeasurement.poseEstimate().ambiguity()) {
+          this.recentVisionMeasurement = visionMeasurement;
+        }
+      } else {
+        this.recentVisionMeasurement = visionMeasurement;
+      }
+    } catch (Error e) {
+      Logger.recordOutput("Vision Record Error", e.toString());
+    }
   }
 
   public void addVisionData(List<VisionMeasurement> visionData) {
@@ -444,6 +465,17 @@ public class Drive extends SubsystemBase {
   }
 
   public record VisionParameters(Pose2d robotPose, AngularVelocity gyroRate) {}
+
+  public void resetToVisionMeasurement() {
+    // Just in case this doesn't work (it should)
+    try {
+      if (recentVisionMeasurement != null) {
+        poseEstimator.resetPose(recentVisionMeasurement.poseEstimate().robotPose());
+      }
+    } catch (Error e) {
+      Logger.recordOutput("Pose Reset Error", e.toString());
+    }
+  }
 
   public void updateWithTime() {
     if (Constants.currentMode != Mode.REPLAY || !inputs.odometryIsValid) {
