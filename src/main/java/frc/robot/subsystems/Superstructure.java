@@ -209,7 +209,8 @@ public class Superstructure extends SubsystemBase {
     return elevator.isAtTarget()
         && elevator.getState() != ElevatorStates.INTAKE
         && isDrivetrainAtTarget()
-        && manipulator.hasCoral();
+        && manipulator.hasCoral()
+        && !DriverStation.isAutonomous();
   }
 
   public boolean isPathFindingFinishedAuto() {
@@ -1292,7 +1293,7 @@ public class Superstructure extends SubsystemBase {
                   autoSourceIsLeft ? isRedAlliance ? 126 : 306 : isRedAlliance ? 234 : 54))
           .plus(
               new Transform2d(
-                  0.5,
+                  0.5 - Units.inchesToMeters(6),
                   (autoSourceIsLeft ? 1 : -1)
                       * (targetSourceSide == TargetSourceSide.FAR
                           ? 0.6
@@ -1315,7 +1316,7 @@ public class Superstructure extends SubsystemBase {
                     : isRedAlliance ? 126 : 54))
         .plus(
             new Transform2d(
-                0.5,
+                0.5 - Units.inchesToMeters(6),
                 (autoSourceIsLeft ? 1 : -1)
                     * (targetSourceSide == TargetSourceSide.FAR
                         ? pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2 ? 0.6 : -0.6

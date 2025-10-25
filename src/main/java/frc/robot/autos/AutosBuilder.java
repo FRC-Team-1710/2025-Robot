@@ -286,10 +286,6 @@ public class AutosBuilder {
     return Commands.runOnce(() -> superstructure.setTargets(source, sourceDistance))
         .andThen(
             Commands.runOnce(
-                () -> superstructure.setWantedState(WantedState.AUTO_DRIVE_TO_CORAL_STATION)))
-        .andThen(new WaitUntilCommand(superstructure::isPathFindingFinishedAuto))
-        .andThen(
-            Commands.runOnce(
                 () -> superstructure.setWantedState(WantedState.INTAKE_CORAL_FROM_STATION)))
         .andThen(
             new WaitUntilCommand(
