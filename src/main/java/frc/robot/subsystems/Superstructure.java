@@ -122,7 +122,7 @@ public class Superstructure extends SubsystemBase {
 
   private double driverOverideAllignment = 0.25;
 
-  private final double metersToElevatorUp = 1;
+  private final double metersToElevatorUp = 0.5;
 
   private boolean autoSourceIsLeft = false;
 
