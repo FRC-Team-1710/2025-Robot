@@ -41,26 +41,26 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
   // FAST
-  // private double kP = 0.1; // 0.1 // 0.75
-  // private double kI = 0; // 0.0 // 0.0
-  // private double kD = 0; // 0.0 // 0.0
-  // private double kS = 0.1875; // 0.0 // 0.1
-  // private double kG = 0.315; // 0.3375 // 0.375
-  // private double kV = 0.126; // 0.0 // 0.075
-  // private double kA = 0; // 0.0 // 0.0
-  // private double kAcel = 125; // 200
-  // private double kVel = 175;
-
-  // slow
-  private double kP = 0.05; // 0.1 // 0.75
+  private double kP = 0.1; // 0.1 // 0.75
   private double kI = 0; // 0.0 // 0.0
   private double kD = 0; // 0.0 // 0.0
-  private double kS = 0.19; // 0.0 // 0.1
-  private double kG = 0.31; // 0.3375 // 0.375
-  private double kV = 0.135; // 0.0 // 0.075
+  private double kS = 0.1875; // 0.0 // 0.1
+  private double kG = 0.315; // 0.3375 // 0.375
+  private double kV = 0.126; // 0.0 // 0.075
   private double kA = 0; // 0.0 // 0.0
-  private double kAcel = 65; // 200
+  private double kAcel = 125; // 200
   private double kVel = 175;
+
+  // slow
+  // private double kP = 0.05; // 0.1 // 0.75
+  // private double kI = 0; // 0.0 // 0.0
+  // private double kD = 0; // 0.0 // 0.0
+  // private double kS = 0.19; // 0.0 // 0.1
+  // private double kG = 0.31; // 0.3375 // 0.375
+  // private double kV = 0.135; // 0.0 // 0.075
+  // private double kA = 0; // 0.0 // 0.0
+  // private double kAcel = 65; // 200
+  // private double kVel = 175;
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
