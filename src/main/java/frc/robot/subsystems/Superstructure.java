@@ -122,7 +122,7 @@ public class Superstructure extends SubsystemBase {
 
   private double driverOverideAllignment = 0.25;
 
-  private final double metersToElevatorUp = 0.75;
+  private final double metersToElevatorUp = 1;
 
   private boolean autoSourceIsLeft = false;
 
@@ -671,7 +671,7 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
     currentAlignTarget = AlignTarget.SOURCE;
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
-    if (manipulator.hasCoral()) {
+    if (manipulator.almostHasCoral() || manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
     }
   }

@@ -85,6 +85,13 @@ public class Manipulator extends SubsystemBase {
   }
 
   @AutoLogOutput
+  public boolean almostHasCoral() {
+    return Constants.currentMode == Mode.SIM
+        ? (currentCoralState == CurrentCoralState.SECURED)
+        : (inputs.beam2Broken && inputs.beam1Broken);
+  }
+
+  @AutoLogOutput
   public boolean detectsCoral() {
     return Constants.currentMode == Mode.SIM
         ? (currentCoralState == CurrentCoralState.DETECTS
