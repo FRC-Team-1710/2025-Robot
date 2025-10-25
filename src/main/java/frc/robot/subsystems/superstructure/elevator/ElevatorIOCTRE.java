@@ -41,15 +41,15 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
   // FAST
-  private double kP = 0.1; // 0.1 // 0.75
+  private double kP = 1; // 0.1 // 0.75
   private double kI = 0; // 0.0 // 0.0
   private double kD = 0; // 0.0 // 0.0
-  private double kS = 0.1875; // 0.0 // 0.1
-  private double kG = 0.315; // 0.3375 // 0.375
-  private double kV = 0.126; // 0.0 // 0.075
+  private double kS = 0.2; // 0.0 // 0.1
+  private double kG = 0.55; // 0.3375 // 0.375
+  private double kV = 0.12; // 0.0 // 0.075
   private double kA = 0; // 0.0 // 0.0
-  private double kAcel = 125; // 200
-  private double kVel = 175;
+  private double kAcel = 225; // 200
+  private double kVel = 225;
 
   // slow
   // private double kP = 0.05; // 0.1 // 0.75
