@@ -56,8 +56,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Class that extends the Phoenix 6 Swerveclass and implements Subsystem so it
- * can easily be used in
+ * Class that extends the Phoenix 6 Swerveclass and implements Subsystem so it can easily be used in
  * command-based projects.
  */
 public class Drive extends SubsystemBase {
@@ -69,16 +68,20 @@ public class Drive extends SubsystemBase {
   private final DriveIOInputsAutoLogged inputs;
   private final ModuleIOInputsAutoLogged[] modules = ArrayBuilder.buildModuleAutoLogged();
 
-  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Constants.SWERVE_MODULE_OFFSETS);
+  private final SwerveDriveKinematics kinematics =
+      new SwerveDriveKinematics(Constants.SWERVE_MODULE_OFFSETS);
   private SwerveDrivePoseEstimator poseEstimator = null;
   private VisionMeasurement recentVisionMeasurement = null;
-  private Trigger estimatorTrigger = new Trigger(() -> poseEstimator != null)
-      .and(() -> Constants.currentMode == Mode.REPLAY);
+  private Trigger estimatorTrigger =
+      new Trigger(() -> poseEstimator != null).and(() -> Constants.currentMode == Mode.REPLAY);
   private SwerveModulePosition[] currentPositions = ArrayBuilder.buildSwerveModulePosition();
 
-  private Alert[] driveDisconnectedAlert = ArrayBuilder.buildAlert("Disconnected drive motor on module");
-  private Alert[] turnDisconnectedAlert = ArrayBuilder.buildAlert("Disconnected turn motor on module");
-  private Alert[] turnEncoderDisconnectedAlert = ArrayBuilder.buildAlert("Disconnected turn encoder on module");
+  private Alert[] driveDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected drive motor on module");
+  private Alert[] turnDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected turn motor on module");
+  private Alert[] turnEncoderDisconnectedAlert =
+      ArrayBuilder.buildAlert("Disconnected turn encoder on module");
 
   private Alert gyroDisconnectedAlert = new Alert("Gyro Disconnected", AlertType.kError);
 
@@ -90,12 +93,14 @@ public class Drive extends SubsystemBase {
   private boolean m_hasAppliedOperatorPerspective = false;
 
   /** Swerve request to apply during robot-centric path following */
-  private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
+  private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
+      new SwerveRequest.ApplyRobotSpeeds();
 
   /* Swerve request to apply when braking */
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
 
-  private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+  private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
+      new SwerveRequest.SysIdSwerveRotation();
 
   /*
    * SysId routine for characterizing rotation.
@@ -104,27 +109,28 @@ public class Drive extends SubsystemBase {
    * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
    * importing the log to SysId.
    */
-  private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          /*
-           * This is in radians per second squared, but SysId only supports
-           * "volts per second"
-           */
-          Volts.of(Math.PI / 6).per(Second),
-          /* This is in radians per second, but SysId only supports "volts" */
-          Volts.of(Math.PI),
-          null, // Use default timeout (10 s)
-          // Log state with Logger class
-          state -> Logger.recordOutput("SysIdRotation_State", state.toString())),
-      new SysIdRoutine.Mechanism(
-          output -> {
-            /* output is actually radians per second, but SysId only supports "volts" */
-            setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-            /* also log the requested output for SysId */
-            Logger.recordOutput("Rotational_Rate", output.in(Volts));
-          },
-          null,
-          this));
+  private final SysIdRoutine m_sysIdRoutineRotation =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              /*
+               * This is in radians per second squared, but SysId only supports
+               * "volts per second"
+               */
+              Volts.of(Math.PI / 6).per(Second),
+              /* This is in radians per second, but SysId only supports "volts" */
+              Volts.of(Math.PI),
+              null, // Use default timeout (10 s)
+              // Log state with Logger class
+              state -> Logger.recordOutput("SysIdRotation_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              output -> {
+                /* output is actually radians per second, but SysId only supports "volts" */
+                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                /* also log the requested output for SysId */
+                Logger.recordOutput("Rotational_Rate", output.in(Volts));
+              },
+              null,
+              this));
 
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineRotation;
@@ -158,11 +164,12 @@ public class Drive extends SubsystemBase {
         this::resetPose, // Consumer for seeding pose against auto
         this::getChassisSpeeds, // Supplier of current robot speeds
         // Consumer of ChassisSpeeds and feedforwards to drive the robot
-        (speeds, feedforwards) -> io.setControl(
-            m_pathApplyRobotSpeeds
-                .withSpeeds(speeds)
-                .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+        (speeds, feedforwards) ->
+            io.setControl(
+                m_pathApplyRobotSpeeds
+                    .withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
         new PPHolonomicDriveController(
             // PID constants for translation
             new PIDConstants(10, 0, 0),
@@ -173,14 +180,13 @@ public class Drive extends SubsystemBase {
         // case
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this // Subsystem for requirements
-    );
+        );
   }
 
   /**
    * Returns a command that applies the specified control request to this swerve
    *
-   * @param request
-   *          Function returning the request to apply
+   * @param request Function returning the request to apply
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
@@ -194,12 +200,13 @@ public class Drive extends SubsystemBase {
 
   public Command stop(RobotCentric requestSupplier) {
     return run(
-        () -> io.setControl(
-            requestSupplier
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                .withVelocityX(0)
-                .withVelocityY(0)
-                .withRotationalRate(0)));
+        () ->
+            io.setControl(
+                requestSupplier
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0)));
   }
 
   public void setControl(SwerveRequest request) {
@@ -211,12 +218,10 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Runs the SysId Quasistatic test in the given direction for the routine
-   * specified by {@link
+   * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
    *
-   * @param direction
-   *          Direction of the SysId Quasistatic test
+   * @param direction Direction of the SysId Quasistatic test
    * @return Command to run
    */
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -224,12 +229,10 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Runs the SysId Dynamic test in the given direction for the routine specified
-   * by {@link
+   * Runs the SysId Dynamic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
    *
-   * @param direction
-   *          Direction of the SysId Dynamic test
+   * @param direction Direction of the SysId Dynamic test
    * @return Command to run
    */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
@@ -334,9 +337,10 @@ public class Drive extends SubsystemBase {
   public boolean isNearProcessor() {
     new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
         .minus(FieldConstants.Processor.centerFace.getTranslation());
-    Pose2d processor = Robot.getAlliance()
-        ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
-        : FieldConstants.Processor.centerFace;
+    Pose2d processor =
+        Robot.getAlliance()
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
+            : FieldConstants.Processor.centerFace;
 
     return getDistanceToPose(processor).getNorm() < 1.5;
   }
@@ -345,9 +349,10 @@ public class Drive extends SubsystemBase {
   public boolean isNearFarProcessor() {
     new Translation2d(FieldConstants.fieldLength.magnitude(), FieldConstants.fieldWidth.magnitude())
         .minus(FieldConstants.Processor.centerFace.getTranslation());
-    Pose2d processor = !Robot.getAlliance()
-        ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
-        : FieldConstants.Processor.centerFace;
+    Pose2d processor =
+        !Robot.getAlliance()
+            ? new Pose2d(Inches.of(690.876 - 235.726), Inches.of(317), Rotation2d.fromDegrees(270))
+            : FieldConstants.Processor.centerFace;
 
     return getDistanceToPose(processor).getNorm() < 1.5;
   }
@@ -372,19 +377,13 @@ public class Drive extends SubsystemBase {
     return values;
   }
 
-  /**
-   * Returns the module states (turn angles and drive velocities) for all of the
-   * modules.
-   */
+  /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   public SwerveModuleState[] getModuleStates() {
     return inputs.moduleStates;
   }
 
-  /**
-   * Returns the module target states (turn angles and drive velocities) for all
-   * of the modules.
-   */
+  /** Returns the module target states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Setpoints")
   public SwerveModuleState[] getModuleTarget() {
     return inputs.moduleTargets;
@@ -404,13 +403,10 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Return the pose at a given timestamp. If the buffer is empty return current
-   * pose.
+   * Return the pose at a given timestamp. If the buffer is empty return current pose.
    *
-   * @param timestampSeconds
-   *          The pose's timestamp. This must use WPILib timestamp.
-   * @return The pose at the given timestamp (or current pose if the buffer is
-   *         empty).
+   * @param timestampSeconds The pose's timestamp. This must use WPILib timestamp.
+   * @return The pose at the given timestamp (or current pose if the buffer is empty).
    */
   public Pose2d samplePoseAt(double timestampSeconds) {
     return estimatorTrigger.getAsBoolean()
@@ -421,12 +417,9 @@ public class Drive extends SubsystemBase {
   /**
    * Adds a vision measurement to the pose estimator.
    *
-   * @param visionRobotPoseMeters
-   *          The measured robot pose from vision
-   * @param timestampSeconds
-   *          The timestamp of the measurement
-   * @param visionMeasurementStdDevs
-   *          Standard deviation matrix for the measurement
+   * @param visionRobotPoseMeters The measured robot pose from vision
+   * @param timestampSeconds The timestamp of the measurement
+   * @param visionMeasurementStdDevs Standard deviation matrix for the measurement
    */
   public void addVisionMeasurement(
       Pose2d visionRobotPoseMeters,
@@ -443,21 +436,20 @@ public class Drive extends SubsystemBase {
   /**
    * Adds a vision measurement to the pose estimator.
    *
-   * @param visionPose
-   *          The pose of the robot as measured by the vision camera.
-   * @param timestamp
-   *          The timestamp of the vision measurement in seconds.
+   * @param visionPose The pose of the robot as measured by the vision camera.
+   * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
     Logger.recordOutput(
         "Odom minus Vision",
         this.getRotation().getRadians()
             - visionMeasurement.poseEstimate().pose().getRotation().getZ());
-    Pose2d poseEstimate = new Pose2d(
-        new Translation2d(
-            visionMeasurement.poseEstimate().pose().toPose2d().getX(),
-            visionMeasurement.poseEstimate().pose().toPose2d().getY()),
-        visionMeasurement.poseEstimate().pose().toPose2d().getRotation());
+    Pose2d poseEstimate =
+        new Pose2d(
+            new Translation2d(
+                visionMeasurement.poseEstimate().pose().toPose2d().getX(),
+                visionMeasurement.poseEstimate().pose().toPose2d().getY()),
+            visionMeasurement.poseEstimate().pose().toPose2d().getRotation());
     this.addVisionMeasurement(
         poseEstimate,
         visionMeasurement.poseEstimate().timestampSeconds(),
@@ -472,11 +464,14 @@ public class Drive extends SubsystemBase {
     try {
       double timestamp = this.recentVisionMeasurement.poseEstimate().timestampSeconds();
       if (visionMeasurement.poseEstimate().timestampSeconds() < timestamp + 0.01) {
-        if (visionMeasurement.poseEstimate().ambiguity() < this.recentVisionMeasurement.poseEstimate().ambiguity()) {
+        if (visionMeasurement.poseEstimate().ambiguity()
+            < this.recentVisionMeasurement.poseEstimate().ambiguity()) {
           this.recentVisionMeasurement = visionMeasurement;
+          Logger.recordOutput("BRUH WORK", visionMeasurement);
         }
       } else {
         this.recentVisionMeasurement = visionMeasurement;
+        Logger.recordOutput("BRUH WORK", visionMeasurement);
       }
     } catch (Error e) {
       Logger.recordOutput("Vision Record Error", e.toString());
@@ -491,14 +486,14 @@ public class Drive extends SubsystemBase {
     return new VisionParameters(getPose(), getGyroRate());
   }
 
-  public record VisionParameters(Pose2d robotPose, AngularVelocity gyroRate) {
-  }
+  public record VisionParameters(Pose2d robotPose, AngularVelocity gyroRate) {}
 
   public void poseWithVisionTranslation() {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        Translation2d translation = recentVisionMeasurement.poseEstimate().robotPose().getTranslation();
+        Translation2d translation =
+            recentVisionMeasurement.poseEstimate().robotPose().getTranslation();
         poseEstimator.resetTranslation(translation);
         io.resetPose(new Pose2d(translation, poseEstimator.getEstimatedPosition().getRotation()));
       }
@@ -513,7 +508,10 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        Pose2d pose = recentVisionMeasurement.poseEstimate().robotPose();
+        Pose2d pose =
+            new Pose2d(
+                recentVisionMeasurement.poseEstimate().robotPose().getTranslation(),
+                recentVisionMeasurement.poseEstimate().pose().getRotation().toRotation2d());
         if (estimatorTrigger.getAsBoolean()) {
           poseEstimator.resetPose(pose);
         }
@@ -534,8 +532,9 @@ public class Drive extends SubsystemBase {
     }
 
     if (!estimatorTrigger.getAsBoolean()) {
-      poseEstimator = new SwerveDrivePoseEstimator(
-          kinematics, inputs.pose.getRotation(), inputs.modulePositions, inputs.pose);
+      poseEstimator =
+          new SwerveDrivePoseEstimator(
+              kinematics, inputs.pose.getRotation(), inputs.modulePositions, inputs.pose);
     }
 
     for (int timeIndex = 0; timeIndex < inputs.timestamp.length; timeIndex++) {
