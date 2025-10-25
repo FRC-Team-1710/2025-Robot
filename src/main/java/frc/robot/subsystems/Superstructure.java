@@ -826,7 +826,7 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
-    if (ejectTimer.hasElapsed(0.5)) {
+    if (ejectTimer.hasElapsed(0.25)) {
       currentAlignTarget = AlignTarget.AP;
       applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
     } else {
@@ -838,7 +838,7 @@ public class Superstructure extends SubsystemBase {
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
-      if (ejectTimer.hasElapsed(1)) {
+      if (ejectTimer.hasElapsed(0.5)) {
         setWantedState(WantedState.DEFAULT_STATE);
       }
     }
