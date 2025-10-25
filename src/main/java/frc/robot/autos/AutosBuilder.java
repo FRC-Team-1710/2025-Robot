@@ -14,6 +14,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -35,7 +36,34 @@ public class AutosBuilder {
 
   private Command preBuiltAuto = Commands.none();
 
+  HashMap<Character, Source> charToSource = new HashMap<Character, Source>();
+  HashMap<Character, Reef> charToReef = new HashMap<Character, Reef>();
+  HashMap<Character, ReefHeight> charToReefHeight = new HashMap<Character, ReefHeight>();
+  HashMap<Character, SourceDistance> charToSourceDistance =
+      new HashMap<Character, SourceDistance>();
+
   public AutosBuilder(Superstructure superstructure) {
+    charToSource.put('R', Source.RIGHT);
+    charToSource.put('N', Source.LEFT);
+    charToReef.put('A', Reef.A);
+    charToReef.put('B', Reef.B);
+    charToReef.put('C', Reef.C);
+    charToReef.put('D', Reef.D);
+    charToReef.put('E', Reef.E);
+    charToReef.put('F', Reef.F);
+    charToReef.put('G', Reef.G);
+    charToReef.put('H', Reef.H);
+    charToReef.put('I', Reef.I);
+    charToReef.put('J', Reef.J);
+    charToReef.put('K', Reef.K);
+    charToReef.put('L', Reef.L);
+    charToReefHeight.put('2', ReefHeight.L2);
+    charToReefHeight.put('3', ReefHeight.L3);
+    charToReefHeight.put('4', ReefHeight.L4);
+    charToSourceDistance.put('F', SourceDistance.FAR);
+    charToSourceDistance.put('M', SourceDistance.MID);
+    charToSourceDistance.put('C', SourceDistance.CLOSE);
+
     this.superstructure = superstructure;
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
@@ -67,48 +95,12 @@ public class AutosBuilder {
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
       if (first) {
-        if (character == 'R') {
+        if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
-          source = Source.RIGHT;
-        } else if (character == 'N') {
-          nextCommand = NextCommand.SOURCE;
-          source = Source.LEFT;
-        } else if (character == 'A') {
+          source = charToSource.get(character);
+        } else if (charToReef.containsKey(character)) {
           nextCommand = NextCommand.PLACE;
-          reef = Reef.A;
-        } else if (character == 'B') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.B;
-        } else if (character == 'C') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.C;
-        } else if (character == 'D') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.D;
-        } else if (character == 'E') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.E;
-        } else if (character == 'F') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.F;
-        } else if (character == 'G') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.G;
-        } else if (character == 'H') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.H;
-        } else if (character == 'I') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.I;
-        } else if (character == 'J') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.J;
-        } else if (character == 'K') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.K;
-        } else if (character == 'L') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.L;
+          reef = charToReef.get(character);
         } else {
           return "Character at character "
               + (i + 1)
@@ -118,12 +110,8 @@ public class AutosBuilder {
         }
       } else {
         if (nextCommand == NextCommand.PLACE) {
-          if (character == '2') {
-            reefHeight = ReefHeight.L2;
-          } else if (character == '3') {
-            reefHeight = ReefHeight.L3;
-          } else if (character == '4') {
-            reefHeight = ReefHeight.L4;
+          if (charToReefHeight.containsKey(character)) {
+            reefHeight = charToReefHeight.get(character);
           } else {
             return "Character at character "
                 + (i + 1)
@@ -134,12 +122,8 @@ public class AutosBuilder {
                 + " which is invalid";
           }
         } else {
-          if (character == 'F') {
-            sourceDistance = SourceDistance.FAR;
-          } else if (character == 'M') {
-            sourceDistance = SourceDistance.MID;
-          } else if (character == 'C') {
-            sourceDistance = SourceDistance.CLOSE;
+          if (charToSourceDistance.containsKey(character)) {
+            sourceDistance = charToSourceDistance.get(character);
           } else {
             return "Character at character "
                 + (i + 1)
@@ -185,64 +169,20 @@ public class AutosBuilder {
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
       if (first) {
-        if (character == 'R') {
+        if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
-          source = Source.RIGHT;
-        } else if (character == 'N') {
-          nextCommand = NextCommand.SOURCE;
-          source = Source.LEFT;
-        } else if (character == 'A') {
+          source = charToSource.get(character);
+        } else if (charToReef.containsKey(character)) {
           nextCommand = NextCommand.PLACE;
-          reef = Reef.A;
-        } else if (character == 'B') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.B;
-        } else if (character == 'C') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.C;
-        } else if (character == 'D') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.D;
-        } else if (character == 'E') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.E;
-        } else if (character == 'F') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.F;
-        } else if (character == 'G') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.G;
-        } else if (character == 'H') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.H;
-        } else if (character == 'I') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.I;
-        } else if (character == 'J') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.J;
-        } else if (character == 'K') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.K;
-        } else if (character == 'L') {
-          nextCommand = NextCommand.PLACE;
-          reef = Reef.L;
+          reef = charToReef.get(character);
         } else {
           System.out.println("First half command wasn't real");
         }
       } else {
-        if (character == '2') {
-          reefHeight = ReefHeight.L2;
-        } else if (character == '3') {
-          reefHeight = ReefHeight.L3;
-        } else if (character == '4') {
-          reefHeight = ReefHeight.L4;
-        } else if (character == 'F') {
-          sourceDistance = SourceDistance.FAR;
-        } else if (character == 'M') {
-          sourceDistance = SourceDistance.MID;
-        } else if (character == 'C') {
-          sourceDistance = SourceDistance.CLOSE;
+        if (charToReefHeight.containsKey(character)) {
+          reefHeight = charToReefHeight.get(character);
+        } else if (charToSourceDistance.containsKey(character)) {
+          sourceDistance = charToSourceDistance.get(character);
         }
         commandList.add(getCommand(nextCommand, reef, reefHeight, source, sourceDistance));
       }
@@ -261,6 +201,10 @@ public class AutosBuilder {
       ReefHeight reefHeight,
       Source source,
       SourceDistance sourceDistance) {
+
+    if (nextCommand == null) {
+      return new Command() {};
+    }
     switch (nextCommand) {
       case PLACE:
         return createPlaceCommand(reef, reefHeight);
