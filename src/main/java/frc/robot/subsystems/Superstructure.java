@@ -1293,9 +1293,10 @@ public class Superstructure extends SubsystemBase {
           .plus(
               new Transform2d(
                   0.5,
-                  targetSourceSide == TargetSourceSide.FAR
-                      ? 0.6
-                      : targetSourceSide == TargetSourceSide.MIDDLE ? 0 : -0.6,
+                  (autoSourceIsLeft ? 1 : -1)
+                      * (targetSourceSide == TargetSourceSide.FAR
+                          ? 0.6
+                          : targetSourceSide == TargetSourceSide.MIDDLE ? 0 : -0.6),
                   new Rotation2d()));
     }
 
@@ -1315,11 +1316,12 @@ public class Superstructure extends SubsystemBase {
         .plus(
             new Transform2d(
                 0.5,
-                targetSourceSide == TargetSourceSide.FAR
-                    ? pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2 ? 0.6 : -0.6
-                    : targetSourceSide == TargetSourceSide.MIDDLE
-                        ? 0
-                        : pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2 ? -0.6 : 0.6,
+                (autoSourceIsLeft ? 1 : -1)
+                    * (targetSourceSide == TargetSourceSide.FAR
+                        ? pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2 ? 0.6 : -0.6
+                        : targetSourceSide == TargetSourceSide.MIDDLE
+                            ? 0
+                            : pose.getY() > FieldConstants.fieldWidth.in(Meters) / 2 ? -0.6 : 0.6),
                 new Rotation2d()));
   }
 
