@@ -57,6 +57,8 @@ public class Claw extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Claw", inputs);
 
+    Logger.recordOutput("why claw no works", isAtTarget());
+
     inputs.state = getState();
 
     if (inputs.hasAlgae
@@ -187,7 +189,7 @@ public class Claw extends SubsystemBase {
   @AutoLogOutput
   public boolean isAtTarget() {
     if (currentState == ClawStates.STOP) return true;
-    return inputs.angle.isNear(currentState.targetAngle, currentState.angleTolerance);
+    return inputs.angle.times(-1).isNear(currentState.targetAngle, currentState.angleTolerance);
   }
 
   public void setState(ClawStates state) {

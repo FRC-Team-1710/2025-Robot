@@ -916,7 +916,7 @@ public class Superstructure extends SubsystemBase {
               .getPose()
               .getTranslation()
               .getDistance(getBeforeReadyToGrabAlgaePose().getTranslation())
-          < Units.inchesToMeters(2.5)) {
+          < metersToElevatorUp) {
         elevator.setState(
             targetFace.isHighAlgae() ? ElevatorStates.ALGAE_HIGH : ElevatorStates.ALGAE_LOW);
         claw.setState(ClawStates.GRAB);
