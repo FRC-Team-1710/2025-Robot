@@ -108,7 +108,7 @@ public class Superstructure extends SubsystemBase {
   private ReefLevel targetLevel = ReefLevel.L4;
   private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
-  private TargetingMethod targetingMethod = TargetingMethod.ROTATION;
+  private TargetingMethod targetingMethod = TargetingMethod.DISTANCE;
 
   private TargetType targetingType = TargetType.CORAL;
 
@@ -122,7 +122,7 @@ public class Superstructure extends SubsystemBase {
 
   private double driverOverideAllignment = 0.25;
 
-  private final double metersToElevatorUp = 0.5;
+  private final double metersToElevatorUp = 0.25;
 
   private boolean autoSourceIsLeft = false;
 
