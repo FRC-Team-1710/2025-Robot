@@ -489,8 +489,9 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetRotation(
-            recentVisionMeasurement.poseEstimate().robotPose().getRotation());
+        io.resetPose(recentVisionMeasurement.poseEstimate().robotPose());
+        // poseEstimator.resetRotation(
+        //     recentVisionMeasurement.poseEstimate().robotPose().getRotation());
       }
     } catch (Error e) {
       Logger.recordOutput("Rotation Reset Error", e.toString());
