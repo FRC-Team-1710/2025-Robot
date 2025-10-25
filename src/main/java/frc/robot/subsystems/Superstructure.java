@@ -85,7 +85,7 @@ public class Superstructure extends SubsystemBase {
       new APConstraints()
           .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 75)
           .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 3)
-          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.02);
+          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.025);
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
