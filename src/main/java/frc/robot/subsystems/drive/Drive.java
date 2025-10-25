@@ -477,10 +477,13 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetTranslation(
-            recentVisionMeasurement.poseEstimate().robotPose().getTranslation());
+        Translation2d translation = recentVisionMeasurement.poseEstimate().robotPose().getTranslation();
+        poseEstimator.resetTranslation(translation);
+        io.resetPose(new Pose2d(translation, poseEstimator.getEstimatedPosition().getRotation()));
       }
     } catch (Error e) {
+      poseEstimator.resetPose(Pose2d.kZero);
+      io.resetPose(Pose2d.kZero);
       Logger.recordOutput("Translation Reset Error", e.toString());
     }
   }
@@ -489,10 +492,14 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetRotation(
-            recentVisionMeasurement.poseEstimate().robotPose().getRotation());
+        Rotation2d rotation = recentVisionMeasurement.poseEstimate().robotPose().getRotation();
+        poseEstimator.resetRotation(rotation);
+        io.resetPose(new Pose2d(poseEstimator.getEstimatedPosition().getTranslation(), rotation));
       }
     } catch (Error e) {
+      poseEstimator.resetPose(Pose2d.kZero);
+      io.resetPose(Pose2d.kZero);
+      System.out.println(e.toString());
       Logger.recordOutput("Rotation Reset Error", e.toString());
     }
   }
@@ -501,9 +508,13 @@ public class Drive extends SubsystemBase {
     // Just in case this doesn't work (it should)
     try {
       if (recentVisionMeasurement != null) {
-        poseEstimator.resetPose(recentVisionMeasurement.poseEstimate().robotPose());
+        Pose2d pose = recentVisionMeasurement.poseEstimate().robotPose();
+        poseEstimator.resetPose(pose);
+        io.resetPose(pose);
       }
     } catch (Error e) {
+      poseEstimator.resetPose(Pose2d.kZero);
+      io.resetPose(Pose2d.kZero);
       Logger.recordOutput("Pose Reset Error", e.toString());
     }
   }
