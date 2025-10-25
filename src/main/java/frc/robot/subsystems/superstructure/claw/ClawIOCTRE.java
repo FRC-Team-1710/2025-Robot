@@ -8,6 +8,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -30,15 +31,15 @@ public class ClawIOCTRE implements ClawIO {
   private boolean rollerLocked = false;
   private boolean hasZeroed = false;
 
-  private double kP = 0.25;
+  private double kP = 0.0;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
   private double kG = 0.0;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kacel = 750;
-  private double kvel = 250;
+  private double kAcel = 15;
+  private double kVel = 20;
 
   private double RollerkP = 3;
   private double RollerkI = 0.0;
@@ -48,11 +49,14 @@ public class ClawIOCTRE implements ClawIO {
   public final TalonFX rollers = new TalonFX(52);
 
   private final PIDController rollerPID = new PIDController(RollerkP, RollerkI, RollerkD);
-  private final ProfiledPIDController wristPID =
-      new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
-  private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
+  // private final ProfiledPIDController wristPID =
+  //     new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
+  // private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
+
+  private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
   private final StatusSignal<Angle> wristPosition = wrist.getPosition();
+  private final StatusSignal<Double> wristRefrence = wrist.getClosedLoopReference();
   private final StatusSignal<AngularVelocity> wristVelocity = wrist.getVelocity();
   private final StatusSignal<Voltage> wristAppliedVolts = wrist.getMotorVoltage();
   private final StatusSignal<Current> wristStatorCurrent = wrist.getStatorCurrent();
@@ -69,29 +73,37 @@ public class ClawIOCTRE implements ClawIO {
   private double wristManual = 0.0;
   private double runPercent = 0.0;
 
-  TalonFXConfiguration config = new TalonFXConfiguration();
+  TalonFXConfiguration config2 = new TalonFXConfiguration();
 
   public ClawIOCTRE() {
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    wrist.getConfigurator().apply(config);
-    rollers.getConfigurator().apply(config);
-
-    wrist.setPosition(0);
-
+    
     if (Constants.useSmartDashboard) {
       SmartDashboard.putNumber("Claw/PID/P", kP);
       SmartDashboard.putNumber("Claw/PID/I", kI);
       SmartDashboard.putNumber("Claw/PID/D", kD);
-
+      SmartDashboard.putNumber("Claw/PID/S", kS);
+      SmartDashboard.putNumber("Claw/PID/G", kG);
+      SmartDashboard.putNumber("Claw/PID/V", kV);
+      SmartDashboard.putNumber("Claw/PID/A", kA);
+      SmartDashboard.putNumber("Claw/PID/Vel", kVel);
+      SmartDashboard.putNumber("Claw/PID/Acel", kAcel);
+      
       SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
       SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
       SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
     }
 
+    config2.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config2.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    wrist.getConfigurator().apply(createMotorConfiguration());
+    rollers.getConfigurator().apply(config2);
+
+    wrist.setPosition(0);
+
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         wristPosition,
+        wristRefrence,
         wristVelocity,
         wristStatorCurrent,
         wristSupplyCurrent,
@@ -99,16 +111,44 @@ public class ClawIOCTRE implements ClawIO {
         intakeAppliedVolts,
         intakeStatorCurrent,
         intakeSupplyCurrent);
+  }
 
-    wristPID.setGoal(0);
+  private TalonFXConfiguration createMotorConfiguration() {
+    var config = new TalonFXConfiguration();
+    if (Constants.useSmartDashboard) {
+      config.Slot0.kP = SmartDashboard.getNumber("Claw/PID/P", kP);
+      config.Slot0.kI = SmartDashboard.getNumber("Claw/PID/I", kI);
+      config.Slot0.kD = SmartDashboard.getNumber("Claw/PID/D", kD);
+      config.Slot0.kS = SmartDashboard.getNumber("Claw/PID/S", kS);
+      config.Slot0.kG = SmartDashboard.getNumber("Claw/PID/G", kG);
+      config.Slot0.kV = SmartDashboard.getNumber("Claw/PID/V", kV);
+      config.Slot0.kA = SmartDashboard.getNumber("Claw/PID/A", kA);
+      config.MotionMagic.MotionMagicAcceleration =
+          SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
+      config.MotionMagic.MotionMagicCruiseVelocity =
+          SmartDashboard.getNumber("Claw/PID/Vel", kVel);
+    } else {
+      config.Slot0.kP = kP;
+      config.Slot0.kI = kI;
+      config.Slot0.kD = kD;
+      config.Slot0.kS = kS;
+      config.Slot0.kG = kG;
+      config.Slot0.kV = kV;
+      config.Slot0.kA = kA;
+      config.MotionMagic.MotionMagicAcceleration = kAcel;
+      config.MotionMagic.MotionMagicCruiseVelocity = kVel;
+    }
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    return config;
   }
 
   @Override
   public void updateInputs(ClawIOInputs inputs) {
     StatusCode wristStatus =
         BaseStatusSignal.refreshAll(
-            wristPosition,
-            wristVelocity,
+          wristPosition,
+          wristRefrence,
+          wristVelocity,
             wristAppliedVolts,
             wristStatorCurrent,
             wristSupplyCurrent);
@@ -149,20 +189,20 @@ public class ClawIOCTRE implements ClawIO {
     if (Constants.useSmartDashboard) {
       tempPIDTuning();
 
-      SmartDashboard.putNumber("Claw/PIDSetpoint", wristPID.getSetpoint().position);
-      SmartDashboard.putNumber("Claw/PIDGoal", wristPID.getGoal().position);
-      SmartDashboard.putNumber("Claw/PIDPosition", inputs.angle.magnitude());
+      SmartDashboard.putNumber("Claw Inches", wrist.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber(
+          "Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
     }
 
-    if (locked) {
-      if (inputs.killSwich) {
-        wrist.stopMotor();
-      } else {
-        wrist.setVoltage(
-            wristPID.calculate(inputs.angle.magnitude())
-                + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
-      }
-    }
+    // if (locked) {
+    //   if (inputs.killSwich) {
+    //     wrist.stopMotor();
+    //   } else {
+    //     wrist.setVoltage(
+    //         wristPID.calculate(inputs.angle.magnitude())
+    //             + wristFF.calculate(inputs.angle.in(Radians), wristPID.getSetpoint().velocity));
+    //   }
+    // }
 
     if (rollerLocked) {
       rollers.setVoltage(rollerPID.calculate(inputs.rollerPosition));
@@ -174,21 +214,21 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void setAngle(Angle angle) {
     setAngle = angle;
-    wristPID.setGoal(angle.magnitude());
+    wrist.setControl(request.withPosition(angle.times(GEAR_RATIO)));
     locked = true;
   }
 
   @Override
   public void zero() {
-    wrist.setPosition(0);
-    wristPID.reset(0);
-    hasZeroed = true;
+    // wrist.setPosition(0);
+    // wristPID.reset(0);
+    // hasZeroed = true;
   }
 
   @Override
   public void setBrake(boolean lock) {
-    config.MotorOutput.NeutralMode = lock ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    rollers.getConfigurator().apply(config);
+    // config.MotorOutput.NeutralMode = lock ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    // rollers.getConfigurator().apply(config);
   }
 
   @Override
@@ -199,16 +239,16 @@ public class ClawIOCTRE implements ClawIO {
 
   @Override
   public void stopHere() {
-    wristPID.reset(((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO)), 0);
-    setAngle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
-    locked = true;
+    // wristPID.reset(((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO)), 0);
+    // setAngle = Degrees.of((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO));
+    // locked = true;
   }
 
   @Override
   public void wristManual(double power) {
-    locked = false;
-    wristManual = power;
-    wrist.setVoltage(wristManual);
+    // locked = false;
+    // wristManual = power;
+    // wrist.setVoltage(wristManual);
   }
 
   @Override
@@ -220,23 +260,13 @@ public class ClawIOCTRE implements ClawIO {
 
   @Override
   public void zeroPIDToAngle() {
-    wristPID.reset((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO), 0);
+    // wristPID.reset((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO), 0);
   }
 
   private void tempPIDTuning() {
-    if (kP != SmartDashboard.getNumber("Claw/PID/P", kP)) {
-      kP = SmartDashboard.getNumber("Claw/PID/P", kP);
-      wristPID.setP(kP);
-    }
-
-    if (kI != SmartDashboard.getNumber("Claw/PID/I", kI)) {
-      kI = SmartDashboard.getNumber("Claw/PID/I", kI);
-      wristPID.setI(kI);
-    }
-
-    if (kD != SmartDashboard.getNumber("Claw/PID/D", kD)) {
-      kD = SmartDashboard.getNumber("Claw/PID/D", kD);
-      wristPID.setD(kD);
+    if (SmartDashboard.getBoolean("Claw/PID/OMG", false)) {
+      SmartDashboard.putBoolean("Claw/PID/OMG", false);
+      wrist.getConfigurator().apply(createMotorConfiguration());
     }
 
     if (RollerkP != SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP)) {
