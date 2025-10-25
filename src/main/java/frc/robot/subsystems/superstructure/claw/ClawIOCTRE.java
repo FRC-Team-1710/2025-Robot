@@ -2,7 +2,6 @@ package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -12,11 +11,8 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -31,15 +27,15 @@ public class ClawIOCTRE implements ClawIO {
   private boolean rollerLocked = false;
   private boolean hasZeroed = false;
 
-  private double kP = 0.0;
+  private double kP = 1.5;
   private double kI = 0.0;
   private double kD = 0.0;
   private double kS = 0.0;
   private double kG = 0.0;
   private double kV = 0.0;
   private double kA = 0.0;
-  private double kAcel = 15;
-  private double kVel = 20;
+  private double kAcel = 65;
+  private double kVel = 85;
 
   private double RollerkP = 3;
   private double RollerkI = 0.0;
@@ -76,8 +72,9 @@ public class ClawIOCTRE implements ClawIO {
   TalonFXConfiguration config2 = new TalonFXConfiguration();
 
   public ClawIOCTRE() {
-    
+
     if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("Claw/PID/OMG", false);
       SmartDashboard.putNumber("Claw/PID/P", kP);
       SmartDashboard.putNumber("Claw/PID/I", kI);
       SmartDashboard.putNumber("Claw/PID/D", kD);
@@ -87,7 +84,7 @@ public class ClawIOCTRE implements ClawIO {
       SmartDashboard.putNumber("Claw/PID/A", kA);
       SmartDashboard.putNumber("Claw/PID/Vel", kVel);
       SmartDashboard.putNumber("Claw/PID/Acel", kAcel);
-      
+
       SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
       SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
       SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
@@ -123,10 +120,8 @@ public class ClawIOCTRE implements ClawIO {
       config.Slot0.kG = SmartDashboard.getNumber("Claw/PID/G", kG);
       config.Slot0.kV = SmartDashboard.getNumber("Claw/PID/V", kV);
       config.Slot0.kA = SmartDashboard.getNumber("Claw/PID/A", kA);
-      config.MotionMagic.MotionMagicAcceleration =
-          SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
-      config.MotionMagic.MotionMagicCruiseVelocity =
-          SmartDashboard.getNumber("Claw/PID/Vel", kVel);
+      config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
+      config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Claw/PID/Vel", kVel);
     } else {
       config.Slot0.kP = kP;
       config.Slot0.kI = kI;
@@ -146,9 +141,9 @@ public class ClawIOCTRE implements ClawIO {
   public void updateInputs(ClawIOInputs inputs) {
     StatusCode wristStatus =
         BaseStatusSignal.refreshAll(
-          wristPosition,
-          wristRefrence,
-          wristVelocity,
+            wristPosition,
+            wristRefrence,
+            wristVelocity,
             wristAppliedVolts,
             wristStatorCurrent,
             wristSupplyCurrent);
@@ -190,8 +185,7 @@ public class ClawIOCTRE implements ClawIO {
       tempPIDTuning();
 
       SmartDashboard.putNumber("Claw Inches", wrist.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber(
-          "Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
+      SmartDashboard.putNumber("Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
     }
 
     // if (locked) {
@@ -214,7 +208,7 @@ public class ClawIOCTRE implements ClawIO {
   @Override
   public void setAngle(Angle angle) {
     setAngle = angle;
-    wrist.setControl(request.withPosition(angle.times(GEAR_RATIO)));
+    wrist.setControl(request.withPosition(angle.times(-GEAR_RATIO)));
     locked = true;
   }
 
