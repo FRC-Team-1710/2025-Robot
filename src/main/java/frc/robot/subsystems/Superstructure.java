@@ -977,7 +977,7 @@ public class Superstructure extends SubsystemBase {
                 .getDegrees());
     applyDrive(
         Rotation2d.fromDegrees(
-            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 35 : -35) : (angle1 <= angle2 ? 35 : -35)));
   }
 
   private void scoreAlgaeProcessor() {
@@ -1013,7 +1013,7 @@ public class Superstructure extends SubsystemBase {
                 .getDegrees());
     applyDrive(
         Rotation2d.fromDegrees(
-            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 35 : -35) : (angle1 <= angle2 ? 35 : -35)));
   }
 
   private void moveAlgaeToProcessorPosition() {
