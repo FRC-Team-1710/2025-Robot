@@ -270,10 +270,11 @@ public class RobotContainer {
 
     autosBuilder = new AutosBuilder(superstructure);
 
+    // Zero gyro while dissabled and sees tags :)
     driver
         .rightStick()
         .and(driver.leftStick())
-        .onTrue(Commands.runOnce(() -> drivetrain.poseWithVisionRotation()).ignoringDisable(true));
+        .onTrue(Commands.runOnce(() -> drivetrain.poseWithVisionPose()).ignoringDisable(true));
 
     if (Constants.babyControlMode) {
       configureBabyBindings();
