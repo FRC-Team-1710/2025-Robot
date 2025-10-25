@@ -63,7 +63,7 @@ public class Climber extends SubsystemBase {
         climber.stopMotor();
         break;
       case OUT:
-        if (getPosition() > 2.3) {
+        if (getPosition() > 2.1) {
           climber.stopMotor();
         } else {
           climber.set(0.8);
