@@ -102,7 +102,8 @@ public class RobotContainer {
   private final Trigger l4Button = new Trigger(() -> reefTargetingSystem.getY() < -.5);
   private final Trigger l3Button = new Trigger(() -> reefTargetingSystem.getY() > .5);
   private final Trigger l2Button = new Trigger(() -> reefTargetingSystem.getX() > .5);
-//   private final Trigger l1Button = new Trigger(() -> reefTargetingSystem.getX() < -.5);
+
+  //   private final Trigger l1Button = new Trigger(() -> reefTargetingSystem.getX() < -.5);
 
   public RobotContainer() {
     climber = new Climber();
@@ -457,7 +458,8 @@ public class RobotContainer {
     l2Button.onTrue(
         Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)).ignoringDisable(true));
     // l1Button.onTrue(
-    //     Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L1)).ignoringDisable(true));
+    //     Commands.runOnce(() ->
+    // superstructure.setTargetLevel(ReefLevel.L1)).ignoringDisable(true));
   }
 
   private void configureNotBabyBindings() {
@@ -701,7 +703,8 @@ public class RobotContainer {
     l2Button.onTrue(
         Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L2)).ignoringDisable(true));
     // l1Button.onTrue(
-    //     Commands.runOnce(() -> superstructure.setTargetLevel(ReefLevel.L1)).ignoringDisable(true));
+    //     Commands.runOnce(() ->
+    // superstructure.setTargetLevel(ReefLevel.L1)).ignoringDisable(true));
   }
 
   public void setAlliance(boolean alliance) {
