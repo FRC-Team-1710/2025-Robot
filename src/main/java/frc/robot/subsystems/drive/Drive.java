@@ -488,6 +488,24 @@ public class Drive extends SubsystemBase {
 
   public record VisionParameters(Pose2d robotPose, AngularVelocity gyroRate) {}
 
+  public void poseWithVisionRotation() {
+    // Just in case this doesn't work (it should)
+    try {
+      if (recentVisionMeasurement != null) {
+        Rotation2d rotation =
+            recentVisionMeasurement.poseEstimate().pose().getRotation().toRotation2d();
+        poseEstimator.resetRotation(rotation);
+        io.resetPose(new Pose2d(poseEstimator.getEstimatedPosition().getTranslation(), rotation));
+      }
+    } catch (Error e) {
+      if (estimatorTrigger.getAsBoolean()) {
+        poseEstimator.resetPose(Pose2d.kZero);
+      }
+      io.resetPose(Pose2d.kZero);
+      Logger.recordOutput("Rotation Reset Error", e.toString());
+    }
+  }
+
   public void poseWithVisionTranslation() {
     // Just in case this doesn't work (it should)
     try {
@@ -498,7 +516,9 @@ public class Drive extends SubsystemBase {
         io.resetPose(new Pose2d(translation, poseEstimator.getEstimatedPosition().getRotation()));
       }
     } catch (Error e) {
-      poseEstimator.resetPose(Pose2d.kZero);
+      if (estimatorTrigger.getAsBoolean()) {
+        poseEstimator.resetPose(Pose2d.kZero);
+      }
       io.resetPose(Pose2d.kZero);
       Logger.recordOutput("Translation Reset Error", e.toString());
     }
