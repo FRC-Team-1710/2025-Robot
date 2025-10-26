@@ -100,11 +100,13 @@ public class Manipulator extends SubsystemBase {
   }
 
   public void advanceGamePiece() {
-    currentCoralState =
-        switch (currentCoralState) {
-          case NONE -> CurrentCoralState.DETECTS;
-          case DETECTS -> CurrentCoralState.SECURED;
-          case SECURED -> CurrentCoralState.NONE;
-        };
+    if (Constants.currentMode == Mode.SIM) {
+      currentCoralState =
+          switch (currentCoralState) {
+            case NONE -> CurrentCoralState.DETECTS;
+            case DETECTS -> CurrentCoralState.SECURED;
+            case SECURED -> CurrentCoralState.NONE;
+          };
+    }
   }
 }

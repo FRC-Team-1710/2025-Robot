@@ -42,7 +42,7 @@ public class AutosBuilder {
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
     autoChooser.addDefaultOption("IDLE", Auto.IDLE);
     autoChooser.addDefaultOption("E4RFD4RFC4RMB4", Auto.E4RFD4RFC4RMB4);
-    autoChooser.addDefaultOption("J4NFK4NFL4NMA4", Auto.J4NFK4NFL4NMA4);
+    autoChooser.addDefaultOption("J4NFK4NFL4NF", Auto.J4NFK4NFL4NF);
     autoChooser.addOption("CUSTOM", Auto.CUSTOM);
 
     Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
@@ -294,8 +294,9 @@ public class AutosBuilder {
 
   public enum Auto {
     IDLE,
+    J4NFK4NFL4NF,
     E4RFD4RFC4RMB4,
-    J4NFK4NFL4NMA4,
+    // J4NFK4NFL4NMA4,
     CUSTOM,
   }
 

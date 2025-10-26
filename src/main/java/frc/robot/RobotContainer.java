@@ -579,25 +579,28 @@ public class RobotContainer {
         .b()
         .onTrue(Commands.runOnce(() -> superstructure.toggleTargetType()).ignoringDisable(true));
 
-    driver
-        .povUp()
-        .onTrue(
-            superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
+    // driver
+    //     .povUp()
+    //     .onTrue(
+    //
+    // superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
-        .povLeft()
+        .povUp()
         .onTrue(superstructure.setWantedStateCommand(WantedState.PRE_CLIMB).ignoringDisable(true));
 
     driver
-        .povRight()
+        .povDown()
         .onTrue(superstructure.setWantedStateCommand(WantedState.CLIMB).ignoringDisable(true));
 
-    driver
-        .povDown()
-        .and(driver.povRight())
-        .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1).ignoringDisable(true))
-        .onFalse(
-            superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
+    // driver
+    //     .povDown()
+    //     .and(driver.povRight())
+    //
+    // .onTrue(superstructure.setWantedStateCommand(WantedState.MANUAL_L1).ignoringDisable(true))
+    //     .onFalse(
+    //
+    // superstructure.setWantedStateCommand(WantedState.DEFAULT_STATE).ignoringDisable(true));
 
     driver
         .povLeft()

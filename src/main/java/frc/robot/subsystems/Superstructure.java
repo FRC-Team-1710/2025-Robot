@@ -108,7 +108,7 @@ public class Superstructure extends SubsystemBase {
   private ReefLevel targetLevel = ReefLevel.L4;
   private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
-  private TargetingMethod targetingMethod = TargetingMethod.ROTATION;
+  private TargetingMethod targetingMethod = TargetingMethod.DISTANCE;
 
   private TargetType targetingType = TargetType.CORAL;
 
@@ -122,7 +122,7 @@ public class Superstructure extends SubsystemBase {
 
   private double driverOverideAllignment = 0.25;
 
-  private final double metersToElevatorUp = 1;
+  private final double metersToElevatorUp = 0.25;
 
   private boolean autoSourceIsLeft = false;
 
@@ -826,7 +826,7 @@ public class Superstructure extends SubsystemBase {
     funnel.setState(FunnelState.OFF);
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
-    if (ejectTimer.hasElapsed(0.5)) {
+    if (ejectTimer.hasElapsed(0.25)) {
       currentAlignTarget = AlignTarget.AP;
       applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
     } else {
@@ -838,7 +838,7 @@ public class Superstructure extends SubsystemBase {
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
-      if (ejectTimer.hasElapsed(1)) {
+      if (ejectTimer.hasElapsed(0.5)) {
         setWantedState(WantedState.DEFAULT_STATE);
       }
     }
@@ -977,7 +977,7 @@ public class Superstructure extends SubsystemBase {
                 .getDegrees());
     applyDrive(
         Rotation2d.fromDegrees(
-            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 35 : -35) : (angle1 <= angle2 ? 35 : -35)));
   }
 
   private void scoreAlgaeProcessor() {
@@ -1013,7 +1013,7 @@ public class Superstructure extends SubsystemBase {
                 .getDegrees());
     applyDrive(
         Rotation2d.fromDegrees(
-            isRedAlliance ? 180 + (angle1 <= angle2 ? 45 : -45) : (angle1 <= angle2 ? 45 : -45)));
+            isRedAlliance ? 180 + (angle1 <= angle2 ? 35 : -35) : (angle1 <= angle2 ? 35 : -35)));
   }
 
   private void moveAlgaeToProcessorPosition() {

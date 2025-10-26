@@ -202,11 +202,13 @@ public class Claw extends SubsystemBase {
   }
 
   public void advanceGamePiece() {
-    currentAlgaeState =
-        switch (currentAlgaeState) {
-          case NONE -> CurrentAlgaeState.HAS_ALGAE;
-          case HAS_ALGAE -> CurrentAlgaeState.NONE;
-        };
+    if (Constants.currentMode == Mode.SIM) {
+      currentAlgaeState =
+          switch (currentAlgaeState) {
+            case NONE -> CurrentAlgaeState.HAS_ALGAE;
+            case HAS_ALGAE -> CurrentAlgaeState.NONE;
+          };
+    }
   }
 
   public enum CurrentAlgaeState {

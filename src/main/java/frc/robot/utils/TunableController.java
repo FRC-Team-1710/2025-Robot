@@ -3,7 +3,6 @@ package frc.robot.utils;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants;
 
 /**
  * A customizable Xbox controller that provides various input scaling options. This class extends
@@ -53,10 +52,7 @@ public class TunableController extends CommandXboxController {
    *     magnitude is guaranteed to be between 0 and 1.
    */
   public Translation2d customLeft() {
-    return getCustom(
-        Math.copySign(Math.pow(getLeftX(), 2), getLeftX()) * (Constants.babyControlMode ? 0.75 : 1),
-        Math.copySign(Math.pow(getLeftY(), 2), getLeftY())
-            * (Constants.babyControlMode ? 0.75 : 1));
+    return getCustom(getLeftX(), getLeftY());
   }
 
   /**
@@ -66,11 +62,7 @@ public class TunableController extends CommandXboxController {
    *     magnitude is guaranteed to be between 0 and 1.
    */
   public Translation2d customRight() {
-    return getCustom(
-        Math.copySign(Math.pow(getRightX(), 2), getRightX())
-            * (Constants.babyControlMode ? 0.75 : 1),
-        Math.copySign(Math.pow(getRightY(), 2), getRightY())
-            * (Constants.babyControlMode ? 0.75 : 1));
+    return getCustom(getRightX(), getRightY());
   }
 
   /**
