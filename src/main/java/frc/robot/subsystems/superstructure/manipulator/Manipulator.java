@@ -4,9 +4,10 @@
 
 package frc.robot.subsystems.superstructure.manipulator;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -14,53 +15,98 @@ public class Manipulator extends SubsystemBase {
   private final ManipulatorIOInputsAutoLogged inputs;
   private final ManipulatorIO io;
 
-  private static boolean hasCoral;
+  private ManipulatorStates currentState = ManipulatorStates.OFF;
+  private CurrentCoralState currentCoralState = CurrentCoralState.NONE;
+
+  private final BooleanSupplier ejectBoolean;
 
   /** Creates a new Claw. */
-  public Manipulator(ManipulatorIO io) {
-    SmartDashboard.putNumber("Coral/x", 0);
-    SmartDashboard.putNumber("Coral/y", 0);
-    SmartDashboard.putNumber("Coral/z", 0);
-    SmartDashboard.putNumber("Coral/roll", 0);
-    SmartDashboard.putNumber("Coral/pitch", 0);
-    SmartDashboard.putNumber("Coral/yaw", 0);
-    SimCoral.start();
+  public Manipulator(ManipulatorIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
     this.inputs = new ManipulatorIOInputsAutoLogged();
-    hasCoral = beam2Broken() && !beam1Broken();
+    this.ejectBoolean = bumpBoolean;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Manipulator", inputs);
+
+    if (ejectBoolean.getAsBoolean()) {
+      io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
+    } else {
+      switch (currentState) {
+        case OFF:
+          if (hasCoral() || !detectsCoral()) {
+            io.setVoltage(0);
+          } else if (detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.insideSpeed * 12);
+          }
+          break;
+        case INTAKE:
+          if (hasCoral()) {
+            io.setVoltage(0);
+          } else if (!detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.intakeSpeed * 12);
+          } else if (detectsCoral()) {
+            io.setVoltage(ManipulatorConstants.insideSpeed * 12);
+          }
+          break;
+        case OUTTAKE:
+          io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
+          break;
+        default:
+          break;
+      }
+    }
   }
 
-  // Sim
-  public void runPercent(double percent) {
-    SmartDashboard.putNumber("Manipulator/ClawPercent", percent);
-    io.setVoltage(percent * 12);
+  public enum ManipulatorStates {
+    OFF(),
+    INTAKE(),
+    OUTTAKE()
+  }
+
+  public enum CurrentCoralState {
+    NONE(),
+    DETECTS(),
+    SECURED()
+  }
+
+  public void setState(ManipulatorStates state) {
+    this.currentState = state;
   }
 
   @AutoLogOutput
   public boolean hasCoral() {
-    if (Constants.currentMode == Constants.Mode.SIM) return hasCoral;
-    else return beam2Broken() && !beam1Broken();
+    return Constants.currentMode == Mode.SIM
+        ? (currentCoralState == CurrentCoralState.SECURED)
+        : (inputs.beam2Broken && !inputs.beam1Broken);
   }
 
-  public void toggleCoralStatus() {
-    hasCoral = !hasCoral;
+  @AutoLogOutput
+  public boolean almostHasCoral() {
+    return Constants.currentMode == Mode.SIM
+        ? (currentCoralState == CurrentCoralState.SECURED)
+        : (inputs.beam2Broken && inputs.beam1Broken);
   }
 
-  /*Boolean */
-  public boolean beam1Broken() {
-    SmartDashboard.putBoolean("Manipulator/Beam1 Broken?", inputs.beam1Broken);
-    return inputs.beam1Broken;
+  @AutoLogOutput
+  public boolean detectsCoral() {
+    return Constants.currentMode == Mode.SIM
+        ? (currentCoralState == CurrentCoralState.DETECTS
+            || currentCoralState == CurrentCoralState.SECURED)
+        : (inputs.beam2Broken || inputs.beam1Broken);
   }
 
-  /*Boolean */
-  public boolean beam2Broken() {
-    SmartDashboard.putBoolean("Manipulator/Beam2 Broken?", inputs.beam2Broken);
-    return inputs.beam2Broken;
+  public void advanceGamePiece() {
+    if (Constants.currentMode == Mode.SIM) {
+      currentCoralState =
+          switch (currentCoralState) {
+            case NONE -> CurrentCoralState.DETECTS;
+            case DETECTS -> CurrentCoralState.SECURED;
+            case SECURED -> CurrentCoralState.NONE;
+          };
+    }
   }
 }

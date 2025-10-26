@@ -1,5 +1,8 @@
 package frc.robot.subsystems.superstructure.elevator;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
+
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.LinearSystem;
@@ -19,6 +22,8 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.Constants;
+import frc.robot.utils.Conversions;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.*;
 
@@ -46,12 +51,17 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       new ProfiledPIDController(kP, kI, kD, m_Constraints);
   private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
   private final DCMotor m_elevatorGearbox = DCMotor.getKrakenX60(2);
+
+  @SuppressWarnings("rawtypes")
   private final LinearSystem elesys =
       LinearSystemId.createElevatorSystem(
           m_elevatorGearbox, Units.lbsToKilograms(5.5), Units.inchesToMeters(2.383), 6);
+
+  @SuppressWarnings("unchecked")
   private final ElevatorSim m_ElevatorSim =
       new ElevatorSim(
           elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, Units.inchesToMeters(1));
+
   private final Encoder enc = new Encoder(4, 5);
   private final EncoderSim m_EncoderSim = new EncoderSim(enc);
   private final PWMTalonFX pwmTalonFX = new PWMTalonFX(10);
@@ -92,15 +102,17 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_secondStage2d.setColor(new Color8Bit(Color.kSteelBlue));
     enc.setDistancePerPulse((2 * Math.PI * Units.inchesToMeters(2.383)) / 4096);
     Logger.recordOutput("Elevator Sim", m_mech2d);
-    SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
-    SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
-    SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
-    SmartDashboard.putNumber("ElevatorSIM/PID/S", kS);
-    SmartDashboard.putNumber("ElevatorSIM/PID/G", kG);
-    SmartDashboard.putNumber("ElevatorSIM/PID/V", kV);
-    SmartDashboard.putNumber("ElevatorSIM/PID/A", kA);
-    SmartDashboard.putNumber("ElevatorSIM/PID/Acel", kAcel);
-    SmartDashboard.putNumber("ElevatorSIM/PID/Vel", kVel);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("ElevatorSIM/PID/P", kP);
+      SmartDashboard.putNumber("ElevatorSIM/PID/I", kI);
+      SmartDashboard.putNumber("ElevatorSIM/PID/D", kD);
+      SmartDashboard.putNumber("ElevatorSIM/PID/S", kS);
+      SmartDashboard.putNumber("ElevatorSIM/PID/G", kG);
+      SmartDashboard.putNumber("ElevatorSIM/PID/V", kV);
+      SmartDashboard.putNumber("ElevatorSIM/PID/A", kA);
+      SmartDashboard.putNumber("ElevatorSIM/PID/Acel", kAcel);
+      SmartDashboard.putNumber("ElevatorSIM/PID/Vel", kVel);
+    }
   }
 
   /**
@@ -111,9 +123,10 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     super.updateInputs(inputs);
-    inputs.elevatorDistance =
-        Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
-    tempPIDTuning();
+    inputs.distance = Distance.ofRelativeUnits(enc.getDistance(), edu.wpi.first.units.Units.Inches);
+    if (Constants.useSmartDashboard) {
+      tempPIDTuning();
+    }
     m_elevatorMechSecondStage2d.setLength(
         enc.getDistance() > 0
             ? Units.inchesToMeters(enc.getDistance())
@@ -125,7 +138,10 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
     m_ElevatorSim.setInput(m_mototsim.getSpeed() * RobotController.getBatteryVoltage());
     m_ElevatorSim.update(0.020);
     m_EncoderSim.setDistance(Units.metersToInches(m_ElevatorSim.getPositionMeters()));
-    elevatorPID.setGoal(inputs.elevatorSetpoint.magnitude());
+    elevatorPID.setGoal(
+        Conversions.rotationsToDistance(
+                Rotations.of(inputs.setpoint), GEAR_RATIO, ElevatorIOCTRE.elevatorRadius)
+            .in(Inches));
     if (inputs.manual != 0) {
       pwmTalonFX.set(inputs.manual);
     } else {

@@ -7,7 +7,6 @@
 package frc.robot.subsystems.superstructure.funnel;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,12 +23,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import frc.robot.utils.Conversions;
-import java.io.File;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -46,8 +44,6 @@ public class FunnelIOCTRE implements FunnelIO {
   /** The leader TalonFX motor controller (CAN ID: 20) */
   public final TalonFX leader = new TalonFX(31);
 
-  /** The follower TalonFX motor controller (CAN ID: 21) */
-  // public final TalonFX follower = new TalonFX(32);
   /** The follower TalonFX motor controller (CAN ID: 21) */
   public final TalonFX angleMotor = new TalonFX(30);
 
@@ -72,9 +68,6 @@ public class FunnelIOCTRE implements FunnelIO {
   private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
   private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
   private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
-  // private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-  // private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-  // private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
   private final StatusSignal<Angle> angleMotorPosition = angleMotor.getPosition();
   private final StatusSignal<AngularVelocity> angleMotorVelocity = angleMotor.getVelocity();
   private final StatusSignal<Voltage> angleMotorAppliedVolts = angleMotor.getMotorVoltage();
@@ -87,12 +80,9 @@ public class FunnelIOCTRE implements FunnelIO {
 
   // Debouncers for connection status (filters out brief disconnections)
   private final Debouncer leaderDebounce = new Debouncer(0.5);
-  private final Debouncer followerDebounce = new Debouncer(0.5);
   private final Debouncer angleMotorDebounce = new Debouncer(0.5);
 
   public Timer timer = new Timer();
-
-  public Orchestra m_orchestra = new Orchestra();
 
   /**
    * Constructs a new ArmIOCTRE instance and initializes all hardware components. This includes
@@ -120,17 +110,6 @@ public class FunnelIOCTRE implements FunnelIO {
     anglePID = new ProfiledPIDController(kP, kI, kD, constraints);
     angleFF = new ArmFeedforward(kS, kG, kV, kA);
 
-    var status =
-        m_orchestra.loadMusic(
-            Filesystem.getDeployDirectory()
-                .toPath()
-                .resolve("orchestra" + File.separator + "dangerzone.chrp")
-                .toString());
-
-    m_orchestra.addInstrument(leader, 0);
-    // m_orchestra.addInstrument(follower, 1);
-    m_orchestra.addInstrument(angleMotor, 2);
-
     // Configure update frequencies for all status signals
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, // 50Hz update rate
@@ -138,10 +117,7 @@ public class FunnelIOCTRE implements FunnelIO {
         leaderVelocity,
         leaderAppliedVolts,
         leaderStatorCurrent,
-        // followerStatorCurrent,
-        // followerVelocity,
         leaderSupplyCurrent,
-        // followerSupplyCurrent,
         angleMotorPosition,
         angleMotorVelocity,
         angleMotorAppliedVolts,
@@ -150,33 +126,23 @@ public class FunnelIOCTRE implements FunnelIO {
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
-    // follower.optimizeBusUtilization(4, 0.1);
     angleMotor.optimizeBusUtilization(4, 0.1);
 
-    SmartDashboard.putNumber("Funnel/PID/P", kP);
-    SmartDashboard.putNumber("Funnel/PID/I", kI);
-    SmartDashboard.putNumber("Funnel/PID/D", kD);
-    SmartDashboard.putNumber("Funnel/PID/S", kS);
-    SmartDashboard.putNumber("Funnel/PID/G", kG);
-    SmartDashboard.putNumber("Funnel/PID/V", kV);
-    SmartDashboard.putNumber("Funnel/PID/A", kA);
-    SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
-    SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
-
-    // m_orchestra.play();
-    // timer.reset();
-    // timer.start();
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Funnel/PID/P", kP);
+      SmartDashboard.putNumber("Funnel/PID/I", kI);
+      SmartDashboard.putNumber("Funnel/PID/D", kD);
+      SmartDashboard.putNumber("Funnel/PID/S", kS);
+      SmartDashboard.putNumber("Funnel/PID/G", kG);
+      SmartDashboard.putNumber("Funnel/PID/V", kV);
+      SmartDashboard.putNumber("Funnel/PID/A", kA);
+      SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
+      SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
+    }
 
     angleMotor.setPosition(0);
     aileron.setAngle(FunnelConstants.AILERON_OUT);
   }
-
-  /**
-   * Creates the motor configuration with appropriate settings. Sets up neutral mode, PID gains, and
-   * feedback device configuration.
-   *
-   * @return The configured TalonFXConfiguration object
-   */
 
   /**
    * Updates the arm's input values with the latest sensor readings. This includes position,
@@ -187,15 +153,8 @@ public class FunnelIOCTRE implements FunnelIO {
    */
   @Override
   public void updateInputs(FunnelIOInputs inputs) {
-    tempPIDTuning();
-
-    if (timer.get() > 15) {
-      if (m_orchestra.isPlaying()) {
-        m_orchestra.stop();
-      }
-      m_orchestra.close();
-      timer.stop();
-      timer.reset();
+    if (Constants.useSmartDashboard) {
+      tempPIDTuning();
     }
 
     // Refresh all sensor data
@@ -207,9 +166,6 @@ public class FunnelIOCTRE implements FunnelIO {
             leaderStatorCurrent,
             leaderSupplyCurrent);
 
-    // StatusCode followerStatus =
-    //     BaseStatusSignal.refreshAll(followerStatorCurrent, followerSupplyCurrent);
-
     StatusCode angleMotorStatus =
         BaseStatusSignal.refreshAll(
             angleMotorPosition,
@@ -220,16 +176,12 @@ public class FunnelIOCTRE implements FunnelIO {
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
-    // inputs.followerConnected = followerDebounce.calculate(followerStatus.isOK());
     inputs.angleMotorConnected = angleMotorDebounce.calculate(angleMotorStatus.isOK());
 
     inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderVelocity = leaderVelocity.getValue();
     inputs.leaderStatorCurrent = leaderStatorCurrent.getValue();
-    // inputs.followerStatorCurrent = followerStatorCurrent.getValue();
-    // inputs.followerVelocity = followerVelocity.getValue();
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
-    // inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
     inputs.angleMotorPosition = angleMotorPosition.getValue();
     inputs.angleMotorVelocity = angleMotorVelocity.getValue();
     inputs.angleMotorStatorCurrent = angleMotorStatorCurrent.getValue();
@@ -254,14 +206,16 @@ public class FunnelIOCTRE implements FunnelIO {
 
     inputs.hasCoral = !forwardBeamBreak.get() || !reverseBeamBreak.get();
 
-    SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
-    SmartDashboard.putNumber(
-        "funnel/CORRECTEDPOSITION",
-        Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude()));
-    SmartDashboard.putNumber("funnel/POSITION", inputs.funnelAngle);
-    SmartDashboard.putNumber("funnel/GOAL", anglePID.getGoal().position);
-    SmartDashboard.putNumber("funnel/SETPOINT", anglePID.getSetpoint().position);
-    SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
+      SmartDashboard.putNumber(
+          "funnel/CORRECTEDPOSITION",
+          Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude()));
+      SmartDashboard.putNumber("funnel/POSITION", inputs.funnelAngle);
+      SmartDashboard.putNumber("funnel/GOAL", anglePID.getGoal().position);
+      SmartDashboard.putNumber("funnel/SETPOINT", anglePID.getSetpoint().position);
+      SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
+    }
     Logger.recordOutput("Funnel/Aileron Pos", aileron.getAngle());
   }
 

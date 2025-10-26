@@ -29,10 +29,9 @@ public interface ElevatorIO {
   public class ElevatorIOInputs {
     public boolean leaderConnected = false;
     public boolean followerConnected = false;
-    public boolean encoderConnected = false;
 
     public boolean killSwich = false;
-    public boolean encoderFault = false;
+    public boolean locked = false;
 
     public Angle leaderPosition = Rotations.of(0);
     public Angle leaderRotorPosition = Rotations.of(0);
@@ -46,21 +45,15 @@ public interface ElevatorIO {
     public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
     public AngularVelocity followerRotorVelocity = RotationsPerSecond.of(0);
 
-    public Angle encoderPosition = Rotations.of(0);
-    public Angle encoderAbsPosition = Rotations.of(0);
-    public AngularVelocity encoderVelocity = RotationsPerSecond.of(0);
-
     public Voltage appliedVoltage = Volts.of(0.0);
     public Current leaderStatorCurrent = Amps.of(0);
     public Current followerStatorCurrent = Amps.of(0);
     public Current leaderSupplyCurrent = Amps.of(0);
     public Current followerSupplyCurrent = Amps.of(0);
 
-    public Distance motorDistance = Inches.of(0);
-    public Distance encoderDistance = Inches.of(0);
-
-    public Distance elevatorDistance = Inches.of(0);
-    public Distance elevatorSetpoint = Inches.of(0);
+    public Distance distance = Inches.of(0);
+    public Distance goal = Inches.of(0);
+    public double setpoint = 0;
 
     public double manual = 0.0;
   }

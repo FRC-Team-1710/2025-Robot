@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
@@ -22,29 +24,38 @@ public class VisionIOAlgae {
     }
   }
 
+  public boolean targetVisible() {
+    return Constants.currentMode == Mode.REAL
+        ? ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets())
+        : false;
+  }
+
   // LEFT BUMBPER
   public double getAlgaeYaw() {
-    boolean targetVisible = false;
-    double targetYaw = 0.0;
-    double lowestPitch = 180.0;
-    if (!cameraResults.isEmpty() || !(cameraResults == null)) {
-      // Camera processed a new frame since last
-      // Get the last one in the list.
-      Boolean hasResults = currentResult.hasTargets();
-      Logger.recordOutput("Has Targets", hasResults);
-      if (hasResults) {
-        // At least one AprilTag was seen by the camera
-        for (var target : currentResult.getTargets()) {
-          double pitch = target.getPitch();
-          if (pitch < lowestPitch) {
-            targetYaw = target.getYaw();
-            lowestPitch = pitch;
+    if (Constants.currentMode == Mode.REAL) {
+      boolean targetVisible = false;
+      double targetYaw = 0.0;
+      double lowestPitch = 180.0;
+      if ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult != null) {
+        // Camera processed a new frame since last
+        // Get the last one in the list.
+        Boolean hasResults = currentResult.hasTargets();
+        Logger.recordOutput("Has Targets", hasResults);
+        if (hasResults) {
+          // At least one AprilTag was seen by the camera
+          for (var target : currentResult.getTargets()) {
+            double pitch = target.getPitch();
+            if (pitch < lowestPitch) {
+              targetYaw = target.getYaw();
+              lowestPitch = pitch;
+            }
+            targetVisible = true;
           }
-          targetVisible = true;
         }
       }
+      Logger.recordOutput("Lowest Pitch", lowestPitch);
+      return targetVisible ? targetYaw : 0.0;
     }
-    Logger.recordOutput("Lowest Pitch", lowestPitch);
-    return targetVisible ? targetYaw : 0.0;
+    return 0;
   }
 }

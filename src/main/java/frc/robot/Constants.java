@@ -41,6 +41,9 @@ import frc.robot.utils.FieldConstants;
  * (log replay from a file).
  */
 public final class Constants {
+  public static final boolean babyControlMode = false;
+
+  public static final boolean useSmartDashboard = true;
 
   public static final Mode simMode = Mode.SIM;
 
@@ -134,6 +137,16 @@ public final class Constants {
   public static final Translation2d CenterOfReef =
       new Translation2d(Units.inchesToMeters(176.75), FieldConstants.fieldWidth.div(2).in(Meters));
 
+  public enum SimCoralAutomation {
+    AUTO_SIM_CORAL,
+    MANUAL_SIM_CORAL
+  }
+
+  public enum AutomationLevel {
+    AUTO_DRIVE,
+    NO_AUTO_DRIVE
+  }
+
   public static enum Mode {
     /** Running on a real robot. */
     REAL,
@@ -145,24 +158,12 @@ public final class Constants {
     REPLAY
   }
 
-  public static double stickDeadband = 0.3;
-
   static {
-    // Checks to make sure config matches GUI values. Code should not throw as not breaking
+    // Checks to make sure config matches GUI values. Code should not throw as not
+    // breaking
     if (!PP_CONFIG.hasValidConfig()) {
       String error = "Invalid robot configuration detected in PP_CONFIG";
       System.err.println(error);
     }
-  }
-
-  public static class ClawConstants {
-    public static final double CLAW_INTAKE_POWER = 0.5;
-  }
-
-  public static class FunnelConstants {
-    public static final double intakeSpeed = 0.4;
-    public static final double insideSpeed = 0.2;
-    public static final double FUNNEL_SLOW = 0.2;
-    public static final double FUNNEL_FAST = 0.6;
   }
 }

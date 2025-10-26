@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.superstructure.climber;
 
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -12,15 +11,17 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Climber extends SubsystemBase {
-  private TalonFX climber; // Right
+  private TalonFX climber;
   public boolean goForClimb;
   public boolean safeToRetract = false;
 
+  private ClimberStates currentState = ClimberStates.STOWED;
+
   public Timer timer = new Timer();
 
-  public Orchestra m_orchestra = new Orchestra();
   private double gearRatio = 80;
 
   public Climber() {
@@ -34,7 +35,9 @@ public class Climber extends SubsystemBase {
 
     climber.setPosition(0);
 
-    SmartDashboard.putBoolean("safe to retract", safeToRetract);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("safe to retract", safeToRetract);
+    }
   }
 
   public void SetClimberPower(double power) {
@@ -48,10 +51,60 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Climber Position", getPosition());
-    if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
-      safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putNumber("Climber Position", getPosition());
+      if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
+        safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
+      }
     }
-    SmartDashboard.putBoolean("safe to retract", safeToRetract);
+
+    switch (currentState) {
+      case STOWED:
+        climber.stopMotor();
+        break;
+      case OUT:
+        if (getPosition() > 2.1) {
+          climber.stopMotor();
+        } else {
+          climber.set(0.8);
+        }
+        break;
+      case CLIMBED:
+        if (getPosition() > 3.9) {
+          climber.stopMotor();
+        } else {
+          climber.set(0.4);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  public boolean hasClimbed() {
+    return getPosition() > 3.9;
+  }
+
+  public enum ClimberStates {
+    STOWED(),
+    OUT(),
+    CLIMBED(),
+    MANUAL()
+  }
+
+  public void setState(ClimberStates state) {
+    if (state == ClimberStates.MANUAL) {
+      currentState = ClimberStates.MANUAL;
+    } else if (currentState == ClimberStates.STOWED && state == ClimberStates.OUT) {
+      this.currentState = state;
+    } else if (currentState == ClimberStates.OUT && state == ClimberStates.CLIMBED) {
+      this.currentState = state;
+    }
+  }
+
+  public void setState(double power) {
+    if (power >= 0 || safeToRetract) {
+      climber.set(power);
+    }
   }
 }

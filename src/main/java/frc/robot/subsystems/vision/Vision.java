@@ -22,7 +22,6 @@ import frc.robot.subsystems.vision.VisionUtil.VisionData;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
-import frc.robot.utils.TargetingComputer;
 import java.util.*;
 import org.littletonrobotics.junction.Logger;
 
@@ -52,7 +51,7 @@ public class Vision extends SubsystemBase {
           2.0); // Pitch and roll of a reading before a camera needs to be flagged. IN RADIANS FOR
   // GODS SAKE
 
-  private boolean[] rejectCamera = {false, false, false, false};
+  private boolean[] rejectCamera = {false, false, true, true};
 
   /**
    * Lists to store vision measurements and poses. These are maintained at the class level to allow
@@ -92,10 +91,12 @@ public class Vision extends SubsystemBase {
           new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
     }
 
-    SmartDashboard.putBoolean("Disable Front Left Cam", false);
-    SmartDashboard.putBoolean("Disable Front Right Cam", false);
-    SmartDashboard.putBoolean("Disable Back Left Cam", false);
-    SmartDashboard.putBoolean("Disable Back Right Cam", false);
+    if (Constants.useSmartDashboard) {
+      SmartDashboard.putBoolean("Disable Front Left Cam", false);
+      SmartDashboard.putBoolean("Disable Front Right Cam", false);
+      SmartDashboard.putBoolean("Disable Back Left Cam", false);
+      SmartDashboard.putBoolean("Disable Back Right Cam", false);
+    }
   }
 
   @Override
@@ -133,32 +134,6 @@ public class Vision extends SubsystemBase {
         currentCamera.flag(flagged); // This flags the camera in the camera class
       }
       Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
-    }
-
-    try {
-      Logger.recordOutput(
-          "VisionDebugging/Current Target Position",
-          new Transform3d(
-                  FieldConstants.aprilTags
-                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
-                      .get()
-                      .getTranslation(),
-                  FieldConstants.aprilTags
-                      .getTagPose(TargetingComputer.currentTargetBranch.getApriltag())
-                      .get()
-                      .getRotation())
-              .plus(
-                  new Transform3d(
-                      new Translation3d(
-                          TargetingComputer.currentTargetBranch.getOffset().getX(),
-                          TargetingComputer.currentTargetBranch.getOffset().getY(),
-                          -FieldConstants.aprilTags
-                              .getTagPose(TargetingComputer.getCurrentTargetBranch().getApriltag())
-                              .get()
-                              .getZ()),
-                      new Rotation3d(0, 0, -Math.PI))));
-    } catch (Exception e) {
-
     }
   }
 
@@ -216,12 +191,6 @@ public class Vision extends SubsystemBase {
 
     }
 
-    if (!leftCamToTag.equals(Transform3d.kZero) && !rightCamToTag.equals(Transform3d.kZero)) {
-      return TargetingComputer.currentTargetBranch.getPreferredCamera() == 0
-          ? leftCamToTag
-          : rightCamToTag;
-    }
-
     // Return the non-zero offset, or kZero if both are zero
     var result =
         !leftCamToTag.equals(Transform3d.kZero)
@@ -232,10 +201,6 @@ public class Vision extends SubsystemBase {
 
     Logger.recordOutput("X to Tag", result.getX());
     Logger.recordOutput("Y to Tag", result.getY());
-    Logger.recordOutput(
-        "X Error", TargetingComputer.getCurrentTargetBranch().getOffset().getX() - result.getX());
-    Logger.recordOutput(
-        "Y Error", TargetingComputer.getCurrentTargetBranch().getOffset().getY() - result.getY());
 
     return result;
   }
@@ -295,8 +260,6 @@ public class Vision extends SubsystemBase {
               < 0);
 
       Logger.recordOutput("LeftSide?", leftSide);
-      if (TargetingComputer.targetingControllerOverride)
-        TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
   }
 
@@ -311,20 +274,8 @@ public class Vision extends SubsystemBase {
       }
     }
     if (!availableTags.isEmpty()) {
-      int targetTagID =
-          Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
       Logger.recordOutput("LeftSide?", leftSide);
-      TargetingComputer.setTargetByTag(targetTagID, leftSide);
     }
-  }
-
-  /**
-   * //////// WIP //////// TODO change the privacy once done
-   *
-   * @param index
-   */
-  private void recalibrateCamera(int index) {
-    return;
   }
 
   /**
@@ -371,6 +322,10 @@ public class Vision extends SubsystemBase {
     return algaeCamera.getAlgaeYaw();
   }
 
+  public boolean algaeIsVisible() {
+    return algaeCamera.targetVisible();
+  }
+
   /**
    * Processes vision data from all cameras and combines the results.
    *
@@ -390,10 +345,12 @@ public class Vision extends SubsystemBase {
    * @return Processed VisionData for this camera
    */
   private VisionData processCamera(int cameraIndex, VisionIOInputs input) {
-    rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
-    rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
-    rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
-    rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
+    if (Constants.useSmartDashboard) {
+      rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
+      rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
+      rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
+      rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
+    }
 
     if (rejectCamera[cameraIndex]) return VisionData.empty();
 

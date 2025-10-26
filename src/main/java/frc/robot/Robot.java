@@ -5,22 +5,17 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.FieldConstants;
-import frc.robot.utils.TargetingComputer;
-import frc.robot.utils.TargetingComputer.Targets;
+import frc.robot.utils.LocalADStarAK;
+import frc.robot.utils.SimCoral;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -41,7 +36,6 @@ public class Robot extends LoggedRobot {
 
   public Robot() {
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
 
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
@@ -79,19 +73,28 @@ public class Robot extends LoggedRobot {
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     SignalLogger.stop();
 
-    // Warmup the PPLib library
-    FollowPathCommand.warmupCommand().schedule();
-    // PathfindingCommand.warmupCommand().schedule();
+    // Set Pathfinding to the default AdvantageKit Pathfinder
+
+    Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     // Warmup the PPLib library
 
-    FollowPathCommand.warmupCommand().schedule();
-
     m_robotContainer = new RobotContainer();
+
+    m_robotContainer.setAlliance(redAlliance);
+
+    SimCoral.setRedAlliance(redAlliance);
+
+    // Logging for watching logs
+    Logger.recordOutput(
+        "Control Mode",
+        Constants.babyControlMode ? "Bummy baby controls" : "Full speed straight into the reef");
 
     m_gcTimer.start();
   }
@@ -100,41 +103,9 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     Threads.setCurrentThreadPriority(false, 10);
-    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
-    SmartDashboard.putString(
-        "Current Target", TargetingComputer.getCurrentTargetBranch().toString());
-    SmartDashboard.putString(
-        "Current Target Level", TargetingComputer.getCurrentTargetLevel().toString());
-    Logger.recordOutput("Target Level", TargetingComputer.getCurrentTargetLevel().toString());
-    SmartDashboard.putString(
-        "Random Target Branch", TargetingComputer.getCurrentTargetForBranchGame().toString());
-    SmartDashboard.putString(
-        "Random Target Level", TargetingComputer.getCurrentTargetLevelForBranchGame().toString());
-    SmartDashboard.putNumber("Branch Game Score", TargetingComputer.branchGameScore);
-    // if (m_gcTimer.advanceIfElapsed(5)) System.gc();
+    Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
-    Logger.recordOutput(
-        "Branch Game/Random Target Position",
-        new Transform3d(
-                FieldConstants.aprilTags
-                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                    .get()
-                    .getTranslation(),
-                FieldConstants.aprilTags
-                    .getTagPose(TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                    .get()
-                    .getRotation())
-            .plus(
-                new Transform3d(
-                    new Translation3d(
-                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getX(),
-                        TargetingComputer.getCurrentTargetForBranchGame().getOffset().getY(),
-                        -FieldConstants.aprilTags
-                            .getTagPose(
-                                TargetingComputer.getCurrentTargetForBranchGame().getApriltag())
-                            .get()
-                            .getZ()),
-                    new Rotation3d(0, 0, -Math.PI))));
+    m_robotContainer.autoPeriodic();
   }
 
   /** Gets the current alliance, true is red */
@@ -165,7 +136,9 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
+    m_robotContainer.setAlliance(redAlliance);
+
+    SimCoral.setRedAlliance(redAlliance);
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -181,32 +154,26 @@ public class Robot extends LoggedRobot {
   public void autonomousExit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
-    } // Somehow this makes it so that when A-Stop is hit it doesnt run during teleop :shrug:
+      m_robotContainer.requsetDefault();
+    }
   }
 
   @Override
   public void teleopInit() {
     BEFORE_MATCH = false;
     redAlliance = checkRedAlliance();
-    TargetingComputer.setAlliance(redAlliance);
-    if (TargetingComputer.gameMode) {
-      TargetingComputer.startBranchGame();
-    }
+    m_robotContainer.setAlliance(redAlliance);
+
+    SimCoral.setRedAlliance(redAlliance);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
+      m_robotContainer.requsetDefault();
     }
-
-    if (TargetingComputer.getCurrentTargetBranch() == TargetingComputer.Targets.SOURCE_LEFT)
-      TargetingComputer.setTargetBranch(Targets.ALPHA);
   }
 
   @Override
-  public void teleopPeriodic() {
-    if (TargetingComputer.gameMode) {
-      TargetingComputer.checkBranchGame();
-    }
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopExit() {}
