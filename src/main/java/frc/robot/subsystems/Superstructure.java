@@ -360,7 +360,9 @@ public class Superstructure extends SubsystemBase {
         "Superstructure/Periodic/ManipulatorPeriodic",
         RobotController.getFPGATime() - beforeTimeStamp);
 
-    Logger.recordOutput("Superstructure/Periodic/SuperstructurePeriodic", RobotController.getFPGATime() - superBeforeTimeStamp);
+    Logger.recordOutput(
+        "Superstructure/Periodic/SuperstructurePeriodic",
+        RobotController.getFPGATime() - superBeforeTimeStamp);
   }
 
   @AutoLogOutput(key = "Superstructure/CurrentState")

@@ -104,7 +104,7 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "RioRamFreeBefore", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
 
-    Threads.setCurrentThreadPriority(true, 10);
+    Threads.setCurrentThreadPriority(false, 10);
     CommandScheduler.getInstance().run();
     Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
