@@ -42,6 +42,7 @@ public class AutosBuilder {
   HashMap<Character, SourceDistance> charToSourceDistance =
       new HashMap<Character, SourceDistance>();
 
+  //creates a hashmap for every branch of the reef
   public AutosBuilder(Superstructure superstructure) {
     charToSource.put('R', Source.RIGHT);
     charToSource.put('N', Source.LEFT);
@@ -76,6 +77,7 @@ public class AutosBuilder {
     Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
   }
 
+  //Checks if the auto input is CUSTOM and valid, logs the result, and throws an error if not valid
   public void periodic() {
     if (autoChooser.get() == Auto.CUSTOM
         && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
@@ -90,10 +92,12 @@ public class AutosBuilder {
     }
   }
 
+  //Makes sure that the string for the auto is valid
   public String validateAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
+      //checks that the first command contains the proper characters and throws an error if not true
       if (first) {
         if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
@@ -108,6 +112,7 @@ public class AutosBuilder {
               + String.valueOf(character)
               + " which is invalid";
         }
+      //Checks that the rest of the characters are valid and in the correct order
       } else {
         if (nextCommand == NextCommand.PLACE) {
           if (charToReefHeight.containsKey(character)) {
@@ -140,10 +145,12 @@ public class AutosBuilder {
     return "";
   }
 
+  //sees if the driver wants to build their own auto or use a preset one, then returns the selected/typed out auto
   public Command getAuto() {
     return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto();
   }
 
+  //if case is custom then it returns the string that was typed in. If idle, returns the idle command. 
   public Command buildAuto() {
     commandList = new ArrayList<>();
     if (Constants.currentMode == Mode.SIM) {
@@ -164,10 +171,12 @@ public class AutosBuilder {
     }
   }
 
+  //takes the auto string and changes the variables of the command to match. Then adds that command to the list and starts on the next segment
   private Command buildAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
+      //checks first 2 characters
       if (first) {
         if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
@@ -178,6 +187,7 @@ public class AutosBuilder {
         } else {
           System.out.println("First half command wasn't real");
         }
+      //checks every other character besides the first two
       } else {
         if (charToReefHeight.containsKey(character)) {
           reefHeight = charToReefHeight.get(character);
@@ -195,6 +205,7 @@ public class AutosBuilder {
     return commands;
   }
 
+  //creates the command with the provided variables
   private Command getCommand(
       NextCommand nextCommand,
       Reef reef,
@@ -215,6 +226,7 @@ public class AutosBuilder {
     }
   }
 
+  //creates the command for placing the coral on the reef
   private Command createPlaceCommand(Reef reef, ReefHeight reefHeight) {
     return Commands.runOnce(() -> superstructure.setTargets(reef, reefHeight))
         .andThen(
@@ -226,6 +238,7 @@ public class AutosBuilder {
                 () -> superstructure.getWantedState() == WantedState.DEFAULT_STATE));
   }
 
+  //creates command for aligning robot to the source and running intake wheels
   private Command createSourceCommand(Source source, SourceDistance sourceDistance) {
     return Commands.runOnce(() -> superstructure.setTargets(source, sourceDistance))
         .andThen(
