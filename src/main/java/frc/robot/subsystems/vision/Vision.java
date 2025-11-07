@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -102,6 +103,8 @@ public class Vision extends SubsystemBase {
   @Override
   public void periodic() {
     // Update inputs and check connection status for each camera
+    double beforeTimeStamp = RobotController.getFPGATime();
+    Logger.recordOutput("ItsGonnaBe4", io.length);
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       disconnectedAlerts[i].set(!inputs[i].connected);
@@ -135,6 +138,8 @@ public class Vision extends SubsystemBase {
       }
       Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
     }
+    Logger.recordOutput(
+        "Superstructure/Periodic/Vision", RobotController.getFPGATime() - beforeTimeStamp);
   }
 
   public VisionIOPhotonVision getCamera(int index) {

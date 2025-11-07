@@ -29,6 +29,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -83,9 +84,9 @@ public class Superstructure extends SubsystemBase {
 
   private final APConstraints constraints =
       new APConstraints()
-          .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 75)
-          .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 3)
-          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.025);
+          .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 7.5)
+          .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 0)
+          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.015);
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
@@ -139,9 +140,12 @@ public class Superstructure extends SubsystemBase {
   private boolean ppReady = false;
 
   private final double offsetX = Units.inchesToMeters(17.5);
-  private final double offsetY = Units.inchesToMeters(7);
+  private final double offsetY = Units.inchesToMeters(6.5);
 
   private final Timer ejectTimer = new Timer();
+
+  private double beforeTimeStamp = RobotController.getFPGATime();
+  private double superBeforeTimeStamp = RobotController.getFPGATime();
 
   private LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
 
@@ -164,12 +168,6 @@ public class Superstructure extends SubsystemBase {
 
   private Command ppWUp =
       FollowPathCommand.warmupCommand().andThen(PathfindingCommand.warmupCommand());
-
-  // new PathConstraints(
-  //     maxSpeed,
-  //     MetersPerSecondPerSecond.of(50),
-  //     maxAngularRate,
-  //     RotationsPerSecondPerSecond.of(15));
 
   public Superstructure(
       Drive drivetrain,
@@ -226,14 +224,19 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    superBeforeTimeStamp = RobotController.getFPGATime();
+
     if (Constants.useSmartDashboard) {
-      // autopilot =
-      //     new Autopilot(
-      //         profile.withConstraints(
-      //             constraints
-      //                 .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
-      //                 .withVelocity(SmartDashboard.getNumber("Velocity", 0))
-      //                 .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+      autopilot =
+          new Autopilot(
+              profile.withConstraints(
+                  constraints
+                      .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
+                      .withVelocity(
+                          SmartDashboard.getNumber("Velocity", 0) == 0
+                              ? Double.POSITIVE_INFINITY
+                              : SmartDashboard.getNumber("Velocity", 0))
+                      .withJerk(SmartDashboard.getNumber("Jerk", 0))));
     }
 
     if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
@@ -328,6 +331,36 @@ public class Superstructure extends SubsystemBase {
 
     currentState = handStateTransitions();
     applyStates();
+
+    // Optimizations
+    beforeTimeStamp = RobotController.getFPGATime();
+    claw.periodic();
+    Logger.recordOutput(
+        "Superstructure/Periodic/ClawPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+
+    beforeTimeStamp = RobotController.getFPGATime();
+    climber.periodic();
+    Logger.recordOutput(
+        "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+
+    beforeTimeStamp = RobotController.getFPGATime();
+    elevator.periodic();
+    Logger.recordOutput(
+        "Superstructure/Periodic/ElevatorPeriodic",
+        RobotController.getFPGATime() - beforeTimeStamp);
+
+    beforeTimeStamp = RobotController.getFPGATime();
+    funnel.periodic();
+    Logger.recordOutput(
+        "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+
+    beforeTimeStamp = RobotController.getFPGATime();
+    manipulator.periodic();
+    Logger.recordOutput(
+        "Superstructure/Periodic/ManipulatorPeriodic",
+        RobotController.getFPGATime() - beforeTimeStamp);
+
+    Logger.recordOutput("Superstructure/Periodic/SuperstructurePeriodic", RobotController.getFPGATime() - superBeforeTimeStamp);
   }
 
   @AutoLogOutput(key = "Superstructure/CurrentState")
@@ -890,7 +923,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void manualL4() {
-    claw.setState(ClawStates.IDLE);
+    claw.setState(claw.hasAlgae() ? ClawStates.HOLD : ClawStates.IDLE);
     climber.setState(ClimberStates.STOWED);
     elevator.setState(ElevatorStates.L4);
     funnel.setState(FunnelState.OFF);
@@ -1878,11 +1911,12 @@ public class Superstructure extends SubsystemBase {
   }
 
   public CurrentState decideStateForAlgae() {
-    return onOtherHalfOfField()
-        ? CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION
-        : onLeftHalfOfField()
-            ? CurrentState.MOVE_ALGAE_TO_NET_POSITION
-            : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
+    return CurrentState.MOVE_ALGAE_TO_NET_POSITION;
+    // return onOtherHalfOfField()
+    //     ? CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION
+    //     : onLeftHalfOfField()
+    //         ? CurrentState.MOVE_ALGAE_TO_NET_POSITION
+    //         : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
   }
 
   public Command setWantedStateCommand(WantedState state) {

@@ -101,11 +101,20 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
+    Logger.recordOutput(
+        "RioRamFreeBefore", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
+
+    Threads.setCurrentThreadPriority(true, 10);
     CommandScheduler.getInstance().run();
-    Threads.setCurrentThreadPriority(false, 10);
     Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
     m_robotContainer.autoPeriodic();
+
+    Logger.recordOutput("Thread Priority", Threads.getCurrentThreadPriority());
+    Logger.recordOutput("Thread Real Time", Threads.getCurrentThreadIsRealTime());
+
+    Logger.recordOutput(
+        "RioRamFreeAfter", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
   }
 
   /** Gets the current alliance, true is red */

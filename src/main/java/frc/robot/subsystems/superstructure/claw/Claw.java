@@ -15,7 +15,6 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import java.util.function.BooleanSupplier;
@@ -27,7 +26,7 @@ import org.littletonrobotics.junction.Logger;
  * supports multiple angles for different game actions and provides both open-loop and closed-loop
  * control options.
  */
-public class Claw extends SubsystemBase {
+public class Claw {
   private final ClawIO io;
   private final ClawIOInputsAutoLogged inputs;
 
@@ -52,7 +51,6 @@ public class Claw extends SubsystemBase {
     this.ejectSupplier = ejectSupplier;
   }
 
-  @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Claw", inputs);
