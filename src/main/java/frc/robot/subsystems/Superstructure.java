@@ -61,7 +61,6 @@ import frc.robot.utils.FieldConstants;
 import frc.robot.utils.SimCoral;
 import frc.robot.utils.SimCoralAutomationChooser;
 import frc.robot.utils.TunableController;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
@@ -318,6 +317,8 @@ public class Superstructure {
 
     Logger.recordOutput("Superstructure/WrongHalf", isRobotOnWrongHalfOfReefFace(getTargetPose()));
     Logger.recordOutput("Superstructure/LeftHalf", isRobotOnLeftHalfOfReefFace(getTargetPose()));
+    
+    Logger.recordOutput("Superstructure/TargetPose", getTargetPose());
 
     driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
 
@@ -363,7 +364,6 @@ public class Superstructure {
         RobotController.getFPGATime() - superBeforeTimeStamp);
   }
 
-  @AutoLogOutput(key = "Superstructure/CurrentState")
   private CurrentState handStateTransitions() {
     previousState = currentState;
     if (wantedState == WantedState.SCORE_AUTO) {
@@ -1276,7 +1276,6 @@ public class Superstructure {
   }
 
   /** keeps the angle of the translation but keeps the speed under the compressed speed */
-  @AutoLogOutput (key = "Superstructure/ClampedTranslation")
   private Translation2d getClamped(Translation2d before) {
     return before.getNorm() <= speedComp ? before : before.div(before.getNorm() / speedComp);
   }
@@ -1285,7 +1284,6 @@ public class Superstructure {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
-  @AutoLogOutput
   public boolean isRobotOnWrongHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1298,7 +1296,6 @@ public class Superstructure {
     return dotProduct > 0;
   }
 
-  @AutoLogOutput
   public boolean isRobotOnLeftHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1362,7 +1359,6 @@ public class Superstructure {
                 new Rotation2d()));
   }
 
-  @AutoLogOutput(key = "Superstructure/TargetPose")
   private Pose2d getTargetPose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1804,7 +1800,6 @@ public class Superstructure {
     }
   }
 
-  @AutoLogOutput(key = "Superstructure/WantedState")
   public void setWantedState(WantedState state) {
     this.wantedState = state;
   }
