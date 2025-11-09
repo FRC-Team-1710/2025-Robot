@@ -41,8 +41,6 @@ import frc.robot.utils.FieldConstants;
  * (log replay from a file).
  */
 public final class Constants {
-  public static final boolean babyControlMode = false;
-
   public static final boolean useSmartDashboard = false;
 
   public static final Mode simMode = Mode.SIM;

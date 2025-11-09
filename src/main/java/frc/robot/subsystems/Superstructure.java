@@ -317,7 +317,7 @@ public class Superstructure {
 
     Logger.recordOutput("Superstructure/WrongHalf", isRobotOnWrongHalfOfReefFace(getTargetPose()));
     Logger.recordOutput("Superstructure/LeftHalf", isRobotOnLeftHalfOfReefFace(getTargetPose()));
-    
+
     Logger.recordOutput("Superstructure/TargetPose", getTargetPose());
 
     driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
