@@ -34,7 +34,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.AutomationLevel;
 import frc.robot.Constants.Mode;
@@ -65,7 +64,7 @@ import frc.robot.utils.TunableController;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Superstructure extends SubsystemBase {
+public class Superstructure {
   private final Drive drivetrain;
   private final Claw claw;
   private final Climber climber;
@@ -136,6 +135,7 @@ public class Superstructure extends SubsystemBase {
   private boolean isRedAlliance = false;
 
   private boolean compressMaxSpeed = false;
+  private double speedComp = 1;
 
   private boolean ppReady = false;
 
@@ -147,7 +147,7 @@ public class Superstructure extends SubsystemBase {
   private double beforeTimeStamp = RobotController.getFPGATime();
   private double superBeforeTimeStamp = RobotController.getFPGATime();
 
-  private LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
+  private final LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
 
   private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
 
@@ -222,7 +222,6 @@ public class Superstructure extends SubsystemBase {
     isRedAlliance = redAlliance;
   }
 
-  @Override
   public void periodic() {
     superBeforeTimeStamp = RobotController.getFPGATime();
 
@@ -265,14 +264,13 @@ public class Superstructure extends SubsystemBase {
     maxAngularRate = Constants.MaxAngularRate; // .times(claw.hasAlgae() ? 0.5 : 1);
 
     if (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed) {
-      maxSpeed = TunerConstants.kSpeedAt12Volts;
+      speedComp = 1;
       Logger.recordOutput("Superstructure/MaxSpeedCompression", 1);
     } else if (elevator.getPosition().in(Inches) > 45) {
-      maxSpeed = TunerConstants.kSpeedAt12Volts.times(0.5);
+      speedComp = 0.5;
       Logger.recordOutput("Superstructure/MaxSpeedCompression", 0.5);
     } else {
-      maxSpeed =
-          TunerConstants.kSpeedAt12Volts.times(1 - ((elevator.getPosition().in(Inches) - 15) / 60));
+      speedComp = 1 - ((elevator.getPosition().in(Inches) - 15) / 60);
       Logger.recordOutput(
           "Superstructure/MaxSpeedCompression",
           1 - ((elevator.getPosition().in(Inches) - 15) / 60));
@@ -1160,30 +1158,26 @@ public class Superstructure extends SubsystemBase {
         double vx = output.vx().in(MetersPerSecond);
         double vy = output.vy().in(MetersPerSecond);
 
-        double mx = Math.max(Math.abs(vx), Math.abs(vy));
+        var clampedOutput = getClamped(new Translation2d(vx, vy));
 
-        // clamp both while keeping direction
-        if (mx > 1) {
-          vx *= mx;
-          vy *= mx;
-        }
+        vx = clampedOutput.getX();
+        vy = clampedOutput.getY();
 
-        Logger.recordOutput("AP/AppliedX%", clamp(vx));
-        Logger.recordOutput("AP/AppliedY%", clamp(vx));
+        Logger.recordOutput("AP/AppliedX%", vy);
+        Logger.recordOutput("AP/AppliedY%", vx);
 
         applyDrive(
-            clamp(vx * (isRedAlliance ? -1 : 1)),
-            clamp(vy * (isRedAlliance ? -1 : 1)),
-            output.targetAngle());
+            vx * (isRedAlliance ? -1 : 1), vy * (isRedAlliance ? -1 : 1), output.targetAngle());
         break;
       case PP:
         if (!currentPathFindingCommand.isScheduled()) {
-          // when PP is in a wall it tweaks so AP take over for a little
-          // currentAlignTarget = AlignTarget.AP;
-          // applyDrive(pose);
+          // when PP is in a wall it tweaks so itl use
+          // manual controls if the command keeps ending
+          applyDrive();
 
-          // end at 100 to make sure it goes as fast as possible
-          currentPathFindingCommand = AutoBuilder.pathfindToPose(pose, pathfindingConstraints, 100);
+          // end fast to make sure it goes as fast as possible between pp and ap
+          currentPathFindingCommand =
+              AutoBuilder.pathfindToPose(pose, pathfindingConstraints, Double.POSITIVE_INFINITY);
           currentPathFindingCommand.schedule();
         }
     }
@@ -1241,24 +1235,26 @@ public class Superstructure extends SubsystemBase {
 
   /** Uses normal driver controlls */
   private void applyDrive() {
+    var output = getClamped(driver.customLeft());
     drivetrain
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-output.getY()))
+                    .withVelocityY(maxSpeed.times(-output.getX()))
                     .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())))
         .schedule();
   }
 
   /** Uses normal driver controlls with a rotation snap */
   private void applyDrive(Rotation2d rotationSnap) {
+    var output = getClamped(driver.customLeft());
     drivetrain
         .applyRequest(
             () ->
                 fieldCentric
-                    .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
-                    .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
+                    .withVelocityX(maxSpeed.times(-output.getY()))
+                    .withVelocityY(maxSpeed.times(-output.getX()))
                     .withRotationalRate(
                         maxAngularRate.times(
                             clamp(
@@ -1272,12 +1268,17 @@ public class Superstructure extends SubsystemBase {
                                                 -driver.customRight().getX() * 12.5))
                                         .getDegrees(),
                                     0)))))
-        // - (driver.customRight().getX() * driverOverideAllignment)))))
         .schedule();
   }
 
-  private double clamp(double amount) {
-    return Math.copySign(Math.abs(amount) > 1 ? 1 : amount, amount);
+  private double clamp(double before) {
+    return Math.abs(before) > 1 ? before / Math.abs(before) : before;
+  }
+
+  /** keeps the angle of the translation but keeps the speed under the compressed speed */
+  @AutoLogOutput (key = "Superstructure/ClampedTranslation")
+  private Translation2d getClamped(Translation2d before) {
+    return before.getNorm() <= speedComp ? before : before.div(before.getNorm() / speedComp);
   }
 
   public boolean isDrivetrainAtTarget() {

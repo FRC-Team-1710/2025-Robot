@@ -106,9 +106,9 @@ public class Robot extends LoggedRobot {
 
     Threads.setCurrentThreadPriority(false, 10);
     CommandScheduler.getInstance().run();
+    m_robotContainer.periodic();
     Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
-    m_robotContainer.autoPeriodic();
 
     Logger.recordOutput("Thread Priority", Threads.getCurrentThreadPriority());
     Logger.recordOutput("Thread Real Time", Threads.getCurrentThreadIsRealTime());

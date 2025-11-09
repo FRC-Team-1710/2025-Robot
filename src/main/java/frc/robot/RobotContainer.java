@@ -722,7 +722,8 @@ public class RobotContainer {
     return autosBuilder.getAuto();
   }
 
-  public void autoPeriodic() {
+  public void periodic() {
     autosBuilder.periodic();
+    superstructure.periodic();
   }
 }
