@@ -163,9 +163,7 @@ public class Superstructure {
           Constants.currentMode == Mode.SIM ? 0.00175 : 0);
 
   private Command currentPathFindingCommand = Commands.none();
-  // private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
-  private PathConstraints pathfindingConstraints =
-      new PathConstraints(5, 5, Units.rotationsToRadians(2), Units.rotationsToRadians(2), 12);
+  private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
 
   private Command ppWUp =
       FollowPathCommand.warmupCommand().andThen(PathfindingCommand.warmupCommand());
@@ -1177,9 +1175,9 @@ public class Superstructure {
           // manual controls if the command keeps ending
           // applyDrive();
 
-          // end fast to make sure it goes as fast as possible between pp and ap
+          // end at max speed to make sure it goes as fast as possible between pp and ap
           currentPathFindingCommand =
-              AutoBuilder.pathfindToPose(pose, pathfindingConstraints, Double.POSITIVE_INFINITY);
+              AutoBuilder.pathfindToPose(pose, pathfindingConstraints, 5.05);
           currentPathFindingCommand.schedule();
         }
     }
