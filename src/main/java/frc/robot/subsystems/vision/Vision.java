@@ -11,8 +11,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -40,7 +38,7 @@ public class Vision extends SubsystemBase {
   private final VisionIO[] io;
   private final VisionIOAlgae algaeCamera;
   private final VisionIOInputsAutoLogged[] inputs;
-  private final Alert[] disconnectedAlerts;
+  // private final Alert[] disconnectedAlerts;
 
   private final int[] branchIDs = {
     6, 7, 8, 9, 10, 11,
@@ -86,11 +84,11 @@ public class Vision extends SubsystemBase {
     }
 
     // Initialize disconnection alerts for each camera
-    disconnectedAlerts = new Alert[io.length];
-    for (int i = 0; i < inputs.length; i++) {
-      disconnectedAlerts[i] =
-          new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
-    }
+    // disconnectedAlerts = new Alert[io.length];
+    // for (int i = 0; i < inputs.length; i++) {
+    // disconnectedAlerts[i] =
+    //     new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
+    // }
 
     if (Constants.useSmartDashboard) {
       SmartDashboard.putBoolean("Disable Front Left Cam", false);
@@ -107,7 +105,7 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput("ItsGonnaBe4", io.length);
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      disconnectedAlerts[i].set(!inputs[i].connected);
+      // disconnectedAlerts[i].set(!inputs[i].connected);
       Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
     algaeCamera.updateResults();

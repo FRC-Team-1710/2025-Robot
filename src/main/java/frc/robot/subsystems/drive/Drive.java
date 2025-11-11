@@ -34,8 +34,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
+// import edu.wpi.first.wpilibj.Alert;
+// import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -76,14 +76,14 @@ public class Drive extends SubsystemBase {
       new Trigger(() -> poseEstimator != null).and(() -> Constants.currentMode == Mode.REPLAY);
   private SwerveModulePosition[] currentPositions = ArrayBuilder.buildSwerveModulePosition();
 
-  private Alert[] driveDisconnectedAlert =
-      ArrayBuilder.buildAlert("Disconnected drive motor on module");
-  private Alert[] turnDisconnectedAlert =
-      ArrayBuilder.buildAlert("Disconnected turn motor on module");
-  private Alert[] turnEncoderDisconnectedAlert =
-      ArrayBuilder.buildAlert("Disconnected turn encoder on module");
+  // private Alert[] driveDisconnectedAlert =
+  //     ArrayBuilder.buildAlert("Disconnected drive motor on module");
+  // private Alert[] turnDisconnectedAlert =
+  //     ArrayBuilder.buildAlert("Disconnected turn motor on module");
+  // private Alert[] turnEncoderDisconnectedAlert =
+  //     ArrayBuilder.buildAlert("Disconnected turn encoder on module");
 
-  private Alert gyroDisconnectedAlert = new Alert("Gyro Disconnected", AlertType.kError);
+  // private Alert gyroDisconnectedAlert = new Alert("Gyro Disconnected", AlertType.kError);
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -259,14 +259,14 @@ public class Drive extends SubsystemBase {
 
     io.updateInputs(inputs);
     Logger.processInputs("Drive", inputs);
-    gyroDisconnectedAlert.set(!inputs.gyroConnected);
+    // gyroDisconnectedAlert.set(!inputs.gyroConnected);
 
     io.updateModules(modules);
     for (int i = 0; i < modules.length; i++) {
       Logger.processInputs("Module" + i, modules[i]);
-      driveDisconnectedAlert[i].set(!modules[i].driveConnected);
-      turnDisconnectedAlert[i].set(!modules[i].turnConnected);
-      turnEncoderDisconnectedAlert[i].set(!modules[i].turnEncoderConnected);
+      // driveDisconnectedAlert[i].set(!modules[i].driveConnected);
+      // turnDisconnectedAlert[i].set(!modules[i].turnConnected);
+      // turnEncoderDisconnectedAlert[i].set(!modules[i].turnEncoderConnected);
     }
 
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {

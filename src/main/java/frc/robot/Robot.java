@@ -98,6 +98,8 @@ public class Robot extends LoggedRobot {
 
     // this better work
     Threads.setCurrentThreadPriority(true, 1);
+
+    // NetworkTableInstance.getDefault().
   }
 
   @Override
