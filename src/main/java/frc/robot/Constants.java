@@ -51,7 +51,7 @@ public final class Constants {
   // PathPlanner config constants
   private static final Mass ROBOT_MASS = Kilogram.of(52.163);
   private static final MomentOfInertia ROBOT_MOI =
-      KilogramSquareMeters.of(ROBOT_MASS.magnitude() * (0.7112 / 2) * (0.0013209 / 0.0014061));
+      KilogramSquareMeters.of(52.163 * (0.7112 / 2.0) * (0.0013209 / 0.0014061));
 
   private static final double WHEEL_COF = 1.5;
   public static final SwerveModuleConstants<

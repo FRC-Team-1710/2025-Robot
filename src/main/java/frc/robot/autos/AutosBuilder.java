@@ -31,34 +31,46 @@ public class AutosBuilder {
 
   LoggedDashboardChooser<Auto> autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
 
-  private String customString = "";
+  private String autoString = "cooked";
 
   private Command preBuiltAuto = Commands.none();
 
   public AutosBuilder(Superstructure superstructure) {
     this.superstructure = superstructure;
+
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
-    autoChooser.addDefaultOption("IDLE", Auto.IDLE);
-    autoChooser.addDefaultOption("E4RFD4RFC4RMB4", Auto.E4RFD4RFC4RMB4);
-    autoChooser.addDefaultOption("J4NFK4NFL4NMA4", Auto.J4NFK4NFL4NMA4);
-    autoChooser.addOption("CUSTOM", Auto.CUSTOM);
 
-    Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
+    autoChooser.addDefaultOption("IDLE", Auto.IDLE);
+    autoChooser.addOption("CUSTOM", Auto.CUSTOM);
+    for (Auto auto : Auto.values()) {
+      if (auto != Auto.IDLE && auto != Auto.CUSTOM) {
+        autoChooser.addOption(auto.toString(), auto);
+      }
+    }
   }
 
   public void periodic() {
     if (autoChooser.get() == Auto.CUSTOM
-        && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
-      customString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
-      String output = validateAuto(customString);
+        && autoString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
+      autoString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
+      String output = validateAuto(autoString);
       Logger.recordOutput("Is Auto Valid", output == "");
       Logger.recordOutput("Auto Validation Error", output);
       preBuiltAuto = output == "" ? buildAuto() : Commands.none();
-    } else if (autoChooser.get() != Auto.CUSTOM) {
+    } else if (autoChooser.get() != Auto.CUSTOM
+        && autoChooser.get() != Auto.IDLE
+        && autoString != autoChooser.get().toString()) {
+      autoString = autoChooser.get().toString();
+      String output = validateAuto(autoString);
+      Logger.recordOutput("Is Auto Valid", output == "");
+      Logger.recordOutput("Auto Validation Error", output);
+      preBuiltAuto = output == "" ? buildAuto() : Commands.none();
+    } else if (autoChooser.get() == Auto.IDLE) {
       Logger.recordOutput("Is Auto Valid", true);
-      Logger.recordOutput("Auto Validation Error", "");
+      Logger.recordOutput("Auto Validation Error", "bum");
+      preBuiltAuto = buildAuto();
     }
   }
 
@@ -156,30 +168,37 @@ public class AutosBuilder {
     return "";
   }
 
+  /**
+   * @return cached auto that was built in periodic
+   */
   public Command getAuto() {
-    return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto();
+    return preBuiltAuto;
   }
 
+  /**
+   * Builds auto based on auto chooser
+   *
+   * @return command to schedule for auto
+   */
   public Command buildAuto() {
     commandList = new ArrayList<>();
     if (Constants.currentMode == Mode.SIM) {
       commandList.add(Commands.runOnce(() -> superstructure.beginSimAuto()));
     }
     switch (autoChooser.get()) {
-      case CUSTOM:
-        if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
-            == "(insert auto here)") {
-          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE));
-        } else {
-          return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)"));
-        }
       case IDLE:
         return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE));
       default:
-        return buildAuto(autoChooser.get().toString());
+        return buildAuto(autoString);
     }
   }
 
+  /**
+   * Builds auto from the input
+   *
+   * @param input string to build auto from
+   * @return command to schedule for auto
+   */
   private Command buildAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {

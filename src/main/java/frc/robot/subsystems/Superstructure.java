@@ -163,7 +163,9 @@ public class Superstructure {
           Constants.currentMode == Mode.SIM ? 0.00175 : 0);
 
   private Command currentPathFindingCommand = Commands.none();
-  private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
+  // private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
+  private PathConstraints pathfindingConstraints =
+      new PathConstraints(5, 5, Units.rotationsToRadians(2), Units.rotationsToRadians(2), 12);
 
   private Command ppWUp =
       FollowPathCommand.warmupCommand().andThen(PathfindingCommand.warmupCommand());
@@ -1173,7 +1175,7 @@ public class Superstructure {
         if (!currentPathFindingCommand.isScheduled()) {
           // when PP is in a wall it tweaks so itl use
           // manual controls if the command keeps ending
-          applyDrive();
+          // applyDrive();
 
           // end fast to make sure it goes as fast as possible between pp and ap
           currentPathFindingCommand =
@@ -1197,23 +1199,16 @@ public class Superstructure {
    * <p>ALSO DOESN'T CLAMP TRANSLATION!!!
    */
   private void applyDrive(double x, double y, Rotation2d rotationSnap) {
-    drivetrain
-        .applyRequest(
-            () ->
-                fieldCentric
-                    .withVelocityX(maxSpeed.times(x))
-                    .withVelocityY(maxSpeed.times(y))
-                    .withRotationalRate(
-                        maxAngularRate.times(
-                            clamp(
-                                movingRotation.calculate(
-                                    drivetrain
-                                        .getPose()
-                                        .getRotation()
-                                        .minus(rotationSnap)
-                                        .getDegrees(),
-                                    0)))))
-        .schedule();
+    drivetrain.setControl(
+        fieldCentric
+            .withVelocityX(maxSpeed.times(x))
+            .withVelocityY(maxSpeed.times(y))
+            .withRotationalRate(
+                maxAngularRate.times(
+                    clamp(
+                        movingRotation.calculate(
+                            drivetrain.getPose().getRotation().minus(rotationSnap).getDegrees(),
+                            0)))));
   }
 
   /**
@@ -1236,39 +1231,31 @@ public class Superstructure {
   /** Uses normal driver controlls */
   private void applyDrive() {
     var output = getClamped(driver.customLeft());
-    drivetrain
-        .applyRequest(
-            () ->
-                fieldCentric
-                    .withVelocityX(maxSpeed.times(-output.getY()))
-                    .withVelocityY(maxSpeed.times(-output.getX()))
-                    .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())))
-        .schedule();
+    drivetrain.setControl(
+        fieldCentric
+            .withVelocityX(maxSpeed.times(-output.getY()))
+            .withVelocityY(maxSpeed.times(-output.getX()))
+            .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())));
   }
 
   /** Uses normal driver controlls with a rotation snap */
   private void applyDrive(Rotation2d rotationSnap) {
     var output = getClamped(driver.customLeft());
-    drivetrain
-        .applyRequest(
-            () ->
-                fieldCentric
-                    .withVelocityX(maxSpeed.times(-output.getY()))
-                    .withVelocityY(maxSpeed.times(-output.getX()))
-                    .withRotationalRate(
-                        maxAngularRate.times(
-                            clamp(
-                                movingRotation.calculate(
-                                    drivetrain
-                                        .getPose()
-                                        .getRotation()
-                                        .minus(rotationSnap)
-                                        .minus(
-                                            Rotation2d.fromDegrees(
-                                                -driver.customRight().getX() * 12.5))
-                                        .getDegrees(),
-                                    0)))))
-        .schedule();
+    drivetrain.setControl(
+        fieldCentric
+            .withVelocityX(maxSpeed.times(-output.getY()))
+            .withVelocityY(maxSpeed.times(-output.getX()))
+            .withRotationalRate(
+                maxAngularRate.times(
+                    clamp(
+                        movingRotation.calculate(
+                            drivetrain
+                                .getPose()
+                                .getRotation()
+                                .minus(rotationSnap)
+                                .minus(Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5))
+                                .getDegrees(),
+                            0)))));
   }
 
   private double clamp(double before) {
