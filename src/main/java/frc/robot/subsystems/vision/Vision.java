@@ -104,7 +104,6 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     // Update inputs and check connection status for each camera
     double beforeTimeStamp = RobotController.getFPGATime();
-    Logger.recordOutput("ItsGonnaBe4", io.length);
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       disconnectedAlerts[i].set(!inputs[i].connected);
@@ -115,6 +114,7 @@ public class Vision extends SubsystemBase {
     if (algaeYaw != 0.0) {
       Logger.recordOutput("Algae Yaw", algaeYaw);
     }
+    // TODO: Fix up this function. only logging when not 0.0 doesn't make sense
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
@@ -127,7 +127,7 @@ public class Vision extends SubsystemBase {
         Rotation3d rotationReading =
             currentCamera.lastAcceptedPose.getRotation(); // Grab rotation from reading for skew
         Logger.recordOutput(
-            "VisionDebugging/Camera " + i + " pose",
+            "VisionDebugging/Camera " + i + " pose ",
             currentCamera.lastAcceptedPose); // Log entire pose from camera
         boolean flagged =
             (rotationReading.getX() <= -flagAngle || rotationReading.getX() >= flagAngle)
@@ -341,6 +341,7 @@ public class Vision extends SubsystemBase {
         .map(input -> processCamera(Arrays.asList(inputs).indexOf(input), input))
         .reduce(VisionData.empty(), VisionData::merge);
   }
+  // TODO: Optimize this function  
 
   /**
    * Processes vision data from a single camera.
