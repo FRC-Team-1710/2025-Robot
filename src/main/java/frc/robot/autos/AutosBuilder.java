@@ -34,7 +34,7 @@ public class AutosBuilder {
 
   LoggedDashboardChooser<Auto> autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
 
-  private String customString = "";
+  private String autoString = "cooked";
 
   private Command preBuiltAuto = Commands.none();
 
@@ -70,29 +70,41 @@ public class AutosBuilder {
     this.superstructure = superstructure;
     
     //Add defaults to SmartDashboard
+
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
-    autoChooser.addDefaultOption("IDLE", Auto.IDLE);
-    autoChooser.addDefaultOption("E4RFD4RFC4RMB4", Auto.E4RFD4RFC4RMB4);
-    autoChooser.addDefaultOption("J4NFK4NFL4NF", Auto.J4NFK4NFL4NF);
-    autoChooser.addOption("CUSTOM", Auto.CUSTOM);
 
-    Logger.recordOutput("AutosBuilder/CommandList", commandList.toString());
+    autoChooser.addDefaultOption("IDLE", Auto.IDLE);
+    autoChooser.addOption("CUSTOM", Auto.CUSTOM);
+    for (Auto auto : Auto.values()) {
+      if (auto != Auto.IDLE && auto != Auto.CUSTOM) {
+        autoChooser.addOption(auto.toString(), auto);
+      }
+    }
   }
 
   public void periodic() {
     //If it's set to custom and the custom is diffrent, build the auto
     if (autoChooser.get() == Auto.CUSTOM
-        && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
-      customString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
-      String output = validateAuto(customString);
+        && autoString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
+      autoString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
+      String output = validateAuto(autoString);
       Logger.recordOutput("Is Auto Valid", output == "");
       Logger.recordOutput("Auto Validation Error", output);
       preBuiltAuto = output == "" ? buildAuto() : Commands.none();
-    } else if (autoChooser.get() != Auto.CUSTOM) {
+    } else if (autoChooser.get() != Auto.CUSTOM
+        && autoChooser.get() != Auto.IDLE
+        && autoString != autoChooser.get().toString()) {
+      autoString = autoChooser.get().toString();
+      String output = validateAuto(autoString);
+      Logger.recordOutput("Is Auto Valid", output == "");
+      Logger.recordOutput("Auto Validation Error", output);
+      preBuiltAuto = output == "" ? buildAuto() : Commands.none();
+    } else if (autoChooser.get() == Auto.IDLE) {
       Logger.recordOutput("Is Auto Valid", true);
-      Logger.recordOutput("Auto Validation Error", "");
+      Logger.recordOutput("Auto Validation Error", "bum");
+      preBuiltAuto = buildAuto();
     }
   }
 
@@ -153,10 +165,18 @@ public class AutosBuilder {
     return ""; //Returns nothing if no errors found
   }
 
+  /**
+   * @return cached auto that was built in periodic
+   */
   public Command getAuto() {
     return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto(); //Return preBuiltAuto if custom, else build auto normally
   }
 
+  /**
+   * Builds auto based on auto chooser
+   *
+   * @return command to schedule for auto
+   */
   public Command buildAuto() {
     commandList = new ArrayList<>();
     if (Constants.currentMode == Mode.SIM) {
@@ -173,10 +193,16 @@ public class AutosBuilder {
       case IDLE:
         return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE)); //Sets wanted state to zero when idle
       default:
-        return buildAuto(autoChooser.get().toString()); //If not custom, builds auto from enum / predefined autos
+        return buildAuto(autoString);
     }
   }
 
+  /**
+   * Builds auto from the input
+   *
+   * @param input string to build auto from
+   * @return command to schedule for auto
+   */
   private Command buildAuto(String input) {
     //Same as validateAuto but builds the command list instead of returning errors
     boolean first = true;
@@ -258,9 +284,8 @@ public class AutosBuilder {
   //Enums
   public enum Auto {
     IDLE,
-    J4NFK4NFL4NF,
     E4RFD4RFC4RMB4,
-    // J4NFK4NFL4NMA4,
+    J4NFK4NFL4NMA4,
     CUSTOM,
   }
 

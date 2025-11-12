@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.DummyLogReceiver;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SimCoral;
 import java.util.Optional;
@@ -63,6 +64,9 @@ public class Robot extends LoggedRobot {
     // See http://bit.ly/3YIzFZ6 for more information on timestamps in AdvantageKit.
     // Logger.disableDeterministicTimestamps()
 
+    // Loop overrun, cooked, bad, this better work
+    Logger.addDataReceiver(new DummyLogReceiver());
+
     // Start AdvantageKit logger
     Logger.start();
 
@@ -83,7 +87,6 @@ public class Robot extends LoggedRobot {
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
-    // Warmup the PPLib library
 
     m_robotContainer = new RobotContainer();
 
@@ -91,12 +94,10 @@ public class Robot extends LoggedRobot {
 
     SimCoral.setRedAlliance(redAlliance);
 
-    // Logging for watching logs
-    Logger.recordOutput(
-        "Control Mode",
-        Constants.babyControlMode ? "Bummy baby controls" : "Full speed straight into the reef");
-
     m_gcTimer.start();
+
+    // this better work
+    Threads.setCurrentThreadPriority(true, 1);
   }
 
   @Override
@@ -104,11 +105,10 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "RioRamFreeBefore", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
 
-    Threads.setCurrentThreadPriority(false, 10);
     CommandScheduler.getInstance().run();
+    m_robotContainer.periodic();
     Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
-    m_robotContainer.autoPeriodic();
 
     Logger.recordOutput("Thread Priority", Threads.getCurrentThreadPriority());
     Logger.recordOutput("Thread Real Time", Threads.getCurrentThreadIsRealTime());
