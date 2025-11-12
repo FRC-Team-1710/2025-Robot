@@ -88,7 +88,7 @@ public class Superstructure {
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1))
-          .withErrorTheta(Degrees.of(1.5))
+          .withErrorTheta(Degrees.of(5))
           .withBeelineRadius(Inches.of(24));
 
   private Autopilot autopilot = new Autopilot(profile);
@@ -121,7 +121,7 @@ public class Superstructure {
 
   private double driverOverideAllignment = 0.25;
 
-  private final double metersToElevatorUp = 0.25;
+  private final double metersToElevatorUp = 1.25;
 
   private boolean autoSourceIsLeft = false;
 
@@ -133,7 +133,7 @@ public class Superstructure {
 
   private boolean isRedAlliance = false;
 
-  private boolean compressMaxSpeed = false;
+  private boolean compressMaxSpeed = true;
   private double speedComp = 1;
 
   private boolean ppReady = false;
@@ -196,8 +196,8 @@ public class Superstructure {
 
     if (Constants.useSmartDashboard) {
       SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-      SmartDashboard.putNumber("Acceleration", 0);
-      SmartDashboard.putNumber("Jerk", 0);
+      SmartDashboard.putNumber("Acceleration", 7.5);
+      SmartDashboard.putNumber("Jerk", 0.015);
       SmartDashboard.putNumber("Velocity", 0);
     }
   }
@@ -295,6 +295,8 @@ public class Superstructure {
             .getRotation()
             .minus(currentTarget.getReference().getRotation())
             .getDegrees());
+
+    Logger.recordOutput("Superstructure/IsDrivetrainAtTarget", isDrivetrainAtTarget());
 
     Logger.recordOutput("Superstructure/WantedState", wantedState);
     Logger.recordOutput("Superstructure/currentState", currentState);
@@ -744,8 +746,12 @@ public class Superstructure {
 
   private void autoDriveToReef() {
     claw.setState(ClawStates.IDLE);
+    if (Math.abs(
+            drivetrain.getPose().getTranslation().getDistance(getTargetPose().getTranslation()))
+        > 0.5) {
+      elevator.setState(ElevatorStates.INTAKE);
+    }
     climber.setState(ClimberStates.STOWED);
-    elevator.setState(ElevatorStates.INTAKE);
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
 
@@ -859,19 +865,14 @@ public class Superstructure {
     funnel.setState(FunnelState.OFF);
     scoreCoralFlag = ((isDrivetrainAtTarget() && elevator.isAtTarget()) || scoreCoralFlag);
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
-    if (ejectTimer.hasElapsed(0.25)) {
-      currentAlignTarget = AlignTarget.AP;
-      applyDrive(getTargetPose().plus(new Transform2d(-0.5, 0, Rotation2d.kZero)));
-    } else {
-      currentAlignTarget = AlignTarget.REEF;
-      applyDrive(getTargetPose());
-    }
+    currentAlignTarget = AlignTarget.REEF;
+    applyDrive(getTargetPose());
     if (!manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
-      if (ejectTimer.hasElapsed(0.5)) {
+      if (ejectTimer.hasElapsed(0.25)) {
         setWantedState(WantedState.DEFAULT_STATE);
       }
     }
@@ -977,7 +978,7 @@ public class Superstructure {
     funnel.setState(FunnelState.OFF);
     manipulator.setState(ManipulatorStates.OFF);
     // if (vision.algaeIsVisible()) {
-    //   applyDrive(vision.getAlgaeYaw() * 0.4);
+    // applyDrive(vision.getAlgaeYaw() * 0.4);
     // } else {
     applyDrive();
     // }
@@ -1213,17 +1214,17 @@ public class Superstructure {
    * @param rotation uses this for rotation + driver
    */
   // private void applyDrive(double rotation) {
-  //   drivetrain
-  //       .applyRequest(
-  //           () ->
-  //               fieldCentric
-  //                   .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
-  //                   .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
-  //                   .withRotationalRate(
-  //                       maxAngularRate.times(
-  //                           clamp(rotation)
-  //                               - (driver.customRight().getX() * driverOverideAllignment))))
-  //       .schedule();
+  // drivetrain
+  // .applyRequest(
+  // () ->
+  // fieldCentric
+  // .withVelocityX(maxSpeed.times(-driver.customLeft().getY()))
+  // .withVelocityY(maxSpeed.times(-driver.customLeft().getX()))
+  // .withRotationalRate(
+  // maxAngularRate.times(
+  // clamp(rotation)
+  // - (driver.customRight().getX() * driverOverideAllignment))))
+  // .schedule();
   // }
 
   /** Uses normal driver controlls */
@@ -1896,10 +1897,10 @@ public class Superstructure {
   public CurrentState decideStateForAlgae() {
     return CurrentState.MOVE_ALGAE_TO_NET_POSITION;
     // return onOtherHalfOfField()
-    //     ? CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION
-    //     : onLeftHalfOfField()
-    //         ? CurrentState.MOVE_ALGAE_TO_NET_POSITION
-    //         : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
+    // ? CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION
+    // : onLeftHalfOfField()
+    // ? CurrentState.MOVE_ALGAE_TO_NET_POSITION
+    // : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
   }
 
   public Command setWantedStateCommand(WantedState state) {
