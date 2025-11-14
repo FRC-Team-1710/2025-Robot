@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.DummyLogReceiver;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SimCoral;
 import java.util.Optional;
@@ -65,7 +64,7 @@ public class Robot extends LoggedRobot {
     // Logger.disableDeterministicTimestamps()
 
     // Loop overrun, cooked, bad, this better work
-    Logger.addDataReceiver(new DummyLogReceiver());
+    // Logger.addDataReceiver(new DummyLogReceiver());
 
     // Start AdvantageKit logger
     Logger.start();
@@ -95,9 +94,6 @@ public class Robot extends LoggedRobot {
     SimCoral.setRedAlliance(redAlliance);
 
     m_gcTimer.start();
-
-    // this better work
-    Threads.setCurrentThreadPriority(true, 1);
   }
 
   @Override
@@ -105,8 +101,12 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "RioRamFreeBefore", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
 
+    // this better work
+    Threads.setCurrentThreadPriority(true, 1);
     CommandScheduler.getInstance().run();
     m_robotContainer.periodic();
+    // this better work
+    Threads.setCurrentThreadPriority(false, 10);
     Logger.recordOutput("Match Time", DriverStation.getMatchTime());
     Logger.recordOutput("Time since startup", m_gcTimer.get());
 
