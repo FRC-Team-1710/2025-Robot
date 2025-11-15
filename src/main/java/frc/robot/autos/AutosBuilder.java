@@ -14,7 +14,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -36,35 +36,39 @@ public class AutosBuilder {
 
   private Command preBuiltAuto = Commands.none();
 
-  HashMap<Character, Source> charToSource = new HashMap<Character, Source>();
-  HashMap<Character, Reef> charToReef = new HashMap<Character, Reef>();
-  HashMap<Character, ReefHeight> charToReefHeight = new HashMap<Character, ReefHeight>();
-  HashMap<Character, SourceDistance> charToSourceDistance =
-      new HashMap<Character, SourceDistance>();
+  Map<Character, Source> charToSource =
+      Map.of(
+          'R', Source.RIGHT,
+          'N', Source.LEFT);
+
+  Map<Character, Reef> charToReef =
+      Map.ofEntries(
+          Map.entry('A', Reef.A),
+          Map.entry('B', Reef.B),
+          Map.entry('C', Reef.C),
+          Map.entry('D', Reef.D),
+          Map.entry('E', Reef.E),
+          Map.entry('F', Reef.F),
+          Map.entry('G', Reef.G),
+          Map.entry('H', Reef.H),
+          Map.entry('I', Reef.I),
+          Map.entry('J', Reef.J),
+          Map.entry('K', Reef.K),
+          Map.entry('L', Reef.L));
+
+  Map<Character, ReefHeight> charToReefHeight =
+      Map.of(
+          '2', ReefHeight.L2,
+          '3', ReefHeight.L3,
+          '4', ReefHeight.L4);
+
+  Map<Character, SourceDistance> charToSourceDistance =
+      Map.of(
+          'F', SourceDistance.FAR,
+          'M', SourceDistance.MID,
+          'C', SourceDistance.CLOSE);
 
   public AutosBuilder(Superstructure superstructure) {
-    // Add keys & values to HashMap
-    charToSource.put('R', Source.RIGHT);
-    charToSource.put('N', Source.LEFT);
-    charToReef.put('A', Reef.A);
-    charToReef.put('B', Reef.B);
-    charToReef.put('C', Reef.C);
-    charToReef.put('D', Reef.D);
-    charToReef.put('E', Reef.E);
-    charToReef.put('F', Reef.F);
-    charToReef.put('G', Reef.G);
-    charToReef.put('H', Reef.H);
-    charToReef.put('I', Reef.I);
-    charToReef.put('J', Reef.J);
-    charToReef.put('K', Reef.K);
-    charToReef.put('L', Reef.L);
-    charToReefHeight.put('2', ReefHeight.L2);
-    charToReefHeight.put('3', ReefHeight.L3);
-    charToReefHeight.put('4', ReefHeight.L4);
-    charToSourceDistance.put('F', SourceDistance.FAR);
-    charToSourceDistance.put('M', SourceDistance.MID);
-    charToSourceDistance.put('C', SourceDistance.CLOSE);
-
     this.superstructure = superstructure;
 
     // Add defaults to SmartDashboard
@@ -167,9 +171,7 @@ public class AutosBuilder {
    * @return cached auto that was built in periodic
    */
   public Command getAuto() {
-    return autoChooser.get() == Auto.CUSTOM
-        ? preBuiltAuto
-        : buildAuto(); // Return preBuiltAuto if custom, else build auto normally
+    return preBuiltAuto; // Return preBuiltAuto
   }
 
   /**
