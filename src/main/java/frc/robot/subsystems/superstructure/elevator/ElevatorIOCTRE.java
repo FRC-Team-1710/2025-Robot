@@ -7,7 +7,10 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -22,8 +25,10 @@ import frc.robot.Constants;
 import frc.robot.utils.Conversions;
 
 /**
- * CTRE-based implementation of the ElevatorIO interface for controlling an elevator mechanism. This
- * implementation uses TalonFX motors and a CANcoder for position feedback. The elevator consists of
+ * CTRE-based implementation of the ElevatorIO interface for controlling an
+ * elevator mechanism. This
+ * implementation uses TalonFX motors and a CANcoder for position feedback. The
+ * elevator consists of
  * a leader motor, a follower motor, and an encoder for precise positioning.
  */
 public class ElevatorIOCTRE implements ElevatorIO {
@@ -38,29 +43,38 @@ public class ElevatorIOCTRE implements ElevatorIO {
   /** The follower TalonFX motor controller (CAN ID: 12) */
   public final TalonFX follower = new TalonFX(12);
 
-  private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
+  // Torques
 
-  // FAST
-  private double kP = 1; // 0.1 // 0.75
-  private double kI = 0; // 0.0 // 0.0
-  private double kD = 0; // 0.0 // 0.0
-  private double kS = 0.2; // 0.0 // 0.1
-  private double kG = 0.55; // 0.3375 // 0.375
-  private double kV = 0.12; // 0.0 // 0.075
-  private double kA = 0; // 0.0 // 0.0
-  private double kAcel = 100; // 200
-  private double kVel = 150;
+  // will experiment if mm is needed
+  private final PositionTorqueCurrentFOC request = new PositionTorqueCurrentFOC(0).withSlot(0);
+  // private final MotionMagicTorqueCurrentFOC request = new
+  // MotionMagicTorqueCurrentFOC(0).withSlot(0);
 
-  // slow
-  // private double kP = 0.05; // 0.1 // 0.75
-  // private double kI = 0; // 0.0 // 0.0
-  // private double kD = 0; // 0.0 // 0.0
-  // private double kS = 0.19; // 0.0 // 0.1
-  // private double kG = 0.31; // 0.3375 // 0.375
-  // private double kV = 0.135; // 0.0 // 0.075
-  // private double kA = 0; // 0.0 // 0.0
-  // private double kAcel = 65; // 200
-  // private double kVel = 175;
+  private double kP = 0.0;
+  private double kI = 0.0;
+  private double kD = 0.0;
+  private double kS = 0.0;
+  private double kG = 0.0;
+  private double kV = 0.0;
+  private double kA = 0.0;
+  private double kAcel = 0.0;
+  private double kVel = 0.0;
+  private double kStat = 0.0;
+  private double kSup = 0.0;
+
+  // MM Voltage
+  // private final MotionMagicVoltage request = new
+  // MotionMagicVoltage(0).withSlot(0);
+
+  // private double kP = 1;
+  // private double kI = 0;
+  // private double kD = 0;
+  // private double kS = 0.2;
+  // private double kG = 0.55;
+  // private double kV = 0.12;
+  // private double kA = 0;
+  // private double kAcel = 100;
+  // private double kVel = 150;
 
   // Status signals for monitoring motor and encoder states
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
@@ -86,7 +100,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   private Distance setpoint = Inches.of(0);
 
   /**
-   * The radius of the elevator pulley/drum, used for converting between rotations and linear
+   * The radius of the elevator pulley/drum, used for converting between rotations
+   * and linear
    * distance
    */
   public static final Distance elevatorRadius = Inches.of(1.1338619402985);
@@ -94,8 +109,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
   protected final Distance cancoderTripThreshold = Inches.of(15);
 
   /**
-   * Constructs a new ElevatorIOCTRE instance and initializes all hardware components. This includes
-   * configuring both motors, setting up the follower relationship, and optimizing CAN bus
+   * Constructs a new ElevatorIOCTRE instance and initializes all hardware
+   * components. This includes
+   * configuring both motors, setting up the follower relationship, and optimizing
+   * CAN bus
    * utilization for all devices.
    */
   public ElevatorIOCTRE() {
@@ -109,6 +126,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
       SmartDashboard.putNumber("Elevator/PID/A", kA);
       SmartDashboard.putNumber("Elevator/PID/Acel", kAcel);
       SmartDashboard.putNumber("Elevator/PID/Vel", kVel);
+      SmartDashboard.putNumber("Elevator/PID/Sup", kSup);
+      SmartDashboard.putNumber("Elevator/PID/Stat", kStat);
       SmartDashboard.putBoolean("Zero", false);
       SmartDashboard.putBoolean("ELEUPD", false);
     }
@@ -119,6 +138,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     // Configure both motors with identical settings
     TalonFXConfiguration config = createMotorConfiguration();
     leader.getConfigurator().apply(config);
+    follower.getConfigurator().apply(config);
 
     // Configure update frequencies for all status signals
     BaseStatusSignal.setUpdateFrequencyForAll(
@@ -148,7 +168,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Creates the motor configuration with appropriate settings. Sets up neutral mode, PID gains, and
+   * Creates the motor configuration with appropriate settings. Sets up neutral
+   * mode, PID gains, and
    * feedback device configuration.
    *
    * @return The configured TalonFXConfiguration object
@@ -163,10 +184,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
       config.Slot0.kG = SmartDashboard.getNumber("Elevator/PID/G", kG);
       config.Slot0.kV = SmartDashboard.getNumber("Elevator/PID/V", kV);
       config.Slot0.kA = SmartDashboard.getNumber("Elevator/PID/A", kA);
-      config.MotionMagic.MotionMagicAcceleration =
-          SmartDashboard.getNumber("Elevator/PID/Acel", kAcel);
-      config.MotionMagic.MotionMagicCruiseVelocity =
-          SmartDashboard.getNumber("Elevator/PID/Vel", kVel);
+      config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Elevator/PID/Acel", kAcel);
+      config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Elevator/PID/Vel", kVel);
+      config.CurrentLimits.StatorCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Stat", kStat);
+      config.CurrentLimits.SupplyCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Sup", kSup);
     } else {
       config.Slot0.kP = kP;
       config.Slot0.kI = kI;
@@ -177,41 +198,46 @@ public class ElevatorIOCTRE implements ElevatorIO {
       config.Slot0.kA = kA;
       config.MotionMagic.MotionMagicAcceleration = kAcel;
       config.MotionMagic.MotionMagicCruiseVelocity = kVel;
+      config.CurrentLimits.StatorCurrentLimit = kStat;
+      config.CurrentLimits.SupplyCurrentLimit = kSup;
     }
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     return config;
   }
 
   /**
-   * Updates the elevator's input values with the latest sensor readings. This includes position,
-   * velocity, voltage, and current measurements from both motors and the encoder, as well as
+   * Updates the elevator's input values with the latest sensor readings. This
+   * includes position,
+   * velocity, voltage, and current measurements from both motors and the encoder,
+   * as well as
    * connection status for all devices.
    *
-   * @param inputs The ElevatorIOInputs object to update with the latest values
+   * @param inputs
+   *          The ElevatorIOInputs object to update with the latest values
    */
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     // Refresh all sensor data
-    StatusCode leaderStatus =
-        BaseStatusSignal.refreshAll(
-            leaderPosition,
-            leaderRotorPosition,
-            leaderVelocity,
-            leaderRotorVelocity,
-            leaderAppliedVolts,
-            leaderStatorCurrent,
-            leaderSupplyCurrent,
-            leaderSetpoint);
+    StatusCode leaderStatus = BaseStatusSignal.refreshAll(
+        leaderPosition,
+        leaderRotorPosition,
+        leaderVelocity,
+        leaderRotorVelocity,
+        leaderAppliedVolts,
+        leaderStatorCurrent,
+        leaderSupplyCurrent,
+        leaderSetpoint);
 
-    StatusCode followerStatus =
-        BaseStatusSignal.refreshAll(
-            followerPosition,
-            followerRotorPosition,
-            followerVelocity,
-            followerRotorVelocity,
-            followerAppliedVolts,
-            followerStatorCurrent,
-            followerSupplyCurrent);
+    StatusCode followerStatus = BaseStatusSignal.refreshAll(
+        followerPosition,
+        followerRotorPosition,
+        followerVelocity,
+        followerRotorVelocity,
+        followerAppliedVolts,
+        followerStatorCurrent,
+        followerSupplyCurrent);
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
@@ -230,8 +256,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.followerSupplyCurrent = followerSupplyCurrent.getValue();
 
-    inputs.distance =
-        Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
+    inputs.distance = Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
 
     inputs.goal = setpoint;
     inputs.setpoint = leaderSetpoint.getValue();
@@ -247,20 +272,22 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Sets the desired distance for the elevator to move to. Converts the desired linear distance to
+   * Sets the desired distance for the elevator to move to. Converts the desired
+   * linear distance to
    * encoder rotations and applies position control.
    *
-   * @param distance The target distance for the elevator
+   * @param distance
+   *          The target distance for the elevator
    */
   @Override
   public void setDistance(Distance distance) {
     locked = true;
     if (distance.in(Inches) == 0
         && Conversions.rotationsToDistance(
-                leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
+            leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
             .isNear(Inches.of(0), Inches.of(2.5))
         && !Conversions.rotationsToDistance(
-                leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
+            leader.getPosition().getValue(), GEAR_RATIO, elevatorRadius)
             .isNear(Inches.of(0), Inches.of(0.125))) {
       leader.setControl(new VoltageOut(-0.75));
     } else {
@@ -288,7 +315,8 @@ public class ElevatorIOCTRE implements ElevatorIO {
   }
 
   /**
-   * Stops all elevator movement by stopping the leader motor. The follower will also stop due to
+   * Stops all elevator movement by stopping the leader motor. The follower will
+   * also stop due to
    * the follower relationship.
    */
   @Override
