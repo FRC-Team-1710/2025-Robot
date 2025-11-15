@@ -4,12 +4,6 @@
 
 package frc.robot.autos;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,6 +13,10 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Add your docs here. */
 public class AutosBuilder {
@@ -45,7 +43,7 @@ public class AutosBuilder {
       new HashMap<Character, SourceDistance>();
 
   public AutosBuilder(Superstructure superstructure) {
-    //Add keys & values to HashMap
+    // Add keys & values to HashMap
     charToSource.put('R', Source.RIGHT);
     charToSource.put('N', Source.LEFT);
     charToReef.put('A', Reef.A);
@@ -68,8 +66,8 @@ public class AutosBuilder {
     charToSourceDistance.put('C', SourceDistance.CLOSE);
 
     this.superstructure = superstructure;
-    
-    //Add defaults to SmartDashboard
+
+    // Add defaults to SmartDashboard
 
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
@@ -85,7 +83,7 @@ public class AutosBuilder {
   }
 
   public void periodic() {
-    //If it's set to custom and the custom is diffrent, build the auto
+    // If it's set to custom and the custom is diffrent, build the auto
     if (autoChooser.get() == Auto.CUSTOM
         && autoString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
       autoString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
@@ -112,8 +110,8 @@ public class AutosBuilder {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
-      //Sets the NextCommand and source to specific value from HashMap
-      //For first character in pair
+      // Sets the NextCommand and source to specific value from HashMap
+      // For first character in pair
       if (first) {
         if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
@@ -122,7 +120,7 @@ public class AutosBuilder {
           nextCommand = NextCommand.PLACE;
           reef = charToReef.get(character);
         } else {
-          //Return the error
+          // Return the error
           return "Character at character "
               + (i + 1)
               + " of the first half was "
@@ -130,13 +128,13 @@ public class AutosBuilder {
               + " which is invalid";
         }
       } else {
-        //Also sets NextCommand (see comment above)
-        //For second character in pair
+        // Also sets NextCommand (see comment above)
+        // For second character in pair
         if (nextCommand == NextCommand.PLACE) {
           if (charToReefHeight.containsKey(character)) {
             reefHeight = charToReefHeight.get(character);
           } else {
-            //Return the error
+            // Return the error
             return "Character at character "
                 + (i + 1)
                 + " of the second half was "
@@ -149,7 +147,7 @@ public class AutosBuilder {
           if (charToSourceDistance.containsKey(character)) {
             sourceDistance = charToSourceDistance.get(character);
           } else {
-            //Returns the error
+            // Returns the error
             return "Character at character "
                 + (i + 1)
                 + " of the second half was "
@@ -160,16 +158,18 @@ public class AutosBuilder {
           }
         }
       }
-      first = !first; //Swaps whether it's first or second character in pair
+      first = !first; // Swaps whether it's first or second character in pair
     }
-    return ""; //Returns nothing if no errors found
+    return ""; // Returns nothing if no errors found
   }
 
   /**
    * @return cached auto that was built in periodic
    */
   public Command getAuto() {
-    return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto(); //Return preBuiltAuto if custom, else build auto normally
+    return autoChooser.get() == Auto.CUSTOM
+        ? preBuiltAuto
+        : buildAuto(); // Return preBuiltAuto if custom, else build auto normally
   }
 
   /**
@@ -186,12 +186,21 @@ public class AutosBuilder {
       case CUSTOM:
         if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
             == "(insert auto here)") {
-          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE)); //Returns zero command if no custom input
+          return Commands.runOnce(
+              () ->
+                  superstructure.setWantedState(
+                      WantedState.DEFAULT_STATE)); // Returns zero command if no custom input
         } else {
-          return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)")); //returns built custom auto from SmartDashboard input
+          return buildAuto(
+              SmartDashboard.getString(
+                  "Custom Auto Input",
+                  "(insert auto here)")); // returns built custom auto from SmartDashboard input
         }
       case IDLE:
-        return Commands.runOnce(() -> superstructure.setWantedState(WantedState.DEFAULT_STATE)); //Sets wanted state to zero when idle
+        return Commands.runOnce(
+            () ->
+                superstructure.setWantedState(
+                    WantedState.DEFAULT_STATE)); // Sets wanted state to zero when idle
       default:
         return buildAuto(autoString);
     }
@@ -204,7 +213,7 @@ public class AutosBuilder {
    * @return command to schedule for auto
    */
   private Command buildAuto(String input) {
-    //Same as validateAuto but builds the command list instead of returning errors
+    // Same as validateAuto but builds the command list instead of returning errors
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
@@ -229,7 +238,7 @@ public class AutosBuilder {
       first = !first;
     }
 
-    //Adds all the commands in commandList to a SequentialCommandGroup and returns it
+    // Adds all the commands in commandList to a SequentialCommandGroup and returns it
     SequentialCommandGroup commands = new SequentialCommandGroup();
     for (int i = 0; i < commandList.size(); i++) {
       commands.addCommands(commandList.get(i));
@@ -237,7 +246,7 @@ public class AutosBuilder {
     return commands;
   }
 
-  //Turns the enums into actual commands
+  // Turns the enums into actual commands
   private Command getCommand(
       NextCommand nextCommand,
       Reef reef,
@@ -258,7 +267,7 @@ public class AutosBuilder {
     }
   }
 
-  //Command for placing coral on reef, takes reef side and reefheight as parameters
+  // Command for placing coral on reef, takes reef side and reefheight as parameters
   private Command createPlaceCommand(Reef reef, ReefHeight reefHeight) {
     return Commands.runOnce(() -> superstructure.setTargets(reef, reefHeight))
         .andThen(
@@ -270,7 +279,7 @@ public class AutosBuilder {
                 () -> superstructure.getWantedState() == WantedState.DEFAULT_STATE));
   }
 
-  //Command for sourcing coral from station, takes near/far source and distance as parameters
+  // Command for sourcing coral from station, takes near/far source and distance as parameters
   private Command createSourceCommand(Source source, SourceDistance sourceDistance) {
     return Commands.runOnce(() -> superstructure.setTargets(source, sourceDistance))
         .andThen(
@@ -281,11 +290,12 @@ public class AutosBuilder {
                 () -> superstructure.getWantedState() == WantedState.DEFAULT_STATE));
   }
 
-  //Enums
+  // Enums
   public enum Auto {
     IDLE,
     E4RFD4RFC4RMB4,
     J4NFK4NFL4NMA4,
+    K4NFL4NMA4NM,
     CUSTOM,
   }
 

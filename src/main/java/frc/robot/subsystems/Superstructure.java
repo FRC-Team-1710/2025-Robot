@@ -84,10 +84,10 @@ public class Superstructure {
       new APConstraints()
           .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 7.5)
           .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 0)
-          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.015);
+          .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.0175);
   private final APProfile profile =
       new APProfile(constraints)
-          .withErrorXY(Inches.of(1))
+          .withErrorXY(Inches.of(1.25))
           .withErrorTheta(Degrees.of(5))
           .withBeelineRadius(Inches.of(24));
 
@@ -139,7 +139,7 @@ public class Superstructure {
   private boolean ppReady = false;
 
   private final double offsetX = Units.inchesToMeters(17.5);
-  private final double offsetY = Units.inchesToMeters(6.5);
+  private final double offsetY = Units.inchesToMeters(6);
 
   private final Timer ejectTimer = new Timer();
 
@@ -706,7 +706,7 @@ public class Superstructure {
     funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
     currentAlignTarget = AlignTarget.SOURCE;
     applyDrive(targetSourcePoseAuto(drivetrain.getPose()));
-    if (manipulator.almostHasCoral() || manipulator.hasCoral()) {
+    if (manipulator.detectsCoral() || manipulator.almostHasCoral() || manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
     }
   }
@@ -832,7 +832,7 @@ public class Superstructure {
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
-      if (ejectTimer.hasElapsed(0.5)) {
+      if (ejectTimer.hasElapsed(0.25)) {
         setWantedState(WantedState.DEFAULT_STATE);
       }
     }
@@ -852,7 +852,7 @@ public class Superstructure {
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);
       }
-      if (ejectTimer.hasElapsed(0.5)) {
+      if (ejectTimer.hasElapsed(0.25)) {
         setWantedState(WantedState.DEFAULT_STATE);
       }
     }
@@ -867,7 +867,7 @@ public class Superstructure {
     manipulator.setState(scoreCoralFlag ? ManipulatorStates.OUTTAKE : ManipulatorStates.OFF);
     currentAlignTarget = AlignTarget.REEF;
     applyDrive(getTargetPose());
-    if (!manipulator.detectsCoral()) {
+    if (scoreCoralFlag) { // !manipulator.detectsCoral()) {
       ejectTimer.start();
       if (Constants.currentMode == Mode.SIM) {
         SimCoral.addPose(targetFace, targetSide, targetLevel);

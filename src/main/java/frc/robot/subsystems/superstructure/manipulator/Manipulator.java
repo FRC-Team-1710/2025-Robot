@@ -97,6 +97,14 @@ public class Manipulator {
         : (inputs.beam2Broken || inputs.beam1Broken);
   }
 
+  public boolean canElevatorMove() {
+    // return Constants.currentMode == Mode.SIM
+    //     ? (currentCoralState == CurrentCoralState.DETECTS
+    //         && currentCoralState != CurrentCoralState.SECURED)
+    // : (!inputs.beam1Broken);
+    return !inputs.beam1Broken;
+  }
+
   public void advanceGamePiece() {
     if (Constants.currentMode == Mode.SIM) {
       currentCoralState =

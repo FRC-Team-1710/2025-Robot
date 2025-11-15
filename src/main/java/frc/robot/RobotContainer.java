@@ -109,7 +109,8 @@ public class RobotContainer {
         // new Elevator(
         // new ElevatorIO() {},
         // () -> mech.getLeftY());
-        elevator = new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY());
+        elevator =
+            new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY(), manipulator::canElevatorMove);
         claw = new Claw(new ClawIOCTRE(), () -> driver.leftBumper().getAsBoolean());
         funnel = new Funnel(new FunnelIOCTRE(), () -> driver.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
@@ -168,7 +169,7 @@ public class RobotContainer {
         manipulator =
             new Manipulator(new ManipulatorIOSim(), () -> driver.leftBumper().getAsBoolean());
         ElevatorIOSIM iosim = new ElevatorIOSIM();
-        elevator = new Elevator(iosim, () -> mech.getLeftY());
+        elevator = new Elevator(iosim, () -> mech.getLeftY(), manipulator::canElevatorMove);
         claw = new Claw(new ClawIOSIM(iosim), () -> driver.leftBumper().getAsBoolean());
         funnel = new Funnel(new FunnelIOSIM(), () -> driver.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
@@ -225,7 +226,8 @@ public class RobotContainer {
         drivetrain = new Drive(new DriveIO() {});
         manipulator =
             new Manipulator(new ManipulatorIO() {}, () -> driver.leftBumper().getAsBoolean());
-        elevator = new Elevator(new ElevatorIO() {}, () -> mech.getLeftY());
+        elevator =
+            new Elevator(new ElevatorIO() {}, () -> mech.getLeftY(), manipulator::canElevatorMove);
         claw = new Claw(new ClawIO() {}, () -> driver.leftBumper().getAsBoolean());
         funnel = new Funnel(new FunnelIO() {}, () -> driver.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);

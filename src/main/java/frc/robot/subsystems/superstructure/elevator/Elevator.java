@@ -6,6 +6,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -25,6 +26,8 @@ public class Elevator {
   private final Timer timer = new Timer();
   private boolean doneZeroing = false;
 
+  private final BooleanSupplier canMoveUp;
+
   private final DoubleSupplier manualSupplier;
 
   /**
@@ -32,10 +35,11 @@ public class Elevator {
    *
    * @param io The hardware interface implementation for the elevator
    */
-  public Elevator(ElevatorIO io, DoubleSupplier manualSupplier) {
+  public Elevator(ElevatorIO io, DoubleSupplier manualSupplier, BooleanSupplier canMoveUp) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
     this.manualSupplier = manualSupplier;
+    this.canMoveUp = canMoveUp;
   }
 
   public void periodic() {
@@ -108,7 +112,11 @@ public class Elevator {
     if (!timer.isRunning()) {
       timer.start();
     }
-    this.currentState = state;
+    if (canMoveUp.getAsBoolean()) {
+      this.currentState = state;
+    } else {
+      this.currentState = ElevatorStates.INTAKE;
+    }
   }
 
   public boolean isDoneZeroing() {
