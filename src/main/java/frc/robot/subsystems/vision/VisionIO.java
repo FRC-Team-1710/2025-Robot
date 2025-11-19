@@ -18,6 +18,7 @@ public interface VisionIO {
     PoseEstimate poseEstimateMT2 = new PoseEstimate();
     RawFiducial[] rawFiducialsMT1 = new RawFiducial[0];
     RawFiducial[] rawFiducialsMT2 = new RawFiducial[0];
+    // TODO: limelight not necessary, see about removing it.
   }
 
   default void updateInputs(VisionIOInputs inputs) {}

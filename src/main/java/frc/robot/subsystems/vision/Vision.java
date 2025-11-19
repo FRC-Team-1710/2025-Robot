@@ -109,12 +109,12 @@ public class Vision extends SubsystemBase {
       disconnectedAlerts[i].set(!inputs[i].connected);
       Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
+    // Update algae camera
     algaeCamera.updateResults();
     double algaeYaw = algaeCamera.getAlgaeYaw();
-    if (algaeYaw != 0.0) {
+    if (!Double.isNaN(algaeYaw)) {
       Logger.recordOutput("Algae Yaw", algaeYaw);
     }
-    // TODO: Fix up this function. only logging when not 0.0 doesn't make sense
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
@@ -341,7 +341,8 @@ public class Vision extends SubsystemBase {
         .map(input -> processCamera(Arrays.asList(inputs).indexOf(input), input))
         .reduce(VisionData.empty(), VisionData::merge);
   }
-  // TODO: Optimize this function  
+
+  // TODO: Optimize this function
 
   /**
    * Processes vision data from a single camera.

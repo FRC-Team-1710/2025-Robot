@@ -26,17 +26,17 @@ public class VisionIOAlgae {
 
   public boolean targetVisible() {
     return Constants.currentMode == Mode.REAL
-        ? ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets())
+        ? ((!(cameraResults == null) || !cameraResults.isEmpty()) && currentResult.hasTargets())
         : false;
   }
 
   // LEFT BUMBPER
   public double getAlgaeYaw() {
     if (Constants.currentMode == Mode.REAL) {
-      boolean targetVisible = false;
-      double targetYaw = 0.0;
-      double lowestPitch = 180.0;
-      if ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult != null) {
+      // Default to not visible,
+      double targetYaw = Double.NaN;
+      double lowestPitch = Double.POSITIVE_INFINITY;
+      if ((!(cameraResults == null) || !cameraResults.isEmpty()) && currentResult != null) {
         // Camera processed a new frame since last
         // Get the last one in the list.
         Boolean hasResults = currentResult.hasTargets();
@@ -49,13 +49,13 @@ public class VisionIOAlgae {
               targetYaw = target.getYaw();
               lowestPitch = pitch;
             }
-            targetVisible = true;
+            // Finds the target with the lowest pitch (closest to robot)
           }
         }
       }
       Logger.recordOutput("Lowest Pitch", lowestPitch);
-      return targetVisible ? targetYaw : 0.0;
+      return targetYaw;
     }
-    return 0;
+    return Double.NaN;
   }
 }
