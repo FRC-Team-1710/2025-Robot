@@ -691,7 +691,8 @@ public class Superstructure {
     elevator.setState(ElevatorStates.INTAKE);
     manipulator.setState(ManipulatorStates.INTAKE);
     funnel.setState(manipulator.detectsCoral() ? FunnelState.INTAKE_SLOW : FunnelState.INTAKE);
-    applyDrive(targetSourcePoseAuto(drivetrain.getPose()).getRotation());
+    // applyDrive(targetSourcePoseAuto(drivetrain.getPose()).getRotation());
+    applyDrive();
     if (manipulator.hasCoral()) {
       setWantedState(WantedState.DEFAULT_STATE);
     }
