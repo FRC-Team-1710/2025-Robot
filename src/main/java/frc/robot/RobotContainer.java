@@ -25,20 +25,16 @@ import frc.robot.subsystems.drive.DriveIOCTRE;
 import frc.robot.subsystems.superstructure.LEDs.LEDSubsystem;
 import frc.robot.subsystems.superstructure.claw.Claw;
 import frc.robot.subsystems.superstructure.claw.ClawIO;
-import frc.robot.subsystems.superstructure.claw.ClawIOCTRE;
 import frc.robot.subsystems.superstructure.claw.ClawIOSIM;
 import frc.robot.subsystems.superstructure.climber.Climber;
 import frc.robot.subsystems.superstructure.elevator.Elevator;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
-import frc.robot.subsystems.superstructure.elevator.ElevatorIOCTRE;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSIM;
 import frc.robot.subsystems.superstructure.funnel.Funnel;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO;
-import frc.robot.subsystems.superstructure.funnel.FunnelIOCTRE;
 import frc.robot.subsystems.superstructure.funnel.FunnelIOSIM;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO;
-import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOCTRE;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
@@ -101,19 +97,24 @@ public class RobotContainer {
     DriveIOCTRE currentDriveTrain = TunerConstants.createDrivetrain();
     switch (Constants.currentMode) {
       case REAL:
-        // drivetrain = new Drive(new DriveIO() {});
         drivetrain = new Drive(currentDriveTrain);
+
         manipulator =
-            new Manipulator(new ManipulatorIOCTRE(), () -> driver.leftBumper().getAsBoolean());
-        // elevator =
-        // new Elevator(
-        // new ElevatorIO() {},
-        // () -> mech.getLeftY());
+            new Manipulator(new ManipulatorIO() {}, () -> driver.leftBumper().getAsBoolean());
         elevator =
-            new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY(), manipulator::canElevatorMove);
-        claw = new Claw(new ClawIOCTRE(), () -> driver.leftBumper().getAsBoolean());
-        funnel = new Funnel(new FunnelIOCTRE(), () -> driver.leftBumper().getAsBoolean());
+            new Elevator(new ElevatorIO() {}, () -> mech.getLeftY(), manipulator::canElevatorMove);
+        claw = new Claw(new ClawIO() {}, () -> driver.leftBumper().getAsBoolean());
+        funnel = new Funnel(new FunnelIO() {}, () -> driver.leftBumper().getAsBoolean());
         ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
+
+        // manipulator =
+        //     new Manipulator(new ManipulatorIOCTRE(), () -> driver.leftBumper().getAsBoolean());
+        // elevator =
+        //     new Elevator(new ElevatorIOCTRE(), () -> mech.getLeftY(),
+        // manipulator::canElevatorMove);
+        // claw = new Claw(new ClawIOCTRE(), () -> driver.leftBumper().getAsBoolean());
+        // funnel = new Funnel(new FunnelIOCTRE(), () -> driver.leftBumper().getAsBoolean());
+        // ledsubsystem = new LEDSubsystem(funnel, manipulator, climber, elevator, drivetrain);
         algaeCam = new VisionIOAlgae("AlgaeCam");
         vision =
             new Vision(

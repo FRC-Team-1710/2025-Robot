@@ -154,6 +154,12 @@ public class Superstructure {
       new SwerveRequest.FieldCentric()
           .withDeadband(maxSpeed.times(0.025))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
+          .withDriveRequestType(DriveRequestType.Velocity);
+
+  private final SwerveRequest.FieldCentric fieldCentricVoltage =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(maxSpeed.times(0.025))
+          .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   private final PIDController movingRotation =
@@ -200,6 +206,9 @@ public class Superstructure {
       SmartDashboard.putNumber("Jerk", 0.015);
       SmartDashboard.putNumber("Velocity", 0);
     }
+
+    SmartDashboard.putNumber("speedscausebum", 0);
+    SmartDashboard.putBoolean("whyCoast", false);
   }
 
   public boolean driverRumble() {
@@ -321,6 +330,11 @@ public class Superstructure {
     Logger.recordOutput("Superstructure/LeftHalf", isRobotOnLeftHalfOfReefFace(getTargetPose()));
 
     Logger.recordOutput("Superstructure/TargetPose", getTargetPose());
+
+    Logger.recordOutput(
+        "bfuiwbfiberwgbfiugewifhuiruigf",
+        MetersPerSecond.of(
+            (driver.customLeft().getNorm() + SmartDashboard.getNumber("speedscausebum", 0)) * 5));
 
     driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
 
@@ -1230,11 +1244,21 @@ public class Superstructure {
   /** Uses normal driver controlls */
   private void applyDrive() {
     var output = getClamped(driver.customLeft());
-    drivetrain.setControl(
-        fieldCentric
-            .withVelocityX(maxSpeed.times(-output.getY()))
-            .withVelocityY(maxSpeed.times(-output.getX()))
-            .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())));
+    if (SmartDashboard.getBoolean("whyCoast", false)) {
+      drivetrain.setControl(
+          fieldCentric
+              .withVelocityX(maxSpeed.times(-output.getY()))
+              .withVelocityY(
+                  maxSpeed.times(-output.getX() + SmartDashboard.getNumber("speedscausebum", 0)))
+              .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())));
+    } else {
+      drivetrain.setControl(
+          fieldCentricVoltage
+              .withVelocityX(maxSpeed.times(-output.getY()))
+              .withVelocityY(
+                  maxSpeed.times(-output.getX() + SmartDashboard.getNumber("speedscausebum", 0)))
+              .withRotationalRate(maxAngularRate.times(-driver.customRight().getX())));
+    }
   }
 
   /** Uses normal driver controlls with a rotation snap */

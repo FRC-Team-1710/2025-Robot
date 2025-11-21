@@ -47,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.Robot;
+import frc.robot.autos.SysIdSwerveTranslationTorqueCurrentFOC;
 import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.utils.ArrayBuilder;
 import frc.robot.utils.FieldConstants;
@@ -99,8 +100,8 @@ public class Drive extends SubsystemBase {
   /* Swerve request to apply when braking */
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
 
-  private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
-      new SwerveRequest.SysIdSwerveRotation();
+  private final SysIdSwerveTranslationTorqueCurrentFOC m_rotationCharacterization =
+      new SysIdSwerveTranslationTorqueCurrentFOC();
 
   /*
    * SysId routine for characterizing rotation.
@@ -109,6 +110,29 @@ public class Drive extends SubsystemBase {
    * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
    * importing the log to SysId.
    */
+  // private final SysIdRoutine m_sysIdRoutineRotation =
+  //     new SysIdRoutine(
+  //         new SysIdRoutine.Config(
+  //             /*
+  //              * This is in radians per second squared, but SysId only supports
+  //              * "volts per second"
+  //              */
+  //             Volts.of(Math.PI / 6).per(Second),
+  //             /* This is in radians per second, but SysId only supports "volts" */
+  //             Volts.of(Math.PI),
+  //             null, // Use default timeout (10 s)
+  //             // Log state with Logger class
+  //             state -> Logger.recordOutput("SysIdRotation_State", state.toString())),
+  //         new SysIdRoutine.Mechanism(
+  //             output -> {
+  //               /* output is actually radians per second, but SysId only supports "volts" */
+  //               setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+  //               /* also log the requested output for SysId */
+  //               Logger.recordOutput("Rotational_Rate", output.in(Volts));
+  //             },
+  //             null,
+  //             this));
+
   private final SysIdRoutine m_sysIdRoutineRotation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -116,18 +140,18 @@ public class Drive extends SubsystemBase {
                * This is in radians per second squared, but SysId only supports
                * "volts per second"
                */
-              Volts.of(Math.PI / 6).per(Second),
+              Volts.of(6).per(Second),
               /* This is in radians per second, but SysId only supports "volts" */
-              Volts.of(Math.PI),
+              Volts.of(10),
               null, // Use default timeout (10 s)
               // Log state with Logger class
-              state -> Logger.recordOutput("SysIdRotation_State", state.toString())),
+              state -> Logger.recordOutput("SysIdTranslation_State", state.toString())),
           new SysIdRoutine.Mechanism(
               output -> {
                 /* output is actually radians per second, but SysId only supports "volts" */
-                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                setControl(m_rotationCharacterization.withCurrent(output.in(Volts)));
                 /* also log the requested output for SysId */
-                Logger.recordOutput("Rotational_Rate", output.in(Volts));
+                Logger.recordOutput("Translation_Rate", output.in(Volts));
               },
               null,
               this));

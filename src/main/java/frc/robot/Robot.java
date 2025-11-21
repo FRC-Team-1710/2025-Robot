@@ -78,6 +78,7 @@ public class Robot extends LoggedRobot {
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
+    SignalLogger.setPath("/U/ctre-logs");
     SignalLogger.stop();
 
     // Set Pathfinding to the default AdvantageKit Pathfinder
@@ -179,10 +180,14 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
       m_robotContainer.requsetDefault();
     }
+
+    SignalLogger.start();
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    SignalLogger.stop();
+  }
 
   @Override
   public void teleopExit() {}
