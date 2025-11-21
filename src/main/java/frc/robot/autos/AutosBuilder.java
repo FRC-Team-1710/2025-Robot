@@ -97,7 +97,7 @@ public class AutosBuilder {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
-      //checks that the first command contains the proper characters and throws an error if not true
+      //checks that the first half of the command contains the proper characters and throws an error if not true
       if (first) {
         if (charToSource.containsKey(character)) {
           nextCommand = NextCommand.SOURCE;
@@ -112,7 +112,7 @@ public class AutosBuilder {
               + String.valueOf(character)
               + " which is invalid";
         }
-      //Checks that the rest of the characters are valid and in the correct order
+      //Checks that the second half of the command are valid and in the correct order
       } else {
         if (nextCommand == NextCommand.PLACE) {
           if (charToReefHeight.containsKey(character)) {

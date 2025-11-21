@@ -145,6 +145,7 @@ public class Superstructure extends SubsystemBase {
 
   private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
 
+  //sets the drivetrain to drive field centric
   private final SwerveRequest.FieldCentric fieldCentric =
       new SwerveRequest.FieldCentric()
           .withDeadband(maxSpeed.times(0.025))
