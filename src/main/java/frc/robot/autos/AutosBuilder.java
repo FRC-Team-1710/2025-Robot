@@ -4,6 +4,12 @@
 
 package frc.robot.autos;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -13,10 +19,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
-import java.util.ArrayList;
-import java.util.HashMap;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Add your docs here. */
 public class AutosBuilder {
@@ -44,6 +46,7 @@ public class AutosBuilder {
 
   //creates a hashmap for every branch of the reef
   public AutosBuilder(Superstructure superstructure) {
+    //Add keys & values to HashMap
     charToSource.put('R', Source.RIGHT);
     charToSource.put('N', Source.LEFT);
     charToReef.put('A', Reef.A);
@@ -66,6 +69,8 @@ public class AutosBuilder {
     charToSourceDistance.put('C', SourceDistance.CLOSE);
 
     this.superstructure = superstructure;
+    
+    //Add defaults to SmartDashboard
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
         "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
@@ -79,6 +84,7 @@ public class AutosBuilder {
 
   //Checks if the auto input is CUSTOM and valid, logs the result, and throws an error if not valid
   public void periodic() {
+    //If it's set to custom and the custom is diffrent, build the auto
     if (autoChooser.get() == Auto.CUSTOM
         && customString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
       customString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
@@ -106,6 +112,7 @@ public class AutosBuilder {
           nextCommand = NextCommand.PLACE;
           reef = charToReef.get(character);
         } else {
+          //Return the error
           return "Character at character "
               + (i + 1)
               + " of the first half was "
@@ -114,10 +121,13 @@ public class AutosBuilder {
         }
       //Checks that the second half of the command are valid and in the correct order
       } else {
+        //Also sets NextCommand (see comment above)
+        //For second character in pair
         if (nextCommand == NextCommand.PLACE) {
           if (charToReefHeight.containsKey(character)) {
             reefHeight = charToReefHeight.get(character);
           } else {
+            //Return the error
             return "Character at character "
                 + (i + 1)
                 + " of the second half was "
@@ -130,6 +140,7 @@ public class AutosBuilder {
           if (charToSourceDistance.containsKey(character)) {
             sourceDistance = charToSourceDistance.get(character);
           } else {
+            //Returns the error
             return "Character at character "
                 + (i + 1)
                 + " of the second half was "
@@ -140,14 +151,14 @@ public class AutosBuilder {
           }
         }
       }
-      first = !first;
+      first = !first; //Swaps whether it's first or second character in pair
     }
-    return "";
+    return ""; //Returns nothing if no errors found
   }
 
   //sees if the driver wants to build their own auto or use a preset one, then returns the selected/typed out auto
   public Command getAuto() {
-    return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto();
+    return autoChooser.get() == Auto.CUSTOM ? preBuiltAuto : buildAuto(); //Return preBuiltAuto if custom, else build auto normally
   }
 
   //if case is custom then it returns the string that was typed in. If idle, returns the idle command. 
@@ -160,19 +171,20 @@ public class AutosBuilder {
       case CUSTOM:
         if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
             == "(insert auto here)") {
-          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
+          return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO)); //Returns zero command if no custom input
         } else {
-          return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)"));
+          return buildAuto(SmartDashboard.getString("Custom Auto Input", "(insert auto here)")); //returns built custom auto from SmartDashboard input
         }
       case IDLE:
-        return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO));
+        return Commands.runOnce(() -> superstructure.setWantedState(WantedState.ZERO)); //Sets wanted state to zero when idle
       default:
-        return buildAuto(autoChooser.get().toString());
+        return buildAuto(autoChooser.get().toString()); //If not custom, builds auto from enum / predefined autos
     }
   }
 
   //takes the auto string and changes the variables of the command to match. Then adds that command to the list and starts on the next segment
   private Command buildAuto(String input) {
+    //Same as validateAuto but builds the command list instead of returning errors
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
       char character = input.charAt(i);
@@ -198,6 +210,8 @@ public class AutosBuilder {
       }
       first = !first;
     }
+
+    //Adds all the commands in commandList to a SequentialCommandGroup and returns it
     SequentialCommandGroup commands = new SequentialCommandGroup();
     for (int i = 0; i < commandList.size(); i++) {
       commands.addCommands(commandList.get(i));
@@ -253,6 +267,7 @@ public class AutosBuilder {
                 () -> superstructure.getWantedState() == WantedState.DEFAULT_STATE));
   }
 
+  //Enums
   public enum Auto {
     IDLE,
     E4RFD4RFC4RMB4,
