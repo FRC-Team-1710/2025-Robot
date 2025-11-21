@@ -19,14 +19,16 @@ public class VisionIOAlgae {
 
   public void updateResults() {
     this.cameraResults = camera.getAllUnreadResults();
-    if (cameraResults == null || !cameraResults.isEmpty()) {
+    if (cameraResults != null && !cameraResults.isEmpty()) {
       this.currentResult = cameraResults.get(cameraResults.size() - 1);
+    } else {
+      this.currentResult = null; // necessary for sim
     }
   }
 
   public boolean targetVisible() {
     return Constants.currentMode == Mode.REAL
-        ? ((!(cameraResults == null) || !cameraResults.isEmpty()) && currentResult.hasTargets())
+        ? ((cameraResults != null && !cameraResults.isEmpty()) && currentResult.hasTargets())
         : false;
   }
 
@@ -36,7 +38,7 @@ public class VisionIOAlgae {
       // Default to not visible,
       double targetYaw = Double.NaN;
       double lowestPitch = Double.POSITIVE_INFINITY;
-      if ((!(cameraResults == null) || !cameraResults.isEmpty()) && currentResult != null) {
+      if ((cameraResults != null && !cameraResults.isEmpty()) && currentResult != null) {
         // Camera processed a new frame since last
         // Get the last one in the list.
         Boolean hasResults = currentResult.hasTargets();
