@@ -344,11 +344,11 @@ public class Superstructure {
     // Optimizations
     // Runs all the subsystems
     // Note: ALL subsystems need to extend "BasicSubsystem"
-    runAndLogCommand(claw, "Superstructure/Periodic/ClawPeriodic");
-    runAndLogCommand(climber, "Superstructure/Periodic/ClimberPeriodic");
-    runAndLogCommand(elevator, "Superstructure/Periodic/ElevatorPeriodic");
-    runAndLogCommand(funnel, "Superstructure/Periodic/FunnelPeriodic");
-    runAndLogCommand(manipulator, "Superstructure/Periodic/ManipulatorPeriodic");
+    runAndLogMethod(claw, "Superstructure/Periodic/ClawPeriodic");
+    runAndLogMethod(climber, "Superstructure/Periodic/ClimberPeriodic");
+    runAndLogMethod(elevator, "Superstructure/Periodic/ElevatorPeriodic");
+    runAndLogMethod(funnel, "Superstructure/Periodic/FunnelPeriodic");
+    runAndLogMethod(manipulator, "Superstructure/Periodic/ManipulatorPeriodic");
 
     Logger.recordOutput(
         "Superstructure/Periodic/SuperstructurePeriodic",
