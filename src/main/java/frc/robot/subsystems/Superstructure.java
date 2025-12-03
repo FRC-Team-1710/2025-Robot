@@ -57,6 +57,7 @@ import frc.robot.subsystems.superstructure.manipulator.Manipulator;
 import frc.robot.subsystems.superstructure.manipulator.Manipulator.ManipulatorStates;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.AutomationLevelChooser;
+import frc.robot.utils.BasicSubsystem;
 import frc.robot.utils.FieldConstants;
 import frc.robot.utils.SimCoral;
 import frc.robot.utils.SimCoralAutomationChooser;
@@ -202,6 +203,13 @@ public class Superstructure {
     }
   }
 
+  /*Takes a method and logs it  */
+  public void runAndLogMethod(BasicSubsystem method, String name) {
+    beforeTimeStamp = RobotController.getFPGATime();
+    method.periodic();
+    Logger.recordOutput(name, RobotController.getFPGATime() - beforeTimeStamp);
+  }
+
   public boolean driverRumble() {
     return elevator.isAtTarget()
         && elevator.getState() != ElevatorStates.INTAKE
@@ -334,32 +342,13 @@ public class Superstructure {
     applyStates();
 
     // Optimizations
-    beforeTimeStamp = RobotController.getFPGATime();
-    claw.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ClawPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
-
-    beforeTimeStamp = RobotController.getFPGATime();
-    climber.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
-
-    beforeTimeStamp = RobotController.getFPGATime();
-    elevator.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ElevatorPeriodic",
-        RobotController.getFPGATime() - beforeTimeStamp);
-
-    beforeTimeStamp = RobotController.getFPGATime();
-    funnel.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
-
-    beforeTimeStamp = RobotController.getFPGATime();
-    manipulator.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ManipulatorPeriodic",
-        RobotController.getFPGATime() - beforeTimeStamp);
+    // Runs all the subsystems
+    // Note: ALL subsystems need to extend "BasicSubsystem"
+    runAndLogCommand(claw, "Superstructure/Periodic/ClawPeriodic");
+    runAndLogCommand(climber, "Superstructure/Periodic/ClimberPeriodic");
+    runAndLogCommand(elevator, "Superstructure/Periodic/ElevatorPeriodic");
+    runAndLogCommand(funnel, "Superstructure/Periodic/FunnelPeriodic");
+    runAndLogCommand(manipulator, "Superstructure/Periodic/ManipulatorPeriodic");
 
     Logger.recordOutput(
         "Superstructure/Periodic/SuperstructurePeriodic",

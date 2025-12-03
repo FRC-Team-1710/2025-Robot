@@ -11,8 +11,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import frc.robot.utils.BasicSubsystem;
 
-public class Climber {
+public class Climber extends BasicSubsystem {
   private TalonFX climber;
   public boolean goForClimb;
   public boolean safeToRetract = false;

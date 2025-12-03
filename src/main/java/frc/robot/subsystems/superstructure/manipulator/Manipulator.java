@@ -6,11 +6,12 @@ package frc.robot.subsystems.superstructure.manipulator;
 
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.utils.BasicSubsystem;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Manipulator {
+public class Manipulator extends BasicSubsystem {
   private final ManipulatorIOInputsAutoLogged inputs;
   private final ManipulatorIO io;
 

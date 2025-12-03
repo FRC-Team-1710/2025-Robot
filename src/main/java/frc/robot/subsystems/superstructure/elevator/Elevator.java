@@ -6,6 +6,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.utils.BasicSubsystem;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -14,7 +15,7 @@ import org.littletonrobotics.junction.Logger;
  * The Elevator subsystem controls a dual-motor mechanism for game piece manipulation. It supports
  * multiple distances for different game actions
  */
-public class Elevator {
+public class Elevator extends BasicSubsystem {
   // Hardware interface and inputs
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs;

@@ -9,6 +9,7 @@ package frc.robot.subsystems.superstructure.funnel;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
+import frc.robot.utils.BasicSubsystem;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -18,7 +19,7 @@ import org.littletonrobotics.junction.Logger;
  * multiple positions for different game actions and provides both open-loop and closed-loop control
  * options.
  */
-public class Funnel {
+public class Funnel extends BasicSubsystem {
   // Hardware interface and inputs
   private final FunnelIO io;
   private final FunnelIOInputsAutoLogged inputs;

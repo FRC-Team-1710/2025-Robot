@@ -113,16 +113,13 @@ public class FunnelIOCTRE implements FunnelIO {
     // Configure update frequencies for all status signals
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, // 50Hz update rate
-        leaderPosition,
         leaderVelocity,
         leaderAppliedVolts,
         leaderStatorCurrent,
-        leaderSupplyCurrent,
         angleMotorPosition,
         angleMotorVelocity,
         angleMotorAppliedVolts,
-        angleMotorStatorCurrent,
-        angleMotorSupplyCurrent);
+        angleMotorStatorCurrent);
 
     // Optimize CAN bus usage for all devices
     leader.optimizeBusUtilization(4, 0.1);
@@ -159,33 +156,24 @@ public class FunnelIOCTRE implements FunnelIO {
 
     // Refresh all sensor data
     StatusCode leaderStatus =
-        BaseStatusSignal.refreshAll(
-            leaderPosition,
-            leaderVelocity,
-            leaderAppliedVolts,
-            leaderStatorCurrent,
-            leaderSupplyCurrent);
+        BaseStatusSignal.refreshAll(leaderVelocity, leaderAppliedVolts, leaderStatorCurrent);
 
     StatusCode angleMotorStatus =
         BaseStatusSignal.refreshAll(
             angleMotorPosition,
             angleMotorVelocity,
             angleMotorAppliedVolts,
-            angleMotorStatorCurrent,
-            angleMotorSupplyCurrent);
+            angleMotorStatorCurrent);
 
     // Update connection status with debouncing
     inputs.leaderConnected = leaderDebounce.calculate(leaderStatus.isOK());
     inputs.angleMotorConnected = angleMotorDebounce.calculate(angleMotorStatus.isOK());
 
-    inputs.leaderPosition = leaderPosition.getValue();
     inputs.leaderVelocity = leaderVelocity.getValue();
     inputs.leaderStatorCurrent = leaderStatorCurrent.getValue();
-    inputs.leaderSupplyCurrent = leaderSupplyCurrent.getValue();
     inputs.angleMotorPosition = angleMotorPosition.getValue();
     inputs.angleMotorVelocity = angleMotorVelocity.getValue();
     inputs.angleMotorStatorCurrent = angleMotorStatorCurrent.getValue();
-    inputs.angleMotorSupplyCurrent = angleMotorSupplyCurrent.getValue();
 
     // Calculate arm angle using encoder position
     inputs.funnelAngle = (inputs.angleMotorPosition.magnitude() * 360 / GEAR_RATIO);
