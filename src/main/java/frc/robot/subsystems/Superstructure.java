@@ -103,6 +103,10 @@ public class Superstructure {
   private AutoAlignType currentAutoDriveType = AutoAlignType.PP;
   private AlignTarget currentAlignTarget = AlignTarget.REEF;
 
+  private double closestRotation;
+  private double closestDistance;
+  private ReefFaces newFace;
+
   private ReefFaces targetFace = ReefFaces.ab;
   private ReefSide targetSide = ReefSide.left;
   private ReefLevel targetLevel = ReefLevel.L4;
@@ -1472,144 +1476,51 @@ public class Superstructure {
     this.targetingMethod = TargetingMethod.NO_AUTO_TARGET;
   }
 
+  private double getRelativeFaceRotation(ReefFaces faces) {
+    return Math.abs(
+        getFacePose(faces).getRotation().minus(drivetrain.getPose().getRotation()).getDegrees());
+  }
+
+  private double getRelativeFaceDistance(ReefFaces faces) {
+    return getFacePose(faces).getTranslation().getDistance(drivetrain.getPose().getTranslation());
+  }
+
+  private void ifClosestAddSideRotation(ReefFaces faces) {
+    if (closestRotation > getRelativeFaceRotation(faces)) {
+      closestRotation = getRelativeFaceRotation(faces);
+      newFace = faces;
+    }
+  }
+
+  private void ifClosestAddSideDistance(ReefFaces faces) {
+    if (closestDistance > getRelativeFaceDistance(faces)) {
+      closestDistance = getRelativeFaceDistance(faces);
+      newFace = faces;
+    }
+  }
+
   public void decideNextReefTargetFace() {
-    ReefFaces newFace = ReefFaces.ab;
+    newFace = ReefFaces.ab;
     switch (targetingMethod) {
       case NO_AUTO_TARGET:
         return;
       case ROTATION:
-        double closestRotation =
-            Math.abs(
-                getFacePose(ReefFaces.ab)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees());
-        if (closestRotation
-            > Math.abs(
-                getFacePose(ReefFaces.cd)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees())) {
-          closestRotation =
-              Math.abs(
-                  getFacePose(ReefFaces.cd)
-                      .getRotation()
-                      .minus(drivetrain.getPose().getRotation())
-                      .getDegrees());
-          newFace = ReefFaces.cd;
-        }
-        if (closestRotation
-            > Math.abs(
-                getFacePose(ReefFaces.ef)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees())) {
-          closestRotation =
-              Math.abs(
-                  getFacePose(ReefFaces.ef)
-                      .getRotation()
-                      .minus(drivetrain.getPose().getRotation())
-                      .getDegrees());
-          newFace = ReefFaces.ef;
-        }
-        if (closestRotation
-            > Math.abs(
-                getFacePose(ReefFaces.gh)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees())) {
-          closestRotation =
-              Math.abs(
-                  getFacePose(ReefFaces.gh)
-                      .getRotation()
-                      .minus(drivetrain.getPose().getRotation())
-                      .getDegrees());
-          newFace = ReefFaces.gh;
-        }
-        if (closestRotation
-            > Math.abs(
-                getFacePose(ReefFaces.ij)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees())) {
-          closestRotation =
-              Math.abs(
-                  getFacePose(ReefFaces.ij)
-                      .getRotation()
-                      .minus(drivetrain.getPose().getRotation())
-                      .getDegrees());
-          newFace = ReefFaces.ij;
-        }
-        if (closestRotation
-            > Math.abs(
-                getFacePose(ReefFaces.kl)
-                    .getRotation()
-                    .minus(drivetrain.getPose().getRotation())
-                    .getDegrees())) {
-          closestRotation =
-              Math.abs(
-                  getFacePose(ReefFaces.kl)
-                      .getRotation()
-                      .minus(drivetrain.getPose().getRotation())
-                      .getDegrees());
-          newFace = ReefFaces.kl;
-        }
+        closestRotation = getRelativeFaceRotation(ReefFaces.ab);
+        ifClosestAddSideRotation(ReefFaces.ab);
+        ifClosestAddSideRotation(ReefFaces.cd);
+        ifClosestAddSideRotation(ReefFaces.ef);
+        ifClosestAddSideRotation(ReefFaces.gh);
+        ifClosestAddSideRotation(ReefFaces.ij);
+        ifClosestAddSideRotation(ReefFaces.kl);
         break;
       case DISTANCE:
-        double closestDistance =
-            getFacePose(ReefFaces.ab)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation());
-        if (closestDistance
-            > getFacePose(ReefFaces.cd)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation())) {
-          closestDistance =
-              getFacePose(ReefFaces.cd)
-                  .getTranslation()
-                  .getDistance(drivetrain.getPose().getTranslation());
-          newFace = ReefFaces.cd;
-        }
-        if (closestDistance
-            > getFacePose(ReefFaces.ef)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation())) {
-          closestDistance =
-              getFacePose(ReefFaces.ef)
-                  .getTranslation()
-                  .getDistance(drivetrain.getPose().getTranslation());
-          newFace = ReefFaces.ef;
-        }
-        if (closestDistance
-            > getFacePose(ReefFaces.gh)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation())) {
-          closestDistance =
-              getFacePose(ReefFaces.gh)
-                  .getTranslation()
-                  .getDistance(drivetrain.getPose().getTranslation());
-          newFace = ReefFaces.gh;
-        }
-        if (closestDistance
-            > getFacePose(ReefFaces.ij)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation())) {
-          closestDistance =
-              getFacePose(ReefFaces.ij)
-                  .getTranslation()
-                  .getDistance(drivetrain.getPose().getTranslation());
-          newFace = ReefFaces.ij;
-        }
-        if (closestDistance
-            > getFacePose(ReefFaces.kl)
-                .getTranslation()
-                .getDistance(drivetrain.getPose().getTranslation())) {
-          closestDistance =
-              getFacePose(ReefFaces.kl)
-                  .getTranslation()
-                  .getDistance(drivetrain.getPose().getTranslation());
-          newFace = ReefFaces.kl;
-        }
+        closestDistance = getRelativeFaceRotation(ReefFaces.ab);
+        ifClosestAddSideDistance(ReefFaces.ab);
+        ifClosestAddSideDistance(ReefFaces.cd);
+        ifClosestAddSideDistance(ReefFaces.ef);
+        ifClosestAddSideDistance(ReefFaces.gh);
+        ifClosestAddSideDistance(ReefFaces.ij);
+        ifClosestAddSideDistance(ReefFaces.kl);
         break;
     }
     this.targetFace = newFace;
