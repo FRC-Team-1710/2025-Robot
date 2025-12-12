@@ -32,7 +32,7 @@ public class VisionIOPhotonVisionSIM extends VisionIOPhotonVision {
     super(cameraName, robotToCamera, visionParams);
     // Initialize vision sim
     if (visionSim == null) {
-      visionSim = new VisionSystemSim("main");
+      visionSim = new VisionSystemSim("AprilTag Sim");
       visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
     }
 
