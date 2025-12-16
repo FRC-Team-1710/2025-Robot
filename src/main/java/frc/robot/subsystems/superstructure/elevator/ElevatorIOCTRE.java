@@ -1,6 +1,7 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -11,6 +12,10 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -26,16 +31,21 @@ import frc.robot.utils.Conversions;
  * implementation uses TalonFX motors and a CANcoder for position feedback. The elevator consists of
  * a leader motor, a follower motor, and an encoder for precise positioning.
  */
+@Logged
 public class ElevatorIOCTRE implements ElevatorIO {
   /** The gear ratio between the motor and the elevator mechanism */
+  @NotLogged
   public static final double GEAR_RATIO = 6.0;
 
+  @NotLogged
   private boolean locked = false;
 
   /** The leader TalonFX motor controller (CAN ID: 11) */
+  @Logged(name = "Leader", importance = Importance.CRITICAL)
   public final TalonFX leader = new TalonFX(11);
 
   /** The follower TalonFX motor controller (CAN ID: 12) */
+  @Logged(name = "Leader", importance = Importance.CRITICAL)
   public final TalonFX follower = new TalonFX(12);
 
   // Torques
@@ -58,50 +68,74 @@ public class ElevatorIOCTRE implements ElevatorIO {
   // private double kSup = 0.0;
 
   // MM Voltage
+  @NotLogged
   private final MotionMagicVoltage request =
       new MotionMagicVoltage(0).withSlot(0).withEnableFOC(true);
 
+  @Logged(name = "pid/kP", importance = Importance.DEBUG)
   private double kP = 1;
+  @Logged(name = "pid/kI", importance = Importance.DEBUG)
   private double kI = 0;
+  @Logged(name = "pid/kD", importance = Importance.DEBUG)
   private double kD = 0;
+  @Logged(name = "pid/kS", importance = Importance.DEBUG)
   private double kS = 0.2;
+  @Logged(name = "pid/kG", importance = Importance.DEBUG)
   private double kG = 0.55;
+  @Logged(name = "pid/kV", importance = Importance.DEBUG)
   private double kV = 0.12;
+  @Logged(name = "pid/kA", importance = Importance.DEBUG)
   private double kA = 0;
+  @Logged(name = "pid/kAcel", importance = Importance.DEBUG)
   private double kAcel = 100;
+  @Logged(name = "pid/kVel", importance = Importance.DEBUG)
   private double kVel = 150;
+  @Logged(name = "pid/kStat", importance = Importance.DEBUG)
   private double kStat = 120.0;
+  @Logged(name = "pid/kSup", importance = Importance.DEBUG)
   private double kSup = 0.0;
 
   // Status signals for monitoring motor and encoder states
+  @NotLogged
   private final StatusSignal<Angle> leaderPosition = leader.getPosition();
-  private final StatusSignal<Angle> leaderRotorPosition = leader.getRotorPosition();
+  @NotLogged
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
-  private final StatusSignal<AngularVelocity> leaderRotorVelocity = leader.getRotorVelocity();
+  @NotLogged
   private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
+  @NotLogged
   private final StatusSignal<Angle> followerPosition = follower.getPosition();
-  private final StatusSignal<Angle> followerRotorPosition = follower.getRotorPosition();
+  @NotLogged
   private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-  private final StatusSignal<AngularVelocity> followerRotorVelocity = follower.getRotorVelocity();
+  @NotLogged
   private final StatusSignal<Voltage> followerAppliedVolts = follower.getMotorVoltage();
+  @NotLogged
   private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+  @NotLogged
   private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
+  @NotLogged
   private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+  @NotLogged
   private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+  @NotLogged
   private final StatusSignal<Double> leaderSetpoint = leader.getClosedLoopReference();
 
   // Debouncers for connection status (filters out brief disconnections)
+  @NotLogged
   private final Debouncer leaderDebounce = new Debouncer(0.5);
+  @NotLogged
   private final Debouncer followerDebounce = new Debouncer(0.5);
 
+  @NotLogged
   private Distance setpoint = Inches.of(0);
 
   /**
    * The radius of the elevator pulley/drum, used for converting between rotations and linear
    * distance
    */
+  @NotLogged
   public static final Distance elevatorRadius = Inches.of(1.1338619402985);
 
+  @NotLogged
   protected final Distance cancoderTripThreshold = Inches.of(15);
 
   /**
@@ -110,21 +144,21 @@ public class ElevatorIOCTRE implements ElevatorIO {
    * utilization for all devices.
    */
   public ElevatorIOCTRE() {
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("Elevator/PID/P", kP);
-      SmartDashboard.putNumber("Elevator/PID/I", kI);
-      SmartDashboard.putNumber("Elevator/PID/D", kD);
-      SmartDashboard.putNumber("Elevator/PID/S", kS);
-      SmartDashboard.putNumber("Elevator/PID/G", kG);
-      SmartDashboard.putNumber("Elevator/PID/V", kV);
-      SmartDashboard.putNumber("Elevator/PID/A", kA);
-      SmartDashboard.putNumber("Elevator/PID/Acel", kAcel);
-      SmartDashboard.putNumber("Elevator/PID/Vel", kVel);
-      SmartDashboard.putNumber("Elevator/PID/Sup", kSup);
-      SmartDashboard.putNumber("Elevator/PID/Stat", kStat);
-      SmartDashboard.putBoolean("Zero", false);
-      SmartDashboard.putBoolean("ELEUPD", false);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putNumber("Elevator/PID/P", kP);
+    //   SmartDashboard.putNumber("Elevator/PID/I", kI);
+    //   SmartDashboard.putNumber("Elevator/PID/D", kD);
+    //   SmartDashboard.putNumber("Elevator/PID/S", kS);
+    //   SmartDashboard.putNumber("Elevator/PID/G", kG);
+    //   SmartDashboard.putNumber("Elevator/PID/V", kV);
+    //   SmartDashboard.putNumber("Elevator/PID/A", kA);
+    //   SmartDashboard.putNumber("Elevator/PID/Acel", kAcel);
+    //   SmartDashboard.putNumber("Elevator/PID/Vel", kVel);
+    //   SmartDashboard.putNumber("Elevator/PID/Sup", kSup);
+    //   SmartDashboard.putNumber("Elevator/PID/Stat", kStat);
+    //   SmartDashboard.putBoolean("Zero", false);
+    //   SmartDashboard.putBoolean("ELEUPD", false);
+    // }
 
     // Set up follower to mirror leader
     follower.setControl(new Follower(leader.getDeviceID(), true));
@@ -138,14 +172,10 @@ public class ElevatorIOCTRE implements ElevatorIO {
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, // 50Hz update rate
         leaderPosition,
-        leaderRotorPosition,
         leaderVelocity,
-        leaderRotorVelocity,
         leaderAppliedVolts,
         followerPosition,
-        followerRotorPosition,
         followerVelocity,
-        followerRotorVelocity,
         followerAppliedVolts,
         leaderStatorCurrent,
         followerStatorCurrent,
@@ -167,24 +197,25 @@ public class ElevatorIOCTRE implements ElevatorIO {
    *
    * @return The configured TalonFXConfiguration object
    */
+  @NotLogged
   private TalonFXConfiguration createMotorConfiguration() {
     var config = new TalonFXConfiguration();
-    if (Constants.useSmartDashboard) {
-      config.Slot0.kP = SmartDashboard.getNumber("Elevator/PID/P", kP);
-      config.Slot0.kI = SmartDashboard.getNumber("Elevator/PID/I", kI);
-      config.Slot0.kD = SmartDashboard.getNumber("Elevator/PID/D", kD);
-      config.Slot0.kS = SmartDashboard.getNumber("Elevator/PID/S", kS);
-      config.Slot0.kG = SmartDashboard.getNumber("Elevator/PID/G", kG);
-      config.Slot0.kV = SmartDashboard.getNumber("Elevator/PID/V", kV);
-      config.Slot0.kA = SmartDashboard.getNumber("Elevator/PID/A", kA);
-      config.MotionMagic.MotionMagicAcceleration =
-          SmartDashboard.getNumber("Elevator/PID/Acel", kAcel);
-      config.MotionMagic.MotionMagicCruiseVelocity =
-          SmartDashboard.getNumber("Elevator/PID/Vel", kVel);
-      config.CurrentLimits.StatorCurrentLimit =
-          SmartDashboard.getNumber("Elevator/PID/Stat", kStat);
-      config.CurrentLimits.SupplyCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Sup", kSup);
-    } else {
+    // if (Constants.useSmartDashboard) {
+    //   config.Slot0.kP = SmartDashboard.getNumber("Elevator/PID/P", kP);
+    //   config.Slot0.kI = SmartDashboard.getNumber("Elevator/PID/I", kI);
+    //   config.Slot0.kD = SmartDashboard.getNumber("Elevator/PID/D", kD);
+    //   config.Slot0.kS = SmartDashboard.getNumber("Elevator/PID/S", kS);
+    //   config.Slot0.kG = SmartDashboard.getNumber("Elevator/PID/G", kG);
+    //   config.Slot0.kV = SmartDashboard.getNumber("Elevator/PID/V", kV);
+    //   config.Slot0.kA = SmartDashboard.getNumber("Elevator/PID/A", kA);
+    //   config.MotionMagic.MotionMagicAcceleration =
+    //       SmartDashboard.getNumber("Elevator/PID/Acel", kAcel);
+    //   config.MotionMagic.MotionMagicCruiseVelocity =
+    //       SmartDashboard.getNumber("Elevator/PID/Vel", kVel);
+    //   config.CurrentLimits.StatorCurrentLimit =
+    //       SmartDashboard.getNumber("Elevator/PID/Stat", kStat);
+    //   config.CurrentLimits.SupplyCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Sup", kSup);
+    // } else {
       config.Slot0.kP = kP;
       config.Slot0.kI = kI;
       config.Slot0.kD = kD;
@@ -196,7 +227,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
       config.MotionMagic.MotionMagicCruiseVelocity = kVel;
       config.CurrentLimits.StatorCurrentLimit = kStat;
       config.CurrentLimits.SupplyCurrentLimit = kSup;
-    }
+    // }
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimitEnable = false;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -216,9 +247,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     StatusCode leaderStatus =
         BaseStatusSignal.refreshAll(
             leaderPosition,
-            leaderRotorPosition,
             leaderVelocity,
-            leaderRotorVelocity,
             leaderAppliedVolts,
             leaderStatorCurrent,
             leaderSupplyCurrent,
@@ -227,9 +256,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
     StatusCode followerStatus =
         BaseStatusSignal.refreshAll(
             followerPosition,
-            followerRotorPosition,
             followerVelocity,
-            followerRotorVelocity,
             followerAppliedVolts,
             followerStatorCurrent,
             followerSupplyCurrent);
@@ -240,9 +267,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
     // Update position and velocity measurements
     inputs.leaderPosition = leaderPosition.getValue();
-    inputs.leaderRotorPosition = leaderRotorPosition.getValue();
     inputs.leaderVelocity = leaderVelocity.getValue();
-    inputs.leaderRotorVelocity = leaderRotorVelocity.getValue();
 
     // Update voltage and current measurements
     inputs.appliedVoltage = leaderAppliedVolts.getValue();
@@ -255,16 +280,16 @@ public class ElevatorIOCTRE implements ElevatorIO {
         Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
 
     inputs.goal = setpoint;
-    inputs.setpoint = leaderSetpoint.getValue();
+    inputs.setpoint = Conversions.rotationsToDistance(Rotations.of(leaderSetpoint.getValueAsDouble()), GEAR_RATIO, elevatorRadius);
 
     inputs.locked = locked;
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("Elevator Inches", leader.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber(
-          "Elevator Setpoint", leader.getClosedLoopReference().getValueAsDouble());
-      tempPIDTuning();
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putNumber("Elevator Inches", leader.getPosition().getValueAsDouble());
+    //   SmartDashboard.putNumber(
+    //       "Elevator Setpoint", leader.getClosedLoopReference().getValueAsDouble());
+    //   tempPIDTuning();
+    // }
   }
 
   /**
@@ -318,11 +343,11 @@ public class ElevatorIOCTRE implements ElevatorIO {
     locked = false;
   }
 
-  private void tempPIDTuning() {
-    if (SmartDashboard.getBoolean("ELEUPD", false)) {
-      SmartDashboard.putBoolean("ELEUPD", false);
-      leader.getConfigurator().apply(createMotorConfiguration());
-      follower.getConfigurator().apply(createMotorConfiguration());
-    }
-  }
+  // private void tempPIDTuning() {
+  //   if (SmartDashboard.getBoolean("ELEUPD", false)) {
+  //     SmartDashboard.putBoolean("ELEUPD", false);
+  //     leader.getConfigurator().apply(createMotorConfiguration());
+  //     follower.getConfigurator().apply(createMotorConfiguration());
+  //   }
+  // }
 }

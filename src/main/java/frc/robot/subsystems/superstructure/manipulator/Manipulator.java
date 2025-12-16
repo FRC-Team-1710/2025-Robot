@@ -6,29 +6,38 @@ package frc.robot.subsystems.superstructure.manipulator;
 
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import java.util.function.BooleanSupplier;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO.ManipulatorIOInputs;
 
+import java.util.function.BooleanSupplier;
+
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+
+@Logged
 public class Manipulator {
-  private final ManipulatorIOInputsAutoLogged inputs;
+  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  private final ManipulatorIOInputs inputs;
+  @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ManipulatorIO io;
 
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ManipulatorStates currentState = ManipulatorStates.OFF;
+  // Only log if debug (if sim)
+  @Logged(name = "CurrentCoralState", importance = Importance.DEBUG)
   private CurrentCoralState currentCoralState = CurrentCoralState.NONE;
 
+  @Logged(name = "EjectBoolean", importance = Importance.CRITICAL)
   private final BooleanSupplier ejectBoolean;
 
   /** Creates a new Claw. */
   public Manipulator(ManipulatorIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
-    this.inputs = new ManipulatorIOInputsAutoLogged();
+    this.inputs = new ManipulatorIOInputs();
     this.ejectBoolean = bumpBoolean;
   }
 
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Manipulator", inputs);
 
     if (ejectBoolean.getAsBoolean()) {
       io.setVoltage(ManipulatorConstants.outtakeSpeed * 12);
@@ -75,21 +84,21 @@ public class Manipulator {
     this.currentState = state;
   }
 
-  @AutoLogOutput
+  @Logged(name = "HasCoral", importance = Importance.INFO)
   public boolean hasCoral() {
     return Constants.currentMode == Mode.SIM
         ? (currentCoralState == CurrentCoralState.SECURED)
         : (inputs.beam2Broken && !inputs.beam1Broken);
   }
 
-  @AutoLogOutput
+  @Logged(name = "AlmostHasCoral", importance = Importance.INFO)
   public boolean almostHasCoral() {
     return Constants.currentMode == Mode.SIM
         ? (currentCoralState == CurrentCoralState.SECURED)
         : (inputs.beam2Broken && inputs.beam1Broken);
   }
 
-  @AutoLogOutput
+  @Logged(name = "DetectsCoral", importance = Importance.INFO)
   public boolean detectsCoral() {
     return Constants.currentMode == Mode.SIM
         ? (currentCoralState == CurrentCoralState.DETECTS
@@ -97,12 +106,13 @@ public class Manipulator {
         : (inputs.beam2Broken || inputs.beam1Broken);
   }
 
+  @Logged(name = "CanElevatorMove", importance = Importance.CRITICAL)
   public boolean canElevatorMove() {
     // return Constants.currentMode == Mode.SIM
     //     ? (currentCoralState == CurrentCoralState.DETECTS
     //         && currentCoralState != CurrentCoralState.SECURED)
     // : (!inputs.beam1Broken);
-    return !inputs.beam1Broken;
+    return Constants.currentMode == Mode.SIM ? hasCoral() : !inputs.beam1Broken;
   }
 
   public void advanceGamePiece() {

@@ -3,7 +3,6 @@ package frc.robot.subsystems.vision;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import java.util.List;
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -30,7 +29,7 @@ public class VisionIOAlgae {
         : false;
   }
 
-  // LEFT BUMBPER
+  // LEFT BUMPER
   public double getAlgaeYaw() {
     if (Constants.currentMode == Mode.REAL) {
       boolean targetVisible = false;
@@ -40,7 +39,6 @@ public class VisionIOAlgae {
         // Camera processed a new frame since last
         // Get the last one in the list.
         Boolean hasResults = currentResult.hasTargets();
-        Logger.recordOutput("Has Targets", hasResults);
         if (hasResults) {
           // At least one AprilTag was seen by the camera
           for (var target : currentResult.getTargets()) {
@@ -53,7 +51,6 @@ public class VisionIOAlgae {
           }
         }
       }
-      Logger.recordOutput("Lowest Pitch", lowestPitch);
       return targetVisible ? targetYaw : 0.0;
     }
     return 0;

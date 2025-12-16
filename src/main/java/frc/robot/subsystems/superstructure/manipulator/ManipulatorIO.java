@@ -1,14 +1,20 @@
 package frc.robot.subsystems.superstructure.manipulator;
 
-import org.littletonrobotics.junction.AutoLog;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+
+@Logged
 public interface ManipulatorIO {
-  @AutoLog
+  @Logged
   public class ManipulatorIOInputs {
-    public double positionRad = 0.0;
-    public double velocityRadPerSec = 0.0;
+    public Angle position = Rotations.of(0);
+    public AngularVelocity velocity = RotationsPerSecond.of(0);
     public double appliedVolts = 0.0;
-    public double currentAmps = 0.0;
+    public double statorCurrent = 0.0;
     public boolean beam1Broken = false;
     public boolean beam2Broken = false;
   }

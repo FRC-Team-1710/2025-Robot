@@ -4,6 +4,11 @@
 
 package frc.robot.subsystems.superstructure.manipulator;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -12,11 +17,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /** Add your docs here. */
+@Logged
 public class ManipulatorIOSim implements ManipulatorIO {
+  @NotLogged
   private DCMotorSim sim =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(DCMotor.getCIM(1), 0.004, 1), DCMotor.getCIM(1));
 
+          @NotLogged
   private double appliedVolts = 0.0;
 
   @Override
@@ -24,17 +32,14 @@ public class ManipulatorIOSim implements ManipulatorIO {
     sim.setInputVoltage(appliedVolts);
     sim.update(0.02);
 
-    inputs.positionRad = sim.getAngularPositionRad();
-    inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
+    inputs.position = Radians.of(sim.getAngularPositionRad());
+    inputs.velocity = RadiansPerSecond.of(sim.getAngularVelocityRadPerSec());
     inputs.appliedVolts = appliedVolts;
-    inputs.currentAmps = sim.getCurrentDrawAmps();
+    inputs.statorCurrent = sim.getCurrentDrawAmps();
   }
 
   @Override
   public void setVoltage(double volts) {
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("Manipulator/setVoltage", volts);
-    }
-    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    appliedVolts = volts;
   }
 }

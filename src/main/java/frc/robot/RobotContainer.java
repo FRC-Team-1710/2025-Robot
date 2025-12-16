@@ -1,5 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -44,51 +47,78 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
 
+@Logged
 public class RobotContainer {
+  @NotLogged
   private final TunableController driver =
       new TunableController(0)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.1);
 
+  @NotLogged
   private final TunableController mech =
       new TunableController(1)
           .withControllerType(TunableControllerType.QUADRATIC)
           .withOutputAtDeadband(0.025)
           .withDeadband(0.125);
 
-  private final Joystick reefTargetingSystem = new Joystick(2);
+  @NotLogged private final Joystick reefTargetingSystem = new Joystick(2);
 
+  @Logged(name = "Drivetrain", importance = Importance.CRITICAL)
   public final Drive drivetrain;
-  public final Manipulator manipulator;
-  public final Elevator elevator;
-  public final Funnel funnel;
-  public final Climber climber;
-  public final Claw claw;
-  public final LEDSubsystem ledsubsystem;
-  public final VisionIOAlgae algaeCam;
 
+  @Logged(name = "Manipulator", importance = Importance.CRITICAL)
+  public final Manipulator manipulator;
+
+  @Logged(name = "Elevator", importance = Importance.CRITICAL)
+  public final Elevator elevator;
+
+  @Logged(name = "Funnel", importance = Importance.CRITICAL)
+  public final Funnel funnel;
+
+  @Logged(name = "Climber", importance = Importance.CRITICAL)
+  public final Climber climber;
+
+  @Logged(name = "Claw", importance = Importance.CRITICAL)
+  public final Claw claw;
+
+  @NotLogged public final LEDSubsystem ledsubsystem;
+  @NotLogged public final VisionIOAlgae algaeCam;
+
+  @Logged(name = "Superstructure", importance = Importance.CRITICAL)
   public final Superstructure superstructure;
 
+  @Logged(name = "Vision", importance = Importance.CRITICAL)
   private Vision vision;
 
+  @Logged(name = "AutosBuilder", importance = Importance.CRITICAL)
   private final AutosBuilder autosBuilder;
 
-  private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
-  private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
+  @NotLogged private final JoystickButton alphaButton = new JoystickButton(reefTargetingSystem, 1);
+  @NotLogged private final JoystickButton bravoButton = new JoystickButton(reefTargetingSystem, 2);
+
+  @NotLogged
   private final JoystickButton charlieButton = new JoystickButton(reefTargetingSystem, 3);
-  private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
-  private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 5);
+
+  @NotLogged private final JoystickButton deltaButton = new JoystickButton(reefTargetingSystem, 4);
+  @NotLogged private final JoystickButton echoButton = new JoystickButton(reefTargetingSystem, 5);
+
+  @NotLogged
   private final JoystickButton foxtrotButton = new JoystickButton(reefTargetingSystem, 6);
-  private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 7);
-  private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 8);
-  private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 9);
+
+  @NotLogged private final JoystickButton golfButton = new JoystickButton(reefTargetingSystem, 7);
+  @NotLogged private final JoystickButton hotelButton = new JoystickButton(reefTargetingSystem, 8);
+  @NotLogged private final JoystickButton indiaButton = new JoystickButton(reefTargetingSystem, 9);
+
+  @NotLogged
   private final JoystickButton julietButton = new JoystickButton(reefTargetingSystem, 10);
-  private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
-  private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
-  private final Trigger l4Button = new Trigger(() -> reefTargetingSystem.getY() < -.5);
-  private final Trigger l3Button = new Trigger(() -> reefTargetingSystem.getY() > .5);
-  private final Trigger l2Button = new Trigger(() -> reefTargetingSystem.getX() > .5);
+
+  @NotLogged private final JoystickButton kiloButton = new JoystickButton(reefTargetingSystem, 11);
+  @NotLogged private final JoystickButton limaButton = new JoystickButton(reefTargetingSystem, 12);
+  @NotLogged private final Trigger l4Button = new Trigger(() -> reefTargetingSystem.getY() < -.5);
+  @NotLogged private final Trigger l3Button = new Trigger(() -> reefTargetingSystem.getY() > .5);
+  @NotLogged private final Trigger l2Button = new Trigger(() -> reefTargetingSystem.getX() > .5);
 
   //   private final Trigger l1Button = new Trigger(() -> reefTargetingSystem.getX() < -.5);
 
@@ -265,7 +295,7 @@ public class RobotContainer {
 
     autosBuilder = new AutosBuilder(superstructure);
 
-    // Zero gyro while dissabled and sees tags :)
+    // Zero gyro while disabled and sees tags :)
     driver
         .rightStick()
         .and(driver.leftStick())
@@ -522,10 +552,11 @@ public class RobotContainer {
     superstructure.setAlliance(alliance);
   }
 
-  public void requsetDefault() {
+  public void requestDefault() {
     superstructure.setWantedState(WantedState.DEFAULT_STATE);
   }
 
+  @NotLogged
   public Command getAutonomousCommand() {
     return autosBuilder.getAuto();
   }

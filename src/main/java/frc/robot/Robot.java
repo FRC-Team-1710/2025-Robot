@@ -5,70 +5,60 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-
+import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SimCoral;
 import java.util.Optional;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-public class Robot extends LoggedRobot {
+@Logged
+public class Robot extends TimedRobot {
+  @Logged(name = "AutonomousCommand", importance = Importance.DEBUG)
   private Command m_autonomousCommand;
+
   // Configuration constants
+  @Logged(name = "BeforeMatch", importance = Importance.DEBUG)
   public static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
 
+  @Logged(name = "RobotContainer", importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
 
+  @Logged(name = "RedAlliance", importance = Importance.DEBUG)
   private static boolean redAlliance;
+
   Timer m_gcTimer = new Timer();
 
   public Robot() {
+    DriverStation.silenceJoystickConnectionWarning(true);
+
+    Epilogue.configure(
+        config -> {
+          if (isSimulation()) {
+            config.errorHandler = ErrorHandler.crashOnError();
+          } else {
+            config.errorHandler = ErrorHandler.printErrorMessages();
+          }
+
+          config.root = "Telemetry";
+
+          config.minimumImportance = Constants.importance;
+        });
+
+    Epilogue.bind(this);
+
+    DataLogManager.start();
+
     redAlliance = checkRedAlliance();
-
-    // Set up data receivers & replay source
-    switch (Constants.currentMode) {
-      case REAL:
-        // Running on a real robot, log to a USB stick ("/U/logs")
-        Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
-        break;
-
-      case SIM:
-        // Running a physics simulator, log to NT
-        Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
-        break;
-
-      case REPLAY:
-        // Replaying a log, set up replay source
-        setUseTiming(false); // Run as fast as possible
-        String logPath = LogFileUtil.findReplayLog();
-        Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-        break;
-    }
-
-    // See http://bit.ly/3YIzFZ6 for more information on timestamps in AdvantageKit.
-    // Logger.disableDeterministicTimestamps()
-
-    // Loop overrun, cooked, bad, this better work
-    // Logger.addDataReceiver(new DummyLogReceiver());
-
-    // Start AdvantageKit logger
-    Logger.start();
 
     // Output 1710 logo
     System.out.print(
@@ -82,10 +72,6 @@ public class Robot extends LoggedRobot {
     SignalLogger.setPath("/U/ctre-logs");
     SignalLogger.stop();
 
-    // Set Pathfinding to the default AdvantageKit Pathfinder
-
-    Pathfinding.setPathfinder(new LocalADStarAK());
-
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
 
@@ -96,34 +82,23 @@ public class Robot extends LoggedRobot {
     SimCoral.setRedAlliance(redAlliance);
 
     m_gcTimer.start();
+
+    Threads.setCurrentThreadPriority(false, 10);
   }
 
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput(
-        "RioRamFreeBefore", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
-
-    // this better work
-    Threads.setCurrentThreadPriority(true, 1);
     CommandScheduler.getInstance().run();
     m_robotContainer.periodic();
-    // this better work
-    Threads.setCurrentThreadPriority(false, 10);
-    Logger.recordOutput("Match Time", DriverStation.getMatchTime());
-    Logger.recordOutput("Time since startup", m_gcTimer.get());
-
-    Logger.recordOutput("Thread Priority", Threads.getCurrentThreadPriority());
-    Logger.recordOutput("Thread Real Time", Threads.getCurrentThreadIsRealTime());
-
-    Logger.recordOutput(
-        "RioRamFreeAfter", (double) Runtime.getRuntime().freeMemory() / (1024 * 1024));
   }
 
   /** Gets the current alliance, true is red */
+  @NotLogged
   public static boolean getAlliance() {
     return redAlliance;
   }
 
+  @NotLogged
   public static boolean checkRedAlliance() {
     Optional<Alliance> alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {

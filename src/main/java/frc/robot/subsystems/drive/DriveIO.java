@@ -16,6 +16,9 @@ import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -35,72 +38,147 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.utils.ArrayBuilder;
 import java.util.Optional;
-import org.littletonrobotics.junction.AutoLog;
 
 /**
  * Interface for drive subsystem I/O operations. Handles swerve drive state management and pose
  * estimation.
  */
+@Logged
 public interface DriveIO {
-  @AutoLog
+  @Logged
   public static class DriveIOInputs {
     // Module arrays with default states
+    @Logged(name = "ModuleStates", importance = Importance.DEBUG)
     public SwerveModuleState[] moduleStates = ArrayBuilder.buildSwerveModuleState();
+
+    @Logged(name = "ModuleTargets", importance = Importance.CRITICAL)
     public SwerveModuleState[] moduleTargets = ArrayBuilder.buildSwerveModuleState();
+
+    @Logged(name = "ModulePositions", importance = Importance.CRITICAL)
     public SwerveModulePosition[] modulePositions = ArrayBuilder.buildSwerveModulePosition();
 
     // Position and motion state
+    @Logged(name = "Pose", importance = Importance.CRITICAL)
     public Pose2d pose = Pose2d.kZero;
+
+    @Logged(name = "Speeds", importance = Importance.CRITICAL)
     public ChassisSpeeds speeds = new ChassisSpeeds();
+
+    @Logged(name = "OperatorForwardDirection", importance = Importance.DEBUG)
     public Rotation2d operatorForwardDirection = new Rotation2d(Units.degreesToRadians(90));
 
     // Diagnostic data
+    @Logged(name = "OdometryPeriod", importance = Importance.DEBUG)
     public double odometryPeriod = 0.0;
+
+    @Logged(name = "SuccessfulDaqs", importance = Importance.DEBUG)
     public int successfulDaqs = 0;
+
+    @Logged(name = "FailedDaqs", importance = Importance.DEBUG)
     public int failedDaqs = 0;
+
+    @Logged(name = "OdometryIsValid", importance = Importance.DEBUG)
     public boolean odometryIsValid = false;
 
+    @Logged(name = "Roll", importance = Importance.INFO)
     public Angle roll = Degrees.of(0);
+
+    @Logged(name = "Pitch", importance = Importance.INFO)
     public Angle pitch = Degrees.of(0);
+
+    @Logged(name = "Yaw", importance = Importance.INFO)
     public Angle yaw = Degrees.of(0);
 
+    @Logged(name = "Rotation3d", importance = Importance.DEBUG)
     public Rotation3d rotation3d = new Rotation3d();
+
+    @Logged(name = "SupplyVoltage", importance = Importance.DEBUG)
     public Voltage supplyVoltage = Volts.of(0);
+
+    @Logged(name = "TemperatureC", importance = Importance.DEBUG)
     public double temperatureC = 0;
+
+    @Logged(name = "AccumZ", importance = Importance.DEBUG)
     public Angle accumZ = Degrees.of(0);
+
+    @Logged(name = "AccumY", importance = Importance.DEBUG)
     public Angle accumY = Degrees.of(0);
+
+    @Logged(name = "AccumX", importance = Importance.DEBUG)
     public Angle accumX = Degrees.of(0);
+
+    @Logged(name = "AcelZ", importance = Importance.DEBUG)
     public LinearAcceleration acelz = MetersPerSecondPerSecond.of(0);
+
+    @Logged(name = "AcelY", importance = Importance.DEBUG)
     public LinearAcceleration acely = MetersPerSecondPerSecond.of(0);
+
+    @Logged(name = "AcelX", importance = Importance.DEBUG)
     public LinearAcceleration acelx = MetersPerSecondPerSecond.of(0);
 
     // Sensor data
+    @Logged(name = "Timestamp", importance = Importance.INFO)
     public double[] timestamp = new double[0];
+
+    @Logged(name = "GyroYaw", importance = Importance.INFO)
     public Rotation2d[] gyroYaw = new Rotation2d[0];
+
+    @Logged(name = "GyroRate", importance = Importance.CRITICAL)
     public AngularVelocity gyroRate = RotationsPerSecond.of(0.0);
+
+    @Logged(name = "GyroConnected", importance = Importance.CRITICAL)
     public boolean gyroConnected = false;
 
     // Module position arrays
+    @Logged(name = "DrivePositions", importance = Importance.DEBUG)
     public double[][] drivePositions = new double[Constants.PP_CONFIG.numModules][0];
+
+    @Logged(name = "SteerPositions", importance = Importance.DEBUG)
     public Rotation2d[][] steerPositions = new Rotation2d[Constants.PP_CONFIG.numModules][0];
   }
 
-  @AutoLog
+  @Logged
   public static class ModuleIOInputs {
+    @Logged(name = "DriveConnected", importance = Importance.CRITICAL)
     public boolean driveConnected = false;
+
+    @Logged(name = "DrivePosition", importance = Importance.CRITICAL)
     public Angle drivePosition = Radians.of(0.0);
+
+    @Logged(name = "DriveVelocity", importance = Importance.CRITICAL)
     public AngularVelocity driveVelocity = RotationsPerSecond.of(0.0);
+
+    @Logged(name = "DriveAppliedVolts", importance = Importance.CRITICAL)
     public Voltage driveAppliedVolts = Volt.of(0.0);
+
+    @Logged(name = "DriveStatorCurrent", importance = Importance.CRITICAL)
     public Current driveStatorCurrent = Amps.of(0.0);
+
+    @Logged(name = "DriveSupplyCurrent", importance = Importance.INFO)
     public Current driveSupplyCurrent = Amps.of(0.0);
 
+    @Logged(name = "TurnConnected", importance = Importance.CRITICAL)
     public boolean turnConnected = false;
+
+    @Logged(name = "TurnEncoderConnected", importance = Importance.CRITICAL)
     public boolean turnEncoderConnected = false;
+
+    @Logged(name = "TurnAbsolutePosition", importance = Importance.CRITICAL)
     public Angle turnAbsolutePosition = Rotations.of(0.0);
+
+    @Logged(name = "TurnPosition", importance = Importance.CRITICAL)
     public Angle turnPosition = Rotations.of(0.0);
+
+    @Logged(name = "TurnVelocity", importance = Importance.CRITICAL)
     public AngularVelocity turnVelocity = RotationsPerSecond.of(0.0);
+
+    @Logged(name = "TurnAppliedVolts", importance = Importance.CRITICAL)
     public Voltage turnAppliedVolts = Volt.of(0.0);
+
+    @Logged(name = "TurnStatorCurrent", importance = Importance.CRITICAL)
     public Current turnStatorCurrent = Amps.of(0.0);
+
+    @Logged(name = "TurnSupplyCurrent", importance = Importance.INFO)
     public Current turnSupplyCurrent = Amps.of(0.0);
   }
 
@@ -114,6 +192,7 @@ public interface DriveIO {
 
   default void resetPose(Pose2d pose) {}
 
+  @NotLogged
   default Optional<Pose2d> samplePoseAt(double timestamp) {
     return Optional.empty();
   }

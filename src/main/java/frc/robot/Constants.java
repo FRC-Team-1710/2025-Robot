@@ -36,13 +36,11 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.utils.FieldConstants;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
- * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
- * (log replay from a file).
+ * This class defines the runtime mode. The mode is always "real" when running on a roboRIO. Change
+ * the value of "simMode" to switch between "sim" (physics sim) and "replay" (log replay from a
+ * file).
  */
 public final class Constants {
-  public static final boolean useSmartDashboard = true;
-
   public static final Mode simMode = Mode.SIM;
 
   public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.75);

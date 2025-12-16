@@ -22,6 +22,7 @@ import frc.robot.utils.WheelForceCalculator.Feedforwards;
 public class DriveToPointRequest implements SwerveRequest {
   /** Meters */
   private double maxErrorTranslation = 0;
+
   /** Degrees */
   private double maxErrorTheta = 0;
 
@@ -46,9 +47,10 @@ public class DriveToPointRequest implements SwerveRequest {
   private LinearPath.State setpoint = new LinearPath.State();
 
   // Underlying request
-  private final SwerveRequest.ApplyFieldSpeeds driveRequest = new SwerveRequest.ApplyFieldSpeeds()
-      .withDriveRequestType(DriveRequestType.Velocity)
-      .withSteerRequestType(SteerRequestType.Position);
+  private final SwerveRequest.ApplyFieldSpeeds driveRequest =
+      new SwerveRequest.ApplyFieldSpeeds()
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withSteerRequestType(SteerRequestType.Position);
 
   public DriveToPointRequest(
       TrapezoidProfile.Constraints linearProfile,
@@ -61,9 +63,10 @@ public class DriveToPointRequest implements SwerveRequest {
   }
 
   public void reset(Pose2d currentPose, ChassisSpeeds currentSpeeds) {
-    initialState = new LinearPath.State(
-        currentPose,
-        ChassisSpeeds.fromRobotRelativeSpeeds(currentSpeeds, currentPose.getRotation()));
+    initialState =
+        new LinearPath.State(
+            currentPose,
+            ChassisSpeeds.fromRobotRelativeSpeeds(currentSpeeds, currentPose.getRotation()));
 
     elapsedTime = 0.0;
     // Initialize setpoint to current state
@@ -83,22 +86,31 @@ public class DriveToPointRequest implements SwerveRequest {
     Pose2d currentPose = parameters.currentPose;
 
     // Calculate feedback corrections
-    double xFeedback = XController.calculate(currentPose.getX(), setpoint.pose.getX(), parameters.timestamp);
-    double yFeedback = YController.calculate(currentPose.getY(), setpoint.pose.getY(), parameters.timestamp);
-    double thetaFeedback = ThetaController.calculate(
-        currentPose.getRotation().getRadians(),
-        setpoint.pose.getRotation().getRadians(),
-        parameters.timestamp);
+    double xFeedback =
+        XController.calculate(currentPose.getX(), setpoint.pose.getX(), parameters.timestamp);
+    double yFeedback =
+        YController.calculate(currentPose.getY(), setpoint.pose.getY(), parameters.timestamp);
+    double thetaFeedback =
+        ThetaController.calculate(
+            currentPose.getRotation().getRadians(),
+            setpoint.pose.getRotation().getRadians(),
+            parameters.timestamp);
 
     ChassisSpeeds feedbackSpeeds = new ChassisSpeeds(xFeedback, yFeedback, thetaFeedback);
 
     // Calculate feedforward forces based on PLANNED trajectory change
     Feedforwards feedforwards = forceCalculator.calculate(dt, lastSetpointSpeeds, setpoint.speeds);
 
-    boolean transAtTarget = Math
-        .abs(TargetPose.getTranslation().getDistance(currentPose.getTranslation())) <= maxErrorTranslation;
-    boolean rotAtTarget = Math.abs(TargetPose.getRotation().getMeasure().minus(currentPose.getRotation().getMeasure())
-        .in(Degrees)) <= maxErrorTheta;
+    boolean transAtTarget =
+        Math.abs(TargetPose.getTranslation().getDistance(currentPose.getTranslation()))
+            <= maxErrorTranslation;
+    boolean rotAtTarget =
+        Math.abs(
+                TargetPose.getRotation()
+                    .getMeasure()
+                    .minus(currentPose.getRotation().getMeasure())
+                    .in(Degrees))
+            <= maxErrorTheta;
 
     atTarget = transAtTarget && rotAtTarget;
 
@@ -107,10 +119,15 @@ public class DriveToPointRequest implements SwerveRequest {
 
     if (!atTarget) {
       // Combine feedforward + feedback
-      correctedSpeeds = new ChassisSpeeds(
-          setpoint.speeds.vxMetersPerSecond + feedbackSpeeds.vxMetersPerSecond + frictionCoefficient,
-          setpoint.speeds.vyMetersPerSecond + feedbackSpeeds.vyMetersPerSecond + frictionCoefficient,
-          setpoint.speeds.omegaRadiansPerSecond + feedbackSpeeds.omegaRadiansPerSecond);
+      correctedSpeeds =
+          new ChassisSpeeds(
+              setpoint.speeds.vxMetersPerSecond
+                  + feedbackSpeeds.vxMetersPerSecond
+                  + frictionCoefficient,
+              setpoint.speeds.vyMetersPerSecond
+                  + feedbackSpeeds.vyMetersPerSecond
+                  + frictionCoefficient,
+              setpoint.speeds.omegaRadiansPerSecond + feedbackSpeeds.omegaRadiansPerSecond);
     }
 
     // Save setpoint speeds for next feedforward calculation
@@ -126,8 +143,7 @@ public class DriveToPointRequest implements SwerveRequest {
   }
 
   /**
-   * @return True if the profiled path is finished, not if the robot is
-   *         {@link #atTarget()}
+   * @return True if the profiled path is finished, not if the robot is {@link #atTarget()}
    */
   public boolean isFinished() {
     return path.isFinished(elapsedTime);

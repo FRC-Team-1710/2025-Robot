@@ -2,32 +2,43 @@ package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * The Elevator subsystem controls a dual-motor mechanism for game piece manipulation. It supports
  * multiple distances for different game actions
  */
+@Logged
 public class Elevator {
   // Hardware interface and inputs
+  @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ElevatorIO io;
-  private final ElevatorIOInputsAutoLogged inputs;
+  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  private final ElevatorIOInputs inputs;
 
   // Current elevator distance mode
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ElevatorStates currentState = ElevatorStates.INTAKE;
 
+  @Logged(name = "Timer", importance = Importance.CRITICAL)
   private final Timer timer = new Timer();
+  @NotLogged
   private boolean doneZeroing = false;
 
+  @Logged(name = "CanMoveUp", importance = Importance.CRITICAL)
   private final BooleanSupplier canMoveUp;
 
+  @Logged(name = "ManualOverride", importance = Importance.CRITICAL)
   private final DoubleSupplier manualSupplier;
 
   /**
@@ -37,7 +48,7 @@ public class Elevator {
    */
   public Elevator(ElevatorIO io, DoubleSupplier manualSupplier, BooleanSupplier canMoveUp) {
     this.io = io;
-    this.inputs = new ElevatorIOInputsAutoLogged();
+    this.inputs = new ElevatorIOInputs();
     this.manualSupplier = manualSupplier;
     this.canMoveUp = canMoveUp;
   }
@@ -67,8 +78,6 @@ public class Elevator {
         io.setManual(-0.1);
       }
     }
-
-    Logger.processInputs("Elevator", inputs);
   }
 
   public enum ElevatorStates {
@@ -95,11 +104,12 @@ public class Elevator {
     }
   }
 
-  @AutoLogOutput
+  @NotLogged
   public Distance getPosition() {
     return inputs.distance;
   }
 
+  @NotLogged
   public ElevatorStates getState() {
     return currentState;
   }
@@ -119,22 +129,21 @@ public class Elevator {
     }
   }
 
+  @NotLogged
   public boolean isDoneZeroing() {
     return doneZeroing;
   }
 
-  @AutoLogOutput
+  @Logged(name = "IsAtTarget", importance = Importance.CRITICAL)
   public boolean isAtTarget() {
     if (currentState == ElevatorStates.STOP) return true;
-    Logger.recordOutput("Im going insane", currentState.targetDistance);
     return getPosition()
         .isNear(
             currentState.targetDistance,
             Constants.currentMode == Mode.SIM ? Inches.of(2.5) : currentState.angleTolerance);
   }
 
-  @AutoLogOutput
-  public void toggleKillSwich() {
-    inputs.killSwich = inputs.killSwich ? false : true;
+  public void toggleKillSwitch() {
+    inputs.killSwitch = inputs.killSwitch ? false : true;
   }
 }

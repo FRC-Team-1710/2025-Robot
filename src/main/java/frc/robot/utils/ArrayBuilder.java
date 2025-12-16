@@ -5,7 +5,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.Constants;
-import frc.robot.subsystems.drive.ModuleIOInputsAutoLogged;
+import frc.robot.subsystems.drive.DriveIO.ModuleIOInputs;
 import java.util.Arrays;
 
 public class ArrayBuilder {
@@ -44,13 +44,12 @@ public class ArrayBuilder {
    *
    * @return An initialized array of `ModuleIOInputsAutoLogged` objects.
    */
-  public static ModuleIOInputsAutoLogged[] buildModuleAutoLogged() {
+  public static ModuleIOInputs[] buildModuleInputs() {
     if (Constants.PP_CONFIG.numModules <= 0) {
       throw new IllegalArgumentException("Size must be positive");
     }
-    ModuleIOInputsAutoLogged[] moduleAutoLogged =
-        new ModuleIOInputsAutoLogged[Constants.PP_CONFIG.numModules];
-    Arrays.setAll(moduleAutoLogged, i -> new ModuleIOInputsAutoLogged());
+    ModuleIOInputs[] moduleAutoLogged = new ModuleIOInputs[Constants.PP_CONFIG.numModules];
+    Arrays.setAll(moduleAutoLogged, i -> new ModuleIOInputs());
     return moduleAutoLogged;
   }
 
