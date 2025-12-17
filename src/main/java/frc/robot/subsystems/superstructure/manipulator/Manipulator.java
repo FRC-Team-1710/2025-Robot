@@ -4,24 +4,24 @@
 
 package frc.robot.subsystems.superstructure.manipulator;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.manipulator.ManipulatorIO.ManipulatorIOInputs;
-
 import java.util.function.BooleanSupplier;
-
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
 
 @Logged
 public class Manipulator {
   @Logged(name = "Inputs", importance = Importance.CRITICAL)
   private final ManipulatorIOInputs inputs;
+
   @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ManipulatorIO io;
 
   @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ManipulatorStates currentState = ManipulatorStates.OFF;
+
   // Only log if debug (if sim)
   @Logged(name = "CurrentCoralState", importance = Importance.DEBUG)
   private CurrentCoralState currentCoralState = CurrentCoralState.NONE;

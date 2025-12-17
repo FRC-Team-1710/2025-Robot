@@ -2,6 +2,8 @@
 
 package frc.robot.subsystems.superstructure.funnel;
 
+import edu.wpi.first.epilogue.Logged;
+
 // import static edu.wpi.first.units.Units.Degrees;
 // import static edu.wpi.first.units.Units.Radian;
 
@@ -25,6 +27,7 @@ package frc.robot.subsystems.superstructure.funnel;
 // import org.littletonrobotics.junction.Logger;
 // import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
+@Logged
 public class FunnelIOSIM extends FunnelIOCTRE {
   //   private DCMotorSim sim =
   //       new DCMotorSim(

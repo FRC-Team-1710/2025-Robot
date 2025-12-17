@@ -4,6 +4,10 @@
 
 package frc.robot.autos;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,32 +19,43 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedState;
 import java.util.ArrayList;
 import java.util.Map;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Add your docs here. */
+@Logged
 public class AutosBuilder {
+  @NotLogged
   private final Superstructure superstructure;
 
+  @NotLogged
   private ArrayList<Command> commandList = new ArrayList<>();
 
+  @NotLogged
   private NextCommand nextCommand;
+  @NotLogged
   private Source source;
+  @NotLogged
   private SourceDistance sourceDistance;
+  @NotLogged
   private Reef reef;
+  @NotLogged
   private ReefHeight reefHeight;
 
-  LoggedDashboardChooser<Auto> autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+  @Logged(name = "AutoChooser", importance = Importance.CRITICAL)
+  SendableChooser<Auto> autoChooser = new SendableChooser<Auto>();
 
+  @Logged(name = "AutoString", importance = Importance.CRITICAL)
   private String autoString = "cooked";
 
+  @NotLogged
   private Command preBuiltAuto = Commands.none();
 
+  @NotLogged
   Map<Character, Source> charToSource =
       Map.of(
           'R', Source.RIGHT,
           'N', Source.LEFT);
 
+          @NotLogged
   Map<Character, Reef> charToReef =
       Map.ofEntries(
           Map.entry('A', Reef.A),
@@ -56,12 +71,14 @@ public class AutosBuilder {
           Map.entry('K', Reef.K),
           Map.entry('L', Reef.L));
 
+          @NotLogged
   Map<Character, ReefHeight> charToReefHeight =
       Map.of(
           '2', ReefHeight.L2,
           '3', ReefHeight.L3,
           '4', ReefHeight.L4);
 
+          @NotLogged
   Map<Character, SourceDistance> charToSourceDistance =
       Map.of(
           'F', SourceDistance.FAR,
@@ -75,9 +92,8 @@ public class AutosBuilder {
 
     SmartDashboard.putString("Custom Auto Input", "(insert auto here)");
     SmartDashboard.putString(
-        "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrCloes)");
-
-    autoChooser.addDefaultOption("IDLE", Auto.IDLE);
+        "Custom Auto Input Key", "(A-L=Pipe,2-4=Level),(RN=RightOrLeftSource,FMC=FarOrMidOrClose)");
+    autoChooser.setDefaultOption("IDLE", Auto.IDLE);
     autoChooser.addOption("CUSTOM", Auto.CUSTOM);
     for (Auto auto : Auto.values()) {
       if (auto != Auto.IDLE && auto != Auto.CUSTOM) {
@@ -87,29 +103,30 @@ public class AutosBuilder {
   }
 
   public void periodic() {
-    // If it's set to custom and the custom is diffrent, build the auto
-    if (autoChooser.get() == Auto.CUSTOM
+    // If it's set to custom and the custom is different, build the auto
+    if (autoChooser.getSelected() == Auto.CUSTOM
         && autoString != SmartDashboard.getString("Custom Auto Input", "(insert auto here)")) {
       autoString = SmartDashboard.getString("Custom Auto Input", "(insert auto here)");
       String output = validateAuto(autoString);
-      Logger.recordOutput("Is Auto Valid", output == "");
-      Logger.recordOutput("Auto Validation Error", output);
+      // Logger.recordOutput("Is Auto Valid", output == "");
+      // Logger.recordOutput("Auto Validation Error", output);
       preBuiltAuto = output == "" ? buildAuto() : Commands.none();
-    } else if (autoChooser.get() != Auto.CUSTOM
-        && autoChooser.get() != Auto.IDLE
-        && autoString != autoChooser.get().toString()) {
-      autoString = autoChooser.get().toString();
+    } else if (autoChooser.getSelected() != Auto.CUSTOM
+        && autoChooser.getSelected() != Auto.IDLE
+        && autoString != autoChooser.getSelected().toString()) {
+      autoString = autoChooser.getSelected().toString();
       String output = validateAuto(autoString);
-      Logger.recordOutput("Is Auto Valid", output == "");
-      Logger.recordOutput("Auto Validation Error", output);
+      // Logger.recordOutput("Is Auto Valid", output == "");
+      // Logger.recordOutput("Auto Validation Error", output);
       preBuiltAuto = output == "" ? buildAuto() : Commands.none();
-    } else if (autoChooser.get() == Auto.IDLE) {
-      Logger.recordOutput("Is Auto Valid", true);
-      Logger.recordOutput("Auto Validation Error", "bum");
+    } else if (autoChooser.getSelected() == Auto.IDLE) {
+      // Logger.recordOutput("Is Auto Valid", true);
+      // Logger.recordOutput("Auto Validation Error", "bum");
       preBuiltAuto = buildAuto();
     }
   }
 
+  @Logged(name = "ValidateAuto", importance = Importance.CRITICAL)
   public String validateAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {
@@ -170,6 +187,7 @@ public class AutosBuilder {
   /**
    * @return cached auto that was built in periodic
    */
+  @NotLogged
   public Command getAuto() {
     return preBuiltAuto; // Return preBuiltAuto
   }
@@ -179,12 +197,13 @@ public class AutosBuilder {
    *
    * @return command to schedule for auto
    */
+  @NotLogged
   public Command buildAuto() {
     commandList = new ArrayList<>();
     if (Constants.currentMode == Mode.SIM) {
       commandList.add(Commands.runOnce(() -> superstructure.beginSimAuto()));
     }
-    switch (autoChooser.get()) {
+    switch (autoChooser.getSelected()) {
       case CUSTOM:
         if (SmartDashboard.getString("Custom Auto Input", "(insert auto here)")
             == "(insert auto here)") {
@@ -214,6 +233,7 @@ public class AutosBuilder {
    * @param input string to build auto from
    * @return command to schedule for auto
    */
+  @NotLogged
   private Command buildAuto(String input) {
     // Same as validateAuto but builds the command list instead of returning errors
     boolean first = true;
@@ -249,6 +269,7 @@ public class AutosBuilder {
   }
 
   // Turns the enums into actual commands
+  @NotLogged
   private Command getCommand(
       NextCommand nextCommand,
       Reef reef,
@@ -270,6 +291,7 @@ public class AutosBuilder {
   }
 
   // Command for placing coral on reef, takes reef side and reefheight as parameters
+  @NotLogged
   private Command createPlaceCommand(Reef reef, ReefHeight reefHeight) {
     return Commands.runOnce(() -> superstructure.setTargets(reef, reefHeight))
         .andThen(
@@ -282,6 +304,7 @@ public class AutosBuilder {
   }
 
   // Command for sourcing coral from station, takes near/far source and distance as parameters
+  @NotLogged
   private Command createSourceCommand(Source source, SourceDistance sourceDistance) {
     return Commands.runOnce(() -> superstructure.setTargets(source, sourceDistance))
         .andThen(

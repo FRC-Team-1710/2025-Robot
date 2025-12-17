@@ -12,18 +12,15 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
 import frc.robot.utils.Conversions;
 
 /**
@@ -34,11 +31,9 @@ import frc.robot.utils.Conversions;
 @Logged
 public class ElevatorIOCTRE implements ElevatorIO {
   /** The gear ratio between the motor and the elevator mechanism */
-  @NotLogged
-  public static final double GEAR_RATIO = 6.0;
+  @NotLogged public static final double GEAR_RATIO = 6.0;
 
-  @NotLogged
-  private boolean locked = false;
+  @NotLogged private boolean locked = false;
 
   /** The leader TalonFX motor controller (CAN ID: 11) */
   @Logged(name = "Leader", importance = Importance.CRITICAL)
@@ -74,69 +69,69 @@ public class ElevatorIOCTRE implements ElevatorIO {
 
   @Logged(name = "pid/kP", importance = Importance.DEBUG)
   private double kP = 1;
+
   @Logged(name = "pid/kI", importance = Importance.DEBUG)
   private double kI = 0;
+
   @Logged(name = "pid/kD", importance = Importance.DEBUG)
   private double kD = 0;
+
   @Logged(name = "pid/kS", importance = Importance.DEBUG)
   private double kS = 0.2;
+
   @Logged(name = "pid/kG", importance = Importance.DEBUG)
   private double kG = 0.55;
+
   @Logged(name = "pid/kV", importance = Importance.DEBUG)
   private double kV = 0.12;
+
   @Logged(name = "pid/kA", importance = Importance.DEBUG)
   private double kA = 0;
+
   @Logged(name = "pid/kAcel", importance = Importance.DEBUG)
   private double kAcel = 100;
+
   @Logged(name = "pid/kVel", importance = Importance.DEBUG)
   private double kVel = 150;
+
   @Logged(name = "pid/kStat", importance = Importance.DEBUG)
   private double kStat = 120.0;
+
   @Logged(name = "pid/kSup", importance = Importance.DEBUG)
   private double kSup = 0.0;
 
   // Status signals for monitoring motor and encoder states
-  @NotLogged
-  private final StatusSignal<Angle> leaderPosition = leader.getPosition();
-  @NotLogged
-  private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
-  @NotLogged
-  private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
-  @NotLogged
-  private final StatusSignal<Angle> followerPosition = follower.getPosition();
-  @NotLogged
-  private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-  @NotLogged
-  private final StatusSignal<Voltage> followerAppliedVolts = follower.getMotorVoltage();
-  @NotLogged
-  private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+  @NotLogged private final StatusSignal<Angle> leaderPosition = leader.getPosition();
+  @NotLogged private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
+  @NotLogged private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
+  @NotLogged private final StatusSignal<Angle> followerPosition = follower.getPosition();
+  @NotLogged private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
+  @NotLogged private final StatusSignal<Voltage> followerAppliedVolts = follower.getMotorVoltage();
+  @NotLogged private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+
   @NotLogged
   private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-  @NotLogged
-  private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+
+  @NotLogged private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+
   @NotLogged
   private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
-  @NotLogged
-  private final StatusSignal<Double> leaderSetpoint = leader.getClosedLoopReference();
+
+  @NotLogged private final StatusSignal<Double> leaderSetpoint = leader.getClosedLoopReference();
 
   // Debouncers for connection status (filters out brief disconnections)
-  @NotLogged
-  private final Debouncer leaderDebounce = new Debouncer(0.5);
-  @NotLogged
-  private final Debouncer followerDebounce = new Debouncer(0.5);
+  @NotLogged private final Debouncer leaderDebounce = new Debouncer(0.5);
+  @NotLogged private final Debouncer followerDebounce = new Debouncer(0.5);
 
-  @NotLogged
-  private Distance setpoint = Inches.of(0);
+  @NotLogged private Distance setpoint = Inches.of(0);
 
   /**
    * The radius of the elevator pulley/drum, used for converting between rotations and linear
    * distance
    */
-  @NotLogged
-  public static final Distance elevatorRadius = Inches.of(1.1338619402985);
+  @NotLogged public static final Distance elevatorRadius = Inches.of(1.1338619402985);
 
-  @NotLogged
-  protected final Distance cancoderTripThreshold = Inches.of(15);
+  @NotLogged protected final Distance cancoderTripThreshold = Inches.of(15);
 
   /**
    * Constructs a new ElevatorIOCTRE instance and initializes all hardware components. This includes
@@ -214,19 +209,20 @@ public class ElevatorIOCTRE implements ElevatorIO {
     //       SmartDashboard.getNumber("Elevator/PID/Vel", kVel);
     //   config.CurrentLimits.StatorCurrentLimit =
     //       SmartDashboard.getNumber("Elevator/PID/Stat", kStat);
-    //   config.CurrentLimits.SupplyCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Sup", kSup);
+    //   config.CurrentLimits.SupplyCurrentLimit = SmartDashboard.getNumber("Elevator/PID/Sup",
+    // kSup);
     // } else {
-      config.Slot0.kP = kP;
-      config.Slot0.kI = kI;
-      config.Slot0.kD = kD;
-      config.Slot0.kS = kS;
-      config.Slot0.kG = kG;
-      config.Slot0.kV = kV;
-      config.Slot0.kA = kA;
-      config.MotionMagic.MotionMagicAcceleration = kAcel;
-      config.MotionMagic.MotionMagicCruiseVelocity = kVel;
-      config.CurrentLimits.StatorCurrentLimit = kStat;
-      config.CurrentLimits.SupplyCurrentLimit = kSup;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+    config.Slot0.kS = kS;
+    config.Slot0.kG = kG;
+    config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
+    config.MotionMagic.MotionMagicAcceleration = kAcel;
+    config.MotionMagic.MotionMagicCruiseVelocity = kVel;
+    config.CurrentLimits.StatorCurrentLimit = kStat;
+    config.CurrentLimits.SupplyCurrentLimit = kSup;
     // }
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimitEnable = false;
@@ -280,7 +276,9 @@ public class ElevatorIOCTRE implements ElevatorIO {
         Conversions.rotationsToDistance(leaderPosition.getValue(), GEAR_RATIO, elevatorRadius);
 
     inputs.goal = setpoint;
-    inputs.setpoint = Conversions.rotationsToDistance(Rotations.of(leaderSetpoint.getValueAsDouble()), GEAR_RATIO, elevatorRadius);
+    inputs.setpoint =
+        Conversions.rotationsToDistance(
+            Rotations.of(leaderSetpoint.getValueAsDouble()), GEAR_RATIO, elevatorRadius);
 
     inputs.locked = locked;
 

@@ -6,6 +6,8 @@
 
 package frc.robot.subsystems.superstructure.funnel;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
@@ -13,76 +15,104 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
 import frc.robot.utils.Conversions;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * CTRE-based implementation of the ArmIO interface for controlling a robot arm mechanism. This
  * implementation uses TalonFX motors and a CANcoder for position feedback. The arm consists of a
  * leader motor, a follower motor, and an encoder for precise angular positioning.
  */
+@Logged
 public class FunnelIOCTRE implements FunnelIO {
   /** The gear ratio between the motor and the arm mechanism */
-  public static final double GEAR_RATIO = 8;
+  @NotLogged public static final double GEAR_RATIO = 8;
 
-  private boolean locked = false;
+  @NotLogged private boolean locked = false;
 
   /** The leader TalonFX motor controller (CAN ID: 20) */
+  @Logged(name = "Leader", importance = Importance.CRITICAL)
   public final TalonFX leader = new TalonFX(31);
 
   /** The follower TalonFX motor controller (CAN ID: 21) */
+  @Logged(name = "Angle", importance = Importance.CRITICAL)
   public final TalonFX angleMotor = new TalonFX(30);
 
+  @Logged(name = "Aileron", importance = Importance.INFO)
   public final Servo aileron = new Servo(0);
 
+  @Logged(name = "ForwardBeamBreak", importance = Importance.CRITICAL)
   private final DigitalInput forwardBeamBreak = new DigitalInput(3);
+
+  @Logged(name = "ReverseBeamBreak", importance = Importance.CRITICAL)
   private final DigitalInput reverseBeamBreak = new DigitalInput(2);
 
+  @Logged(name = "pid/kP", importance = Importance.DEBUG)
   private double kP = 0.04;
+
+  @Logged(name = "pid/kI", importance = Importance.DEBUG)
   private double kI = 0.0;
+
+  @Logged(name = "pid/kD", importance = Importance.DEBUG)
   private double kD = 0.0025;
+
+  @Logged(name = "pid/kS", importance = Importance.DEBUG)
   private double kS = 0.0;
+
+  @Logged(name = "pid/kG", importance = Importance.DEBUG)
   private double kG = 1.125;
+
+  @Logged(name = "pid/kV", importance = Importance.DEBUG)
   private double kV = 0.0;
+
+  @Logged(name = "pid/kA", importance = Importance.DEBUG)
   private double kA = 0.0;
+
+  @Logged(name = "pid/kVel", importance = Importance.DEBUG)
   private double kVel = 150;
+
+  @Logged(name = "pid/kAcel", importance = Importance.DEBUG)
   private double kAcel = 200;
 
   // Status signals for monitoring motor and encoder states
-  private final StatusSignal<Angle> leaderPosition = leader.getPosition();
-  private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
-  private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
-  private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
-  private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
-  private final StatusSignal<Angle> angleMotorPosition = angleMotor.getPosition();
+  @NotLogged private final StatusSignal<Angle> leaderPosition = leader.getPosition();
+  @NotLogged private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
+  @NotLogged private final StatusSignal<Voltage> leaderAppliedVolts = leader.getMotorVoltage();
+  @NotLogged private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+  @NotLogged private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+  @NotLogged private final StatusSignal<Angle> angleMotorPosition = angleMotor.getPosition();
+
+  @NotLogged
   private final StatusSignal<AngularVelocity> angleMotorVelocity = angleMotor.getVelocity();
+
+  @NotLogged
   private final StatusSignal<Voltage> angleMotorAppliedVolts = angleMotor.getMotorVoltage();
+
+  @NotLogged
   private final StatusSignal<Current> angleMotorStatorCurrent = angleMotor.getStatorCurrent();
+
+  @NotLogged
   private final StatusSignal<Current> angleMotorSupplyCurrent = angleMotor.getSupplyCurrent();
 
-  private TrapezoidProfile.Constraints constraints;
-  private ProfiledPIDController anglePID;
-  private ArmFeedforward angleFF;
+  @NotLogged private TrapezoidProfile.Constraints constraints;
+  @NotLogged private ProfiledPIDController anglePID;
+  @NotLogged private ArmFeedforward angleFF;
 
   // Debouncers for connection status (filters out brief disconnections)
-  private final Debouncer leaderDebounce = new Debouncer(0.5);
-  private final Debouncer angleMotorDebounce = new Debouncer(0.5);
-
-  public Timer timer = new Timer();
+  @NotLogged private final Debouncer leaderDebounce = new Debouncer(0.5);
+  @NotLogged private final Debouncer angleMotorDebounce = new Debouncer(0.5);
 
   /**
    * Constructs a new ArmIOCTRE instance and initializes all hardware components. This includes
@@ -128,17 +158,17 @@ public class FunnelIOCTRE implements FunnelIO {
     leader.optimizeBusUtilization(4, 0.1);
     angleMotor.optimizeBusUtilization(4, 0.1);
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("Funnel/PID/P", kP);
-      SmartDashboard.putNumber("Funnel/PID/I", kI);
-      SmartDashboard.putNumber("Funnel/PID/D", kD);
-      SmartDashboard.putNumber("Funnel/PID/S", kS);
-      SmartDashboard.putNumber("Funnel/PID/G", kG);
-      SmartDashboard.putNumber("Funnel/PID/V", kV);
-      SmartDashboard.putNumber("Funnel/PID/A", kA);
-      SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
-      SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putNumber("Funnel/PID/P", kP);
+    //   SmartDashboard.putNumber("Funnel/PID/I", kI);
+    //   SmartDashboard.putNumber("Funnel/PID/D", kD);
+    //   SmartDashboard.putNumber("Funnel/PID/S", kS);
+    //   SmartDashboard.putNumber("Funnel/PID/G", kG);
+    //   SmartDashboard.putNumber("Funnel/PID/V", kV);
+    //   SmartDashboard.putNumber("Funnel/PID/A", kA);
+    //   SmartDashboard.putNumber("Funnel/PID/Acel", kAcel);
+    //   SmartDashboard.putNumber("Funnel/PID/Vel", kVel);
+    // }
 
     angleMotor.setPosition(0);
     aileron.setAngle(FunnelConstants.AILERON_OUT);
@@ -153,9 +183,9 @@ public class FunnelIOCTRE implements FunnelIO {
    */
   @Override
   public void updateInputs(FunnelIOInputs inputs) {
-    if (Constants.useSmartDashboard) {
-      tempPIDTuning();
-    }
+    // if (Constants.useSmartDashboard) {
+    //   tempPIDTuning();
+    // }
 
     // Refresh all sensor data
     StatusCode leaderStatus =
@@ -188,35 +218,35 @@ public class FunnelIOCTRE implements FunnelIO {
     inputs.angleMotorSupplyCurrent = angleMotorSupplyCurrent.getValue();
 
     // Calculate arm angle using encoder position
-    inputs.funnelAngle = (inputs.angleMotorPosition.magnitude() * 360 / GEAR_RATIO);
+    inputs.funnelAngle = Degrees.of(inputs.angleMotorPosition.magnitude() * 360 / GEAR_RATIO);
 
     if (locked) {
       if (anglePID.getGoal().position != 0
-          || (anglePID.getGoal().position == 0 && inputs.funnelAngle >= 10)) {
+          || (anglePID.getGoal().position == 0 && inputs.funnelAngle.in(Degrees) >= 10)) {
         angleMotor.setVoltage(
-            (anglePID.calculate(inputs.funnelAngle)
+            (anglePID.calculate(inputs.funnelAngle.in(Degrees))
                 + angleFF.calculate(
-                    Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude(),
+                    Conversions.funnelAngleToFFRads(inputs.funnelAngle.in(Degrees)).magnitude(),
                     anglePID.getSetpoint().velocity)));
       } else {
         angleMotor.setVoltage(0);
-        anglePID.reset(inputs.funnelAngle, 0);
+        anglePID.reset(inputs.funnelAngle.in(Degrees), 0);
       }
     }
 
     inputs.hasCoral = !forwardBeamBreak.get() || !reverseBeamBreak.get();
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
-      SmartDashboard.putNumber(
-          "funnel/CORRECTEDPOSITION",
-          Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle).magnitude()));
-      SmartDashboard.putNumber("funnel/POSITION", inputs.funnelAngle);
-      SmartDashboard.putNumber("funnel/GOAL", anglePID.getGoal().position);
-      SmartDashboard.putNumber("funnel/SETPOINT", anglePID.getSetpoint().position);
-      SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
-    }
-    Logger.recordOutput("Funnel/Aileron Pos", aileron.getAngle());
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putNumber("MOTOR", inputs.angleMotorPosition.magnitude());
+    //   SmartDashboard.putNumber(
+    //       "funnel/CORRECTEDPOSITION",
+    //
+    // Units.radiansToDegrees(Conversions.funnelAngleToFFRads(inputs.funnelAngle.in(Degrees)).magnitude()));
+    //   SmartDashboard.putNumber("funnel/POSITION", inputs.funnelAngle);
+    //   SmartDashboard.putNumber("funnel/GOAL", anglePID.getGoal().position);
+    //   SmartDashboard.putNumber("funnel/SETPOINT", anglePID.getSetpoint().position);
+    //   SmartDashboard.putNumber("Funnel/Aileron Angle", aileron.getAngle());
+    // }
   }
 
   /**
@@ -257,50 +287,50 @@ public class FunnelIOCTRE implements FunnelIO {
     aileron.setAngle(angle);
   }
 
-  private void tempPIDTuning() {
-    if (kP != SmartDashboard.getNumber("Funnel/PID/P", kP)) {
-      kP = SmartDashboard.getNumber("Funnel/PID/P", kP);
-      anglePID.setP(kP);
-    }
+  // private void tempPIDTuning() {
+  //   if (kP != SmartDashboard.getNumber("Funnel/PID/P", kP)) {
+  //     kP = SmartDashboard.getNumber("Funnel/PID/P", kP);
+  //     anglePID.setP(kP);
+  //   }
 
-    if (kI != SmartDashboard.getNumber("Funnel/PID/I", kI)) {
-      kI = SmartDashboard.getNumber("Funnel/PID/I", kI);
-      anglePID.setI(kI);
-    }
+  //   if (kI != SmartDashboard.getNumber("Funnel/PID/I", kI)) {
+  //     kI = SmartDashboard.getNumber("Funnel/PID/I", kI);
+  //     anglePID.setI(kI);
+  //   }
 
-    if (kD != SmartDashboard.getNumber("Funnel/PID/D", kD)) {
-      kD = SmartDashboard.getNumber("Funnel/PID/D", kD);
-      anglePID.setD(kD);
-    }
+  //   if (kD != SmartDashboard.getNumber("Funnel/PID/D", kD)) {
+  //     kD = SmartDashboard.getNumber("Funnel/PID/D", kD);
+  //     anglePID.setD(kD);
+  //   }
 
-    if (kS != SmartDashboard.getNumber("Funnel/PID/S", kS)) {
-      kS = SmartDashboard.getNumber("Funnel/PID/S", kS);
-      angleFF = new ArmFeedforward(kS, kG, kV, kA);
-    }
+  //   if (kS != SmartDashboard.getNumber("Funnel/PID/S", kS)) {
+  //     kS = SmartDashboard.getNumber("Funnel/PID/S", kS);
+  //     angleFF = new ArmFeedforward(kS, kG, kV, kA);
+  //   }
 
-    if (kG != SmartDashboard.getNumber("Funnel/PID/G", kG)) {
-      kG = SmartDashboard.getNumber("Funnel/PID/G", kG);
-      angleFF = new ArmFeedforward(kS, kG, kV, kA);
-    }
+  //   if (kG != SmartDashboard.getNumber("Funnel/PID/G", kG)) {
+  //     kG = SmartDashboard.getNumber("Funnel/PID/G", kG);
+  //     angleFF = new ArmFeedforward(kS, kG, kV, kA);
+  //   }
 
-    if (kV != SmartDashboard.getNumber("Funnel/PID/V", kV)) {
-      kV = SmartDashboard.getNumber("Funnel/PID/V", kV);
-      angleFF = new ArmFeedforward(kS, kG, kV, kA);
-    }
+  //   if (kV != SmartDashboard.getNumber("Funnel/PID/V", kV)) {
+  //     kV = SmartDashboard.getNumber("Funnel/PID/V", kV);
+  //     angleFF = new ArmFeedforward(kS, kG, kV, kA);
+  //   }
 
-    if (kA != SmartDashboard.getNumber("Funnel/PID/A", kA)) {
-      kA = SmartDashboard.getNumber("Funnel/PID/A", kA);
-      angleFF = new ArmFeedforward(kS, kG, kV, kA);
-    }
+  //   if (kA != SmartDashboard.getNumber("Funnel/PID/A", kA)) {
+  //     kA = SmartDashboard.getNumber("Funnel/PID/A", kA);
+  //     angleFF = new ArmFeedforward(kS, kG, kV, kA);
+  //   }
 
-    if (kAcel != SmartDashboard.getNumber("Funnel/PID/Acel", kAcel)) {
-      kAcel = SmartDashboard.getNumber("Funnel/PID/Acel", kAcel);
-      anglePID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
-    }
+  //   if (kAcel != SmartDashboard.getNumber("Funnel/PID/Acel", kAcel)) {
+  //     kAcel = SmartDashboard.getNumber("Funnel/PID/Acel", kAcel);
+  //     anglePID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
+  //   }
 
-    if (kVel != SmartDashboard.getNumber("Funnel/PID/Vel", kVel)) {
-      kVel = SmartDashboard.getNumber("Funnel/PID/Vel", kVel);
-      anglePID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
-    }
-  }
+  //   if (kVel != SmartDashboard.getNumber("Funnel/PID/Vel", kVel)) {
+  //     kVel = SmartDashboard.getNumber("Funnel/PID/Vel", kVel);
+  //     anglePID.setConstraints(new TrapezoidProfile.Constraints(kAcel, kVel));
+  //   }
+  // }
 }

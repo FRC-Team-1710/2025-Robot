@@ -8,19 +8,24 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
+
+@Logged
 public class Climber {
+  @Logged(name = "Motor", importance = Importance.CRITICAL)
   private TalonFX climber;
+  @Logged(name = "GoForClimb", importance = Importance.CRITICAL)
   public boolean goForClimb;
+  @Logged(name = "SafeToRetract", importance = Importance.INFO)
   public boolean safeToRetract = false;
 
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ClimberStates currentState = ClimberStates.STOWED;
 
-  public Timer timer = new Timer();
-
+  @NotLogged
   private double gearRatio = 80;
 
   public Climber() {
@@ -34,9 +39,9 @@ public class Climber {
 
     climber.setPosition(0);
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putBoolean("safe to retract", safeToRetract);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putBoolean("safe to retract", safeToRetract);
+    // }
   }
 
   public void SetClimberPower(double power) {
@@ -44,17 +49,18 @@ public class Climber {
   }
 
   /* Degrees */
+  @Logged(name = "Position", importance = Importance.CRITICAL)
   public double getPosition() {
     return climber.getPosition().getValueAsDouble() / gearRatio;
   }
 
   public void periodic() {
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putNumber("Climber Position", getPosition());
-      if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
-        safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
-      }
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putNumber("Climber Position", getPosition());
+    //   if (SmartDashboard.getBoolean("safe to retract", safeToRetract) != safeToRetract) {
+    //     safeToRetract = SmartDashboard.getBoolean("safe to retract", safeToRetract);
+    //   }
+    // }
 
     switch (currentState) {
       case STOWED:
@@ -79,6 +85,7 @@ public class Climber {
     }
   }
 
+  @Logged(name = "HasClimbed", importance = Importance.CRITICAL)
   public boolean hasClimbed() {
     return getPosition() > 3.9;
   }

@@ -13,31 +13,44 @@ package frc.robot.subsystems.superstructure.claw;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.superstructure.claw.ClawIO.ClawIOInputs;
+
 import java.util.function.BooleanSupplier;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * The Claw subsystem controls a single-motor claw mechanism for game piece manipulation. It
  * supports multiple angles for different game actions and provides both open-loop and closed-loop
  * control options.
  */
+@Logged
 public class Claw {
+  @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ClawIO io;
-  private final ClawIOInputsAutoLogged inputs;
+  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  private final ClawIOInputs inputs;
 
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ClawStates currentState = ClawStates.IDLE;
+  @Logged(name = "CurrentAlgaeState", importance = Importance.DEBUG)
   private CurrentAlgaeState currentAlgaeState = CurrentAlgaeState.NONE;
 
+  @NotLogged
   private boolean doneZeroing = false;
+  
+  @Logged(name = "RollerPositionWhenAlgaeGrabbed", importance = Importance.CRITICAL)
   private double rollerPositionWhenAlgaeGrabbed = 0;
 
+  @Logged(name = "Eject", importance = Importance.CRITICAL)
   private final BooleanSupplier ejectSupplier;
 
+  @Logged(name = "Timer", importance = Importance.CRITICAL)
   private Timer timer = new Timer();
 
   /**
@@ -47,15 +60,12 @@ public class Claw {
    */
   public Claw(ClawIO io, BooleanSupplier ejectSupplier) {
     this.io = io;
-    this.inputs = new ClawIOInputsAutoLogged();
+    this.inputs = new ClawIOInputs();
     this.ejectSupplier = ejectSupplier;
   }
 
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Claw", inputs);
-
-    Logger.recordOutput("why claw no works", isAtTarget());
 
     inputs.state = getState();
 
@@ -147,10 +157,12 @@ public class Claw {
     }
   }
 
+  @Logged(name = "HasAlgae", importance = Importance.CRITICAL)
   public boolean hasAlgae() {
     return inputs.hasAlgae;
   }
 
+  @NotLogged
   public boolean isDoneZeroing() {
     return doneZeroing;
   }
@@ -180,11 +192,12 @@ public class Claw {
     }
   }
 
+  @NotLogged
   public ClawStates getState() {
     return currentState;
   }
 
-  @AutoLogOutput
+  @Logged(name = "IsAtTarget", importance = Importance.CRITICAL)
   public boolean isAtTarget() {
     if (currentState == ClawStates.STOP) return true;
     return inputs.angle.times(-1).isNear(currentState.targetAngle, currentState.angleTolerance);

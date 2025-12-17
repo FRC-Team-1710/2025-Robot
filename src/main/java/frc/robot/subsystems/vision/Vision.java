@@ -22,7 +22,6 @@ import frc.robot.subsystems.vision.VisionUtil.VisionMeasurement;
 import frc.robot.subsystems.vision.VisionUtil.VisionMode;
 import frc.robot.utils.FieldConstants;
 import java.util.*;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Subsystem that handles vision processing from multiple cameras using AprilTags. Processes data

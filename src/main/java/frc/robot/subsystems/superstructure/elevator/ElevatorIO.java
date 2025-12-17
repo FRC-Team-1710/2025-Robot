@@ -31,41 +31,49 @@ public interface ElevatorIO {
   public class ElevatorIOInputs {
     @Logged(name = "LeaderConnected", importance = Importance.CRITICAL)
     public boolean leaderConnected = false;
+
     @Logged(name = "FollowerConnected", importance = Importance.CRITICAL)
     public boolean followerConnected = false;
 
     @Logged(name = "KillSwitch", importance = Importance.CRITICAL)
     public boolean killSwitch = false;
+
     @Logged(name = "Locked", importance = Importance.CRITICAL)
     public boolean locked = false;
 
-    @Logged(name = "LeaderPosition", importance = Importance.CRITICAL)
+    @Logged(name = "LeaderPosition", importance = Importance.INFO)
     public Angle leaderPosition = Rotations.of(0);
 
-    @Logged(name = "LeaderVelocity", importance = Importance.CRITICAL)
+    @Logged(name = "LeaderVelocity", importance = Importance.INFO)
     public AngularVelocity leaderVelocity = RotationsPerSecond.of(0);
 
-    @Logged(name = "FollowerPosition", importance = Importance.CRITICAL)
+    @Logged(name = "FollowerPosition", importance = Importance.INFO)
     public Angle followerPosition = Rotations.of(0);
 
-    @Logged(name = "FollowerVelocity", importance = Importance.CRITICAL)
+    @Logged(name = "FollowerVelocity", importance = Importance.INFO)
     public AngularVelocity followerVelocity = RotationsPerSecond.of(0);
 
-    @Logged(name = "AppliedVoltage", importance = Importance.CRITICAL)
+    @Logged(name = "AppliedVoltage", importance = Importance.INFO)
     public Voltage appliedVoltage = Volts.of(0.0);
-    @Logged(name = "LeaderStatorCurrent", importance = Importance.CRITICAL)
+
+    @Logged(name = "LeaderStatorCurrent", importance = Importance.INFO)
     public Current leaderStatorCurrent = Amps.of(0);
-    @Logged(name = "FollowerStatorCurrent", importance = Importance.CRITICAL)
+
+    @Logged(name = "FollowerStatorCurrent", importance = Importance.INFO)
     public Current followerStatorCurrent = Amps.of(0);
+
     @Logged(name = "LeaderSupplyCurrent", importance = Importance.INFO)
     public Current leaderSupplyCurrent = Amps.of(0);
+
     @Logged(name = "FollowerSupplyCurrent", importance = Importance.INFO)
     public Current followerSupplyCurrent = Amps.of(0);
 
     @Logged(name = "Distance", importance = Importance.CRITICAL)
     public Distance distance = Inches.of(0);
+
     @Logged(name = "Goal", importance = Importance.CRITICAL)
     public Distance goal = Inches.of(0);
+
     @Logged(name = "Setpoint", importance = Importance.CRITICAL)
     public Distance setpoint = Inches.of(0);
 

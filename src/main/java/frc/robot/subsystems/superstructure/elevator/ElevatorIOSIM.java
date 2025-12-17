@@ -1,11 +1,10 @@
 package frc.robot.subsystems.superstructure.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Rotations;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.LinearSystem;
@@ -25,11 +24,8 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import frc.robot.Constants;
-import frc.robot.utils.Conversions;
 
 /**
  * Simulation implementation of the elevator subsystem. This class extends ElevatorIOCTRE to provide
@@ -42,31 +38,41 @@ import frc.robot.utils.Conversions;
 public class ElevatorIOSIM extends ElevatorIOCTRE {
   @Logged(name = "pid/kP", importance = Importance.DEBUG)
   private double kP = 0.01;
+
   @Logged(name = "pid/kI", importance = Importance.DEBUG)
   private double kI = 0.0;
+
   @Logged(name = "pid/kD", importance = Importance.DEBUG)
   private double kD = 0.0;
+
   @Logged(name = "pid/kS", importance = Importance.DEBUG)
   private double kS = 0.0;
+
   @Logged(name = "pid/kG", importance = Importance.DEBUG)
   private double kG = 0.2;
+
   @Logged(name = "pid/kV", importance = Importance.DEBUG)
   private double kV = 0.051;
+
   @Logged(name = "pid/kA", importance = Importance.DEBUG)
   private double kA = 0.0;
+
   @Logged(name = "pid/kAcel", importance = Importance.DEBUG)
   private double kVel = 200;
+
   @Logged(name = "pid/kVel", importance = Importance.DEBUG)
   private double kAcel = 1000;
+
   @NotLogged
   private final TrapezoidProfile.Constraints m_Constraints =
       new TrapezoidProfile.Constraints(kAcel, kVel);
-      @NotLogged
+
+  @NotLogged
   private final ProfiledPIDController elevatorPID =
       new ProfiledPIDController(kP, kI, kD, m_Constraints);
+
   private ElevatorFeedforward elevatorFF = new ElevatorFeedforward(kS, kG, kV, kA);
-  @NotLogged
-  private final DCMotor m_elevatorGearbox = DCMotor.getKrakenX60(2);
+  @NotLogged private final DCMotor m_elevatorGearbox = DCMotor.getKrakenX60(2);
 
   @SuppressWarnings("rawtypes")
   @NotLogged
@@ -80,49 +86,48 @@ public class ElevatorIOSIM extends ElevatorIOCTRE {
       new ElevatorSim(
           elesys, m_elevatorGearbox, 0, Units.inchesToMeters(55), true, Units.inchesToMeters(1));
 
-          @NotLogged
-  private final Encoder enc = new Encoder(4, 5);
-  @NotLogged
-  private final EncoderSim m_EncoderSim = new EncoderSim(enc);
-  @NotLogged
-  private final PWMTalonFX pwmTalonFX = new PWMTalonFX(10);
-  @NotLogged
-  private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
+  @NotLogged private final Encoder enc = new Encoder(4, 5);
+  @NotLogged private final EncoderSim m_EncoderSim = new EncoderSim(enc);
+  @NotLogged private final PWMTalonFX pwmTalonFX = new PWMTalonFX(10);
+  @NotLogged private final PWMSim m_mototsim = new PWMSim(pwmTalonFX);
+
   @Logged(name = "Mechanism2d", importance = Importance.INFO)
   public final Mechanism2d m_mech2d =
       new Mechanism2d(Units.inchesToMeters(28), Units.inchesToMeters(80));
 
-      @NotLogged
+  @NotLogged
   public final MechanismRoot2d m_mech2dRootSecondStage =
       m_mech2d.getRoot("Elevator Root 2", Units.inchesToMeters(19), Units.inchesToMeters(5.75));
-      @NotLogged
+
+  @NotLogged
   private final MechanismRoot2d m_mech2dRootFirstStage =
       m_mech2d.getRoot("Elevator Root", Units.inchesToMeters(19), Units.inchesToMeters(4.75));
 
-      @NotLogged
+  @NotLogged
   public final MechanismLigament2d m_elevatorMechSecondStage2d =
       m_mech2dRootSecondStage.append(
           new MechanismLigament2d("SecondStageSim", m_ElevatorSim.getPositionMeters(), 90));
-          @NotLogged
+
+  @NotLogged
   private final MechanismLigament2d m_elevatorMechFirstStage2d =
       m_mech2dRootFirstStage.append(
           new MechanismLigament2d("FirstStageSim", m_ElevatorSim.getPositionMeters(), 90));
 
-          @NotLogged
+  @NotLogged
   public final MechanismLigament2d m_secondStage2d =
       m_elevatorMechSecondStage2d.append(
           new MechanismLigament2d(
               "SecondStage", Units.inchesToMeters(26.32), 0)); // Max height 27in
-              @NotLogged
+
+  @NotLogged
   private final MechanismLigament2d m_firstStage2d =
       m_elevatorMechFirstStage2d.append(
-          new MechanismLigament2d(
-              "FirstStage", Units.inchesToMeters(37), 0)); // Max height 28in
+          new MechanismLigament2d("FirstStage", Units.inchesToMeters(37), 0)); // Max height 28in
 
   /**
    * Constructs a new ElevatorIOSIM instance. Initializes the physics simulation with realistic
-   * parameters including: - Dual Kraken X60 motors - 10 pound carriage mass - 8 foot maximum
-   * height - Gravity simulation enabled
+   * parameters including: - Dual Kraken X60 motors - 10 pound carriage mass - 8 foot maximum height
+   * - Gravity simulation enabled
    */
   public ElevatorIOSIM() {
     super();

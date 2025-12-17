@@ -11,84 +11,133 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import org.littletonrobotics.junction.Logger;
 
+@Logged
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 66.6666666;
+  @Logged(name = "Locked", importance = Importance.INFO)
   private boolean locked = false;
+  @Logged(name = "RollerLocked", importance = Importance.INFO)
   private boolean rollerLocked = false;
+  @Logged(name = "HasZeroed", importance = Importance.INFO)
   private boolean hasZeroed = false;
 
+  
+  @Logged(name = "kP", importance = Importance.INFO)
   private double kP = 1.5;
+  
+  @Logged(name = "kI", importance = Importance.INFO)
   private double kI = 0.0;
+  
+  @Logged(name = "kD", importance = Importance.INFO)
   private double kD = 0.0;
+  
+  @Logged(name = "kS", importance = Importance.INFO)
   private double kS = 0.0;
+  
+  @Logged(name = "kG", importance = Importance.INFO)
   private double kG = 0.0;
+  
+  @Logged(name = "kV", importance = Importance.INFO)
   private double kV = 0.0;
+  
+  @Logged(name = "kA", importance = Importance.INFO)
   private double kA = 0.0;
+  
+  @Logged(name = "kAcel", importance = Importance.INFO)
   private double kAcel = 65;
+  
+  @Logged(name = "kVel", importance = Importance.INFO)
   private double kVel = 85;
 
-  private double RollerkP = 3;
-  private double RollerkI = 0.0;
-  private double RollerkD = 0.0;
+  
+  @Logged(name = "RollerKP", importance = Importance.INFO)
+  private double rollerKP = 3;
+  
+  @Logged(name = "RollerKI", importance = Importance.INFO)
+  private double rollerKI = 0.0;
+  
+  @Logged(name = "RollerKD", importance = Importance.INFO)
+  private double rollerKD = 0.0;
 
+  @Logged(name = "Wrist", importance = Importance.CRITICAL)
   public final TalonFX wrist = new TalonFX(51);
+  @Logged(name = "Rollers", importance = Importance.CRITICAL)
   public final TalonFX rollers = new TalonFX(52);
 
-  private final PIDController rollerPID = new PIDController(RollerkP, RollerkI, RollerkD);
+  @NotLogged
+  private final PIDController rollerPID = new PIDController(rollerKP, rollerKI, rollerKD);
   // private final ProfiledPIDController wristPID =
-  //     new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kvel, kacel));
+  //     new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kVel, kAcel));
   // private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
 
+  @NotLogged
   private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
+  @NotLogged
   private final StatusSignal<Angle> wristPosition = wrist.getPosition();
-  private final StatusSignal<Double> wristRefrence = wrist.getClosedLoopReference();
+  @NotLogged
+  private final StatusSignal<Double> wristReference = wrist.getClosedLoopReference();
+  @NotLogged
   private final StatusSignal<AngularVelocity> wristVelocity = wrist.getVelocity();
+  @NotLogged
   private final StatusSignal<Voltage> wristAppliedVolts = wrist.getMotorVoltage();
+  @NotLogged
   private final StatusSignal<Current> wristStatorCurrent = wrist.getStatorCurrent();
+  @NotLogged
   private final StatusSignal<Current> wristSupplyCurrent = wrist.getSupplyCurrent();
+  @NotLogged
   private final StatusSignal<AngularVelocity> intakeVelocity = rollers.getVelocity();
+  @NotLogged
   private final StatusSignal<Voltage> intakeAppliedVolts = rollers.getMotorVoltage();
+  @NotLogged
   private final StatusSignal<Current> intakeStatorCurrent = rollers.getStatorCurrent();
+  @NotLogged
   private final StatusSignal<Current> intakeSupplyCurrent = rollers.getSupplyCurrent();
 
+  @NotLogged
   private final Debouncer clawDebounce = new Debouncer(0.5);
+  @NotLogged
   private final Debouncer wristDebounce = new Debouncer(0.5);
 
+  @Logged(name = "SetAngle", importance = Importance.INFO)
   private Angle setAngle = Degrees.of(0);
+  @Logged(name = "WristManual", importance = Importance.INFO)
   private double wristManual = 0.0;
+  @Logged(name = "RunPercent", importance = Importance.INFO)
   private double runPercent = 0.0;
 
+  @NotLogged
   TalonFXConfiguration config2 = new TalonFXConfiguration();
 
   public ClawIOCTRE() {
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putBoolean("Claw/PID/OMG", false);
-      SmartDashboard.putNumber("Claw/PID/P", kP);
-      SmartDashboard.putNumber("Claw/PID/I", kI);
-      SmartDashboard.putNumber("Claw/PID/D", kD);
-      SmartDashboard.putNumber("Claw/PID/S", kS);
-      SmartDashboard.putNumber("Claw/PID/G", kG);
-      SmartDashboard.putNumber("Claw/PID/V", kV);
-      SmartDashboard.putNumber("Claw/PID/A", kA);
-      SmartDashboard.putNumber("Claw/PID/Vel", kVel);
-      SmartDashboard.putNumber("Claw/PID/Acel", kAcel);
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putBoolean("Claw/PID/OMG", false);
+    //   SmartDashboard.putNumber("Claw/PID/P", kP);
+    //   SmartDashboard.putNumber("Claw/PID/I", kI);
+    //   SmartDashboard.putNumber("Claw/PID/D", kD);
+    //   SmartDashboard.putNumber("Claw/PID/S", kS);
+    //   SmartDashboard.putNumber("Claw/PID/G", kG);
+    //   SmartDashboard.putNumber("Claw/PID/V", kV);
+    //   SmartDashboard.putNumber("Claw/PID/A", kA);
+    //   SmartDashboard.putNumber("Claw/PID/Vel", kVel);
+    //   SmartDashboard.putNumber("Claw/PID/Acel", kAcel);
 
-      SmartDashboard.putNumber("Claw/RollerPID/P", RollerkP);
-      SmartDashboard.putNumber("Claw/RollerPID/I", RollerkI);
-      SmartDashboard.putNumber("Claw/RollerPID/D", RollerkD);
-    }
+    //   SmartDashboard.putNumber("Claw/RollerPID/P", rollerKP);
+    //   SmartDashboard.putNumber("Claw/RollerPID/I", rollerKI);
+    //   SmartDashboard.putNumber("Claw/RollerPID/D", rollerKD);
+    // }
 
     config2.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config2.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -100,7 +149,7 @@ public class ClawIOCTRE implements ClawIO {
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         wristPosition,
-        wristRefrence,
+        wristReference,
         wristVelocity,
         wristStatorCurrent,
         wristSupplyCurrent,
@@ -112,17 +161,17 @@ public class ClawIOCTRE implements ClawIO {
 
   private TalonFXConfiguration createMotorConfiguration() {
     var config = new TalonFXConfiguration();
-    if (Constants.useSmartDashboard) {
-      config.Slot0.kP = SmartDashboard.getNumber("Claw/PID/P", kP);
-      config.Slot0.kI = SmartDashboard.getNumber("Claw/PID/I", kI);
-      config.Slot0.kD = SmartDashboard.getNumber("Claw/PID/D", kD);
-      config.Slot0.kS = SmartDashboard.getNumber("Claw/PID/S", kS);
-      config.Slot0.kG = SmartDashboard.getNumber("Claw/PID/G", kG);
-      config.Slot0.kV = SmartDashboard.getNumber("Claw/PID/V", kV);
-      config.Slot0.kA = SmartDashboard.getNumber("Claw/PID/A", kA);
-      config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
-      config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Claw/PID/Vel", kVel);
-    } else {
+    // if (Constants.useSmartDashboard) {
+    //   config.Slot0.kP = SmartDashboard.getNumber("Claw/PID/P", kP);
+    //   config.Slot0.kI = SmartDashboard.getNumber("Claw/PID/I", kI);
+    //   config.Slot0.kD = SmartDashboard.getNumber("Claw/PID/D", kD);
+    //   config.Slot0.kS = SmartDashboard.getNumber("Claw/PID/S", kS);
+    //   config.Slot0.kG = SmartDashboard.getNumber("Claw/PID/G", kG);
+    //   config.Slot0.kV = SmartDashboard.getNumber("Claw/PID/V", kV);
+    //   config.Slot0.kA = SmartDashboard.getNumber("Claw/PID/A", kA);
+    //   config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
+    //   config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Claw/PID/Vel", kVel);
+    // } else {
       config.Slot0.kP = kP;
       config.Slot0.kI = kI;
       config.Slot0.kD = kD;
@@ -132,7 +181,7 @@ public class ClawIOCTRE implements ClawIO {
       config.Slot0.kA = kA;
       config.MotionMagic.MotionMagicAcceleration = kAcel;
       config.MotionMagic.MotionMagicCruiseVelocity = kVel;
-    }
+    // }
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     return config;
   }
@@ -142,7 +191,7 @@ public class ClawIOCTRE implements ClawIO {
     StatusCode wristStatus =
         BaseStatusSignal.refreshAll(
             wristPosition,
-            wristRefrence,
+            wristReference,
             wristVelocity,
             wristAppliedVolts,
             wristStatorCurrent,
@@ -181,15 +230,15 @@ public class ClawIOCTRE implements ClawIO {
 
     inputs.hasZeroed = hasZeroed;
 
-    if (Constants.useSmartDashboard) {
-      tempPIDTuning();
+    // if (Constants.useSmartDashboard) {
+    //   tempPIDTuning();
 
-      SmartDashboard.putNumber("Claw Inches", wrist.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber("Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
-    }
+    //   SmartDashboard.putNumber("Claw Inches", wrist.getPosition().getValueAsDouble());
+    //   SmartDashboard.putNumber("Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
+    // }
 
     // if (locked) {
-    //   if (inputs.killSwich) {
+    //   if (inputs.killSwitch) {
     //     wrist.stopMotor();
     //   } else {
     //     wrist.setVoltage(
@@ -201,8 +250,6 @@ public class ClawIOCTRE implements ClawIO {
     if (rollerLocked) {
       rollers.setVoltage(rollerPID.calculate(inputs.rollerPosition));
     }
-
-    Logger.recordOutput("roller locked", rollerLocked);
   }
 
   @Override
@@ -257,25 +304,25 @@ public class ClawIOCTRE implements ClawIO {
     // wristPID.reset((wristPosition.getValueAsDouble() * 360 / GEAR_RATIO), 0);
   }
 
-  private void tempPIDTuning() {
-    if (SmartDashboard.getBoolean("Claw/PID/OMG", false)) {
-      SmartDashboard.putBoolean("Claw/PID/OMG", false);
-      wrist.getConfigurator().apply(createMotorConfiguration());
-    }
+  // private void tempPIDTuning() {
+  //   if (SmartDashboard.getBoolean("Claw/PID/OMG", false)) {
+  //     SmartDashboard.putBoolean("Claw/PID/OMG", false);
+  //     wrist.getConfigurator().apply(createMotorConfiguration());
+  //   }
 
-    if (RollerkP != SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP)) {
-      RollerkP = SmartDashboard.getNumber("Claw/RollerPID/P", RollerkP);
-      rollerPID.setP(RollerkP);
-    }
+  //   if (rollerKP != SmartDashboard.getNumber("Claw/RollerPID/P", rollerKP)) {
+  //     rollerKP = SmartDashboard.getNumber("Claw/RollerPID/P", rollerKP);
+  //     rollerPID.setP(rollerKP);
+  //   }
 
-    if (RollerkI != SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI)) {
-      RollerkI = SmartDashboard.getNumber("Claw/RollerPID/I", RollerkI);
-      rollerPID.setI(RollerkI);
-    }
+  //   if (rollerKI != SmartDashboard.getNumber("Claw/RollerPID/I", rollerKI)) {
+  //     rollerKI = SmartDashboard.getNumber("Claw/RollerPID/I", rollerKI);
+  //     rollerPID.setI(rollerKI);
+  //   }
 
-    if (RollerkD != SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD)) {
-      RollerkD = SmartDashboard.getNumber("Claw/RollerPID/D", RollerkD);
-      rollerPID.setD(RollerkD);
-    }
-  }
+  //   if (rollerKD != SmartDashboard.getNumber("Claw/RollerPID/D", rollerKD)) {
+  //     rollerKD = SmartDashboard.getNumber("Claw/RollerPID/D", rollerKD);
+  //     rollerPID.setD(rollerKD);
+  //   }
+  // }
 }

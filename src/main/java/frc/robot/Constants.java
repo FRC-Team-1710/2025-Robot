@@ -22,6 +22,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -41,6 +42,9 @@ import frc.robot.utils.FieldConstants;
  * file).
  */
 public final class Constants {
+  /** Mode to use if running on a real robot */
+  public static final Importance defaultImportance = Importance.INFO;
+
   public static final Mode simMode = Mode.SIM;
 
   public static final AngularVelocity MaxAngularRate = RotationsPerSecond.of(1.75);
@@ -88,6 +92,14 @@ public final class Constants {
       new SwerveSetpointGenerator(Constants.PP_CONFIG, Units.rotationsToRadians(10.0));
 
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  /**
+   * {@link Importance#DEBUG} if {@link Constants#currentMode} == {@link Mode#SIM} and {@link
+   * Constants#defaultImportance} if {@link Constants#currentMode} == {@link Mode#REAL} <br>
+   * Linking is fun
+   */
+  public static final Importance importance =
+      currentMode == Mode.SIM ? Importance.DEBUG : defaultImportance;
 
   // Vision constants
 

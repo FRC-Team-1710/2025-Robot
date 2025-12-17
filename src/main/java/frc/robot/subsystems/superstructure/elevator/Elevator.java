@@ -3,14 +3,13 @@ package frc.robot.subsystems.superstructure.elevator;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -23,6 +22,7 @@ public class Elevator {
   // Hardware interface and inputs
   @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ElevatorIO io;
+
   @Logged(name = "Inputs", importance = Importance.CRITICAL)
   private final ElevatorIOInputs inputs;
 
@@ -32,8 +32,8 @@ public class Elevator {
 
   @Logged(name = "Timer", importance = Importance.CRITICAL)
   private final Timer timer = new Timer();
-  @NotLogged
-  private boolean doneZeroing = false;
+
+  @NotLogged private boolean doneZeroing = false;
 
   @Logged(name = "CanMoveUp", importance = Importance.CRITICAL)
   private final BooleanSupplier canMoveUp;

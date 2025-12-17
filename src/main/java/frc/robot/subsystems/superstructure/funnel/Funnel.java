@@ -8,33 +8,41 @@ package frc.robot.subsystems.superstructure.funnel;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
+import frc.robot.subsystems.superstructure.funnel.FunnelIO.FunnelIOInputs;
 import java.util.function.BooleanSupplier;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * The Arm subsystem controls a dual-motor arm mechanism for game piece manipulation. It supports
  * multiple positions for different game actions and provides both open-loop and closed-loop control
  * options.
  */
+@Logged
 public class Funnel {
   // Hardware interface and inputs
+  @Logged(name = "IO", importance = Importance.CRITICAL)
   private final FunnelIO io;
-  private final FunnelIOInputsAutoLogged inputs;
 
+  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  private final FunnelIOInputs inputs;
+
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private FunnelState currentState = FunnelState.INTAKE;
+
+  @Logged(name = "Bump", importance = Importance.CRITICAL)
   private final BooleanSupplier bumpBoolean;
 
   public Funnel(FunnelIO io, BooleanSupplier bumpBoolean) {
     this.io = io;
-    this.inputs = new FunnelIOInputsAutoLogged();
+    this.inputs = new FunnelIOInputs();
     this.bumpBoolean = bumpBoolean;
   }
 
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Funnel", inputs);
 
     io.setPosition(currentState.targetAngle);
 
@@ -66,9 +74,9 @@ public class Funnel {
     }
   }
 
-  @AutoLogOutput
+  @NotLogged
   public Angle getPosition() {
-    return Degrees.of(inputs.funnelAngle);
+    return inputs.funnelAngle;
   }
 
   /** Enumeration of available arm positions with their corresponding target angles. */
@@ -90,6 +98,7 @@ public class Funnel {
     }
   }
 
+  @NotLogged
   public FunnelState getState() {
     return currentState;
   }
@@ -98,11 +107,12 @@ public class Funnel {
     this.currentState = state;
   }
 
+  @Logged(name = "HasCoral", importance = Importance.INFO)
   public boolean hasCoral() {
     return inputs.hasCoral;
   }
 
-  @AutoLogOutput
+  @Logged(name = "AtTarget", importance = Importance.CRITICAL)
   public boolean isAtTarget() {
     return getPosition().isNear(currentState.targetAngle, currentState.angleTolerance);
   }

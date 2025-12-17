@@ -19,6 +19,10 @@ import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
 import com.therekrab.autopilot.APTarget;
 import com.therekrab.autopilot.Autopilot;
+
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -61,116 +65,163 @@ import frc.robot.utils.FieldConstants;
 import frc.robot.utils.SimCoral;
 import frc.robot.utils.SimCoralAutomationChooser;
 import frc.robot.utils.TunableController;
-import org.littletonrobotics.junction.Logger;
 
+@Logged
 public class Superstructure {
+  @NotLogged
   private final Drive drivetrain;
+  @NotLogged
   private final Claw claw;
+  @NotLogged
   private final Climber climber;
+  @NotLogged
   private final Elevator elevator;
+  @NotLogged
   private final Funnel funnel;
+  @NotLogged
   private final Manipulator manipulator;
 
-  @SuppressWarnings("unused") // Sorry Gavin
+  @NotLogged
   private final Vision vision;
 
-  @SuppressWarnings("unused") // Sorry Again
+  @NotLogged
   private final LEDSubsystem ledSubsystem;
 
+  @NotLogged
   private final TunableController driver;
+  @NotLogged
   private final TunableController mech;
 
+  @NotLogged
   private final APConstraints constraints =
       new APConstraints()
           .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 7.5)
           .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 0)
           .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.0175);
+          @NotLogged
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1.25))
           .withErrorTheta(Degrees.of(5))
           .withBeelineRadius(Inches.of(24));
 
+          @NotLogged
   private Autopilot autopilot = new Autopilot(profile);
 
+  @Logged(name = "APTarget", importance = Importance.CRITICAL)
   private APTarget currentTarget = new APTarget(new Pose2d());
 
+  @Logged(name = "WantedState", importance = Importance.CRITICAL)
   private WantedState wantedState = WantedState.STOPPED;
+  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private CurrentState currentState = CurrentState.STOPPED;
+  @Logged(name = "PreviousState", importance = Importance.CRITICAL)
   private CurrentState previousState;
 
+  @Logged(name = "CurrentAutoDriveType", importance = Importance.CRITICAL)
   private AutoAlignType currentAutoDriveType = AutoAlignType.PP;
+  @Logged(name = "CurrentAlignTarget", importance = Importance.CRITICAL)
   private AlignTarget currentAlignTarget = AlignTarget.REEF;
 
+  @Logged(name = "TargetFace", importance = Importance.CRITICAL)
   private ReefFaces targetFace = ReefFaces.ab;
+  @Logged(name = "TargetSide", importance = Importance.CRITICAL)
   private ReefSide targetSide = ReefSide.left;
+  @Logged(name = "TargetLevel", importance = Importance.CRITICAL)
   private ReefLevel targetLevel = ReefLevel.L4;
+  @Logged(name = "TargetSourceSide", importance = Importance.CRITICAL)
   private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
+  @Logged(name = "TargetingMethod", importance = Importance.CRITICAL)
   private TargetingMethod targetingMethod = TargetingMethod.DISTANCE;
 
+  @Logged(name = "TargetingType", importance = Importance.CRITICAL)
   private TargetType targetingType = TargetType.CORAL;
 
+  @Logged(name = "CurrentGamePiecePosition", importance = Importance.DEBUG)
   private GamePiecePositions currentGamePiecePosition = GamePiecePositions.NONE;
 
+  @Logged(name = "AutomationLevel", importance = Importance.INFO)
   private AutomationLevel automationLevel = AutomationLevel.AUTO_DRIVE;
+  @Logged(name = "SimCoralAutomation", importance = Importance.DEBUG)
   private SimCoralAutomation simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
 
+  @NotLogged
   private final AutomationLevelChooser automationLevelChooser;
+  @NotLogged
   private final SimCoralAutomationChooser simCoralAutomationChooser;
 
-  private double driverOverideAllignment = 0.25;
+  @Logged(name = "DriverOverrideAlignment", importance = Importance.CRITICAL)
+  private double driverOverrideAlignment = 0.25;
 
   private final double metersToElevatorUp = 1.25;
 
+  @Logged(name = "AutoSourceIsLeft", importance = Importance.CRITICAL)
   private boolean autoSourceIsLeft = false;
 
+  @Logged(name = "ScoreCoral", importance = Importance.CRITICAL)
   private boolean scoreCoralFlag = false;
 
+  @Logged(name = "ManualScoreCoral", importance = Importance.CRITICAL)
   private boolean manualScoreCoralBeingFlagged = false;
 
+  @Logged(name = "HasScoredCoralSim", importance = Importance.DEBUG)
   private boolean hasScoredCoralSim = false;
 
+  @Logged(name = "RedAlliance", importance = Importance.INFO)
   private boolean isRedAlliance = false;
 
+  @Logged(name = "CompressMaxSpeed", importance = Importance.CRITICAL)
   private boolean compressMaxSpeed = true;
+  @Logged(name = "SpeedCompression", importance = Importance.CRITICAL)
   private double speedComp = 1;
 
+  @Logged(name = "PPReady", importance = Importance.CRITICAL)
   private boolean ppReady = false;
 
   private final double offsetX = Units.inchesToMeters(17.5);
   private final double offsetY = Units.inchesToMeters(6);
 
+  @Logged(name = "EjectTimer", importance = Importance.CRITICAL)
   private final Timer ejectTimer = new Timer();
 
+  @NotLogged
   private double beforeTimeStamp = RobotController.getFPGATime();
+  @NotLogged
   private double superBeforeTimeStamp = RobotController.getFPGATime();
 
   private final LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
 
+  @Logged(name = "MaxAngularRate", importance = Importance.INFO)
   private AngularVelocity maxAngularRate = Constants.MaxAngularRate;
 
+  @NotLogged
   private final SwerveRequest.FieldCentric fieldCentric =
       new SwerveRequest.FieldCentric()
           .withDeadband(maxSpeed.times(0.025))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.Velocity);
 
+          @NotLogged
   private final SwerveRequest.FieldCentric fieldCentricVoltage =
       new SwerveRequest.FieldCentric()
           .withDeadband(maxSpeed.times(0.025))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
+          @NotLogged
   private final PIDController movingRotation =
       new PIDController(
           Constants.currentMode == Mode.SIM ? 0.03 : 0.01,
           0,
           Constants.currentMode == Mode.SIM ? 0.00175 : 0);
 
+          @Logged(name = "CurrentPathFindingCommand", importance = Importance.CRITICAL)
   private Command currentPathFindingCommand = Commands.none();
+  @NotLogged
   private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
 
+  @Logged(name = "PPWUp", importance = Importance.INFO)
   private Command ppWUp =
       FollowPathCommand.warmupCommand().andThen(PathfindingCommand.warmupCommand());
 
@@ -200,17 +251,18 @@ public class Superstructure {
 
     ppWUp.schedule();
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-      SmartDashboard.putNumber("Acceleration", 7.5);
-      SmartDashboard.putNumber("Jerk", 0.015);
-      SmartDashboard.putNumber("Velocity", 0);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
+    //   SmartDashboard.putNumber("Acceleration", 7.5);
+    //   SmartDashboard.putNumber("Jerk", 0.015);
+    //   SmartDashboard.putNumber("Velocity", 0);
+    // }
 
-    SmartDashboard.putNumber("speedscausebum", 0);
-    SmartDashboard.putBoolean("whyCoast", false);
+    // SmartDashboard.putNumber("speedscausebum", 0);
+    // SmartDashboard.putBoolean("whyCoast", false);
   }
 
+  @Logged(name = "DriverRumble", importance = Importance.INFO)
   public boolean driverRumble() {
     return elevator.isAtTarget()
         && elevator.getState() != ElevatorStates.INTAKE
@@ -219,10 +271,11 @@ public class Superstructure {
         && !DriverStation.isAutonomous();
   }
 
+  @Logged(name = "PathfindingFinishedAuto", importance = Importance.CRITICAL)
   public boolean isPathFindingFinishedAuto() {
     return switch (currentAutoDriveType) {
       case AP -> isDrivetrainAtTarget() && DriverStation.isAutonomous();
-      case PP -> false; // Waits for the automatic switch to AutoPilot allign
+      case PP -> false; // Waits for the automatic switch to AutoPilot align
     };
   }
 
@@ -233,23 +286,23 @@ public class Superstructure {
   public void periodic() {
     superBeforeTimeStamp = RobotController.getFPGATime();
 
-    if (Constants.useSmartDashboard) {
-      autopilot =
-          new Autopilot(
-              profile.withConstraints(
-                  constraints
-                      .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
-                      .withVelocity(
-                          SmartDashboard.getNumber("Velocity", 0) == 0
-                              ? Double.POSITIVE_INFINITY
-                              : SmartDashboard.getNumber("Velocity", 0))
-                      .withJerk(SmartDashboard.getNumber("Jerk", 0))));
-    }
+    // if (Constants.useSmartDashboard) {
+    //   autopilot =
+    //       new Autopilot(
+    //           profile.withConstraints(
+    //               constraints
+    //                   .withAcceleration(SmartDashboard.getNumber("Acceleration", 0))
+    //                   .withVelocity(
+    //                       SmartDashboard.getNumber("Velocity", 0) == 0
+    //                           ? Double.POSITIVE_INFINITY
+    //                           : SmartDashboard.getNumber("Velocity", 0))
+    //                   .withJerk(SmartDashboard.getNumber("Jerk", 0))));
+    // }
 
-    if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
-      SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
-      manipulator.advanceGamePiece();
-    }
+    // if (SmartDashboard.getBoolean("Superstructure/Sim/AdvanceGamePiece", false)) {
+    //   SmartDashboard.putBoolean("Superstructure/Sim/AdvanceGamePiece", false);
+    //   manipulator.advanceGamePiece();
+    // }
 
     ppReady = (!ppWUp.isScheduled());
 
@@ -273,68 +326,11 @@ public class Superstructure {
 
     if (elevator.getPosition().in(Inches) < 15 || !compressMaxSpeed) {
       speedComp = 1;
-      Logger.recordOutput("Superstructure/MaxSpeedCompression", 1);
     } else if (elevator.getPosition().in(Inches) > 45) {
       speedComp = 0.5;
-      Logger.recordOutput("Superstructure/MaxSpeedCompression", 0.5);
     } else {
       speedComp = 1 - ((elevator.getPosition().in(Inches) - 15) / 60);
-      Logger.recordOutput(
-          "Superstructure/MaxSpeedCompression",
-          1 - ((elevator.getPosition().in(Inches) - 15) / 60));
     }
-
-    Logger.recordOutput(
-        "AP/ErrorTrans",
-        Units.metersToInches(
-            drivetrain
-                .getPose()
-                .getTranslation()
-                .getDistance(currentTarget.getReference().getTranslation())));
-    Logger.recordOutput(
-        "AP/ErrorTransM",
-        drivetrain
-            .getPose()
-            .getTranslation()
-            .getDistance(currentTarget.getReference().getTranslation()));
-    Logger.recordOutput(
-        "AP/ErrorRot",
-        drivetrain
-            .getPose()
-            .getRotation()
-            .minus(currentTarget.getReference().getRotation())
-            .getDegrees());
-
-    Logger.recordOutput("Superstructure/IsDrivetrainAtTarget", isDrivetrainAtTarget());
-
-    Logger.recordOutput("Superstructure/WantedState", wantedState);
-    Logger.recordOutput("Superstructure/currentState", currentState);
-    Logger.recordOutput("Superstructure/PreviousState", previousState);
-
-    Logger.recordOutput("Superstructure/CurrentGamePiecePosition", currentGamePiecePosition);
-
-    Logger.recordOutput(
-        "Superstructure/TargetSourcePoseAuto", targetSourcePoseAuto(drivetrain.getPose()));
-
-    Logger.recordOutput("Superstructure/TargetFace", targetFace);
-    Logger.recordOutput("Superstructure/TargetSide", targetSide);
-    Logger.recordOutput("Superstructure/TargetLevel", targetLevel);
-    Logger.recordOutput("Superstructure/TargetSourceAutoIsLeft", autoSourceIsLeft);
-    Logger.recordOutput("Superstructure/TargetSourceDistance", targetSourceSide);
-
-    Logger.recordOutput("Superstructure/PPReady", ppReady);
-
-    Logger.recordOutput("Superstructure/DriverRumble", driverRumble());
-
-    Logger.recordOutput("Superstructure/WrongHalf", isRobotOnWrongHalfOfReefFace(getTargetPose()));
-    Logger.recordOutput("Superstructure/LeftHalf", isRobotOnLeftHalfOfReefFace(getTargetPose()));
-
-    Logger.recordOutput("Superstructure/TargetPose", getTargetPose());
-
-    Logger.recordOutput(
-        "bfuiwbfiberwgbfiugewifhuiruigf",
-        MetersPerSecond.of(
-            (driver.customLeft().getNorm() + SmartDashboard.getNumber("speedscausebum", 0)) * 5));
 
     driver.setRumble(RumbleType.kBothRumble, driverRumble() ? 1 : 0);
 
@@ -350,36 +346,37 @@ public class Superstructure {
     // Optimizations
     beforeTimeStamp = RobotController.getFPGATime();
     claw.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ClawPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/ClawPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     climber.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     elevator.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ElevatorPeriodic",
-        RobotController.getFPGATime() - beforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/ElevatorPeriodic",
+    //     RobotController.getFPGATime() - beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     funnel.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     manipulator.periodic();
-    Logger.recordOutput(
-        "Superstructure/Periodic/ManipulatorPeriodic",
-        RobotController.getFPGATime() - beforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/ManipulatorPeriodic",
+    //     RobotController.getFPGATime() - beforeTimeStamp);
 
-    Logger.recordOutput(
-        "Superstructure/Periodic/SuperstructurePeriodic",
-        RobotController.getFPGATime() - superBeforeTimeStamp);
+    // Logger.recordOutput(
+    //     "Superstructure/Periodic/SuperstructurePeriodic",
+    //     RobotController.getFPGATime() - superBeforeTimeStamp);
   }
 
+  @NotLogged
   private CurrentState handStateTransitions() {
     previousState = currentState;
     if (wantedState == WantedState.SCORE_AUTO) {
@@ -533,10 +530,10 @@ public class Superstructure {
   private void applyStates() {
     switch (currentState) {
       case AUTO_DRIVE_TO_CORAL_STATION, AUTO_DRIVE_TO_REEF:
-        driverOverideAllignment = 0;
+        driverOverrideAlignment = 0;
         break;
       default:
-        driverOverideAllignment = 0.25;
+        driverOverrideAlignment = 0.25;
         break;
     }
     switch (currentState) {
@@ -1113,10 +1110,6 @@ public class Superstructure {
 
   /** Uses AP and PP to snap to specified pose */
   private void applyDrive(Pose2d pose) {
-    Logger.recordOutput(
-        "Superstructure/DistanceToRequestedPose",
-        Math.abs(drivetrain.getPose().getTranslation().getDistance(pose.getTranslation())));
-    Logger.recordOutput("Superstructure/AlignType", currentAlignTarget);
     if (ppReady
         && currentAlignTarget != AlignTarget.AP
         && ((currentAlignTarget == AlignTarget.REEF
@@ -1148,10 +1141,10 @@ public class Superstructure {
                 .plus(
                     new Transform2d(
                         (-driver.customLeft().getY()
-                            * driverOverideAllignment
+                            * driverOverrideAlignment
                             * (isRedAlliance ? -1 : 1)),
                         (-driver.customLeft().getX()
-                            * driverOverideAllignment
+                            * driverOverrideAlignment
                             * (isRedAlliance ? -1 : 1)),
                         Rotation2d.fromDegrees(-driver.customRight().getX() * 12.5)
                             .plus(pose.getRotation())));
@@ -1177,9 +1170,6 @@ public class Superstructure {
 
         vx = clampedOutput.getX();
         vy = clampedOutput.getY();
-
-        Logger.recordOutput("AP/AppliedX%", vy);
-        Logger.recordOutput("AP/AppliedY%", vx);
 
         applyDrive(
             vx * (isRedAlliance ? -1 : 1), vy * (isRedAlliance ? -1 : 1), output.targetAngle());
@@ -1237,11 +1227,11 @@ public class Superstructure {
   // .withRotationalRate(
   // maxAngularRate.times(
   // clamp(rotation)
-  // - (driver.customRight().getX() * driverOverideAllignment))))
+  // - (driver.customRight().getX() * driverOverrideAlignment))))
   // .schedule();
   // }
 
-  /** Uses normal driver controlls */
+  /** Uses normal driver controls */
   private void applyDrive() {
     var output = getClamped(driver.customLeft());
     if (SmartDashboard.getBoolean("whyCoast", false)) {
@@ -1261,7 +1251,7 @@ public class Superstructure {
     }
   }
 
-  /** Uses normal driver controlls with a rotation snap */
+  /** Uses normal driver controls with a rotation snap */
   private void applyDrive(Rotation2d rotationSnap) {
     var output = getClamped(driver.customLeft());
     drivetrain.setControl(
@@ -1281,19 +1271,23 @@ public class Superstructure {
                             0)))));
   }
 
+  @NotLogged
   private double clamp(double before) {
     return Math.abs(before) > 1 ? before / Math.abs(before) : before;
   }
 
   /** keeps the angle of the translation but keeps the speed under the compressed speed */
+  @NotLogged
   private Translation2d getClamped(Translation2d before) {
     return before.getNorm() <= speedComp ? before : before.div(before.getNorm() / speedComp);
   }
 
+  @Logged(name = "DrivetrainAtTarget", importance = Importance.CRITICAL)
   public boolean isDrivetrainAtTarget() {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
+  @Logged(name = "RobotOnWrongHalfOfReefFace", importance = Importance.INFO)
   public boolean isRobotOnWrongHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1306,6 +1300,7 @@ public class Superstructure {
     return dotProduct > 0;
   }
 
+  @Logged(name = "RobotOnLeftHalfOfReefFace", importance = Importance.INFO)
   public boolean isRobotOnLeftHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1319,11 +1314,13 @@ public class Superstructure {
     return dotProduct < 0;
   }
 
+  @Logged(name = "ProcessorRotation", importance = Importance.CRITICAL)
   private Rotation2d getProcessorRotation() {
     return Rotation2d.fromDegrees(
         isRedAlliance ? onOtherHalfOfField() ? 270 : 90 : onOtherHalfOfField() ? 90 : 270);
   }
 
+  @Logged(name = "TargetSourcePoseAuto", importance = Importance.CRITICAL)
   private Pose2d targetSourcePoseAuto(Pose2d pose) {
     if (DriverStation.isAutonomous()) {
       return new Pose2d(
@@ -1369,6 +1366,7 @@ public class Superstructure {
                 new Rotation2d()));
   }
 
+  @Logged(name = "TargetPose", importance = Importance.CRITICAL)
   private Pose2d getTargetPose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1382,6 +1380,7 @@ public class Superstructure {
                 offsetX, isTargetSideLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)));
   }
 
+  @Logged(name = "DrivetrainNearTarget", importance = Importance.CRITICAL)
   private boolean isDrivetrainNearTarget() {
     return Math.abs(
             new Pose2d(
@@ -1403,6 +1402,7 @@ public class Superstructure {
         < metersToElevatorUp;
   }
 
+  @NotLogged
   private Pose2d getFacePose(ReefFaces face) {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1418,6 +1418,7 @@ public class Superstructure {
         .plus(new Transform2d(offsetX, 0, new Rotation2d(Math.PI)));
   }
 
+  @NotLogged
   private Pose2d getBeforeReadyToGrabAlgaePose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1429,6 +1430,7 @@ public class Superstructure {
         .plus(new Transform2d(Units.inchesToMeters(32), 0, new Rotation2d(Math.PI)));
   }
 
+  @NotLogged
   private Pose2d getReadyToGrabAlgaePose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1444,6 +1446,7 @@ public class Superstructure {
     compressMaxSpeed = !compressMaxSpeed;
   }
 
+  @NotLogged
   public boolean isIntakingCoralSim() {
     return currentState == CurrentState.INTAKE_CORAL_FROM_STATION;
   }
@@ -1483,14 +1486,17 @@ public class Superstructure {
     }
   }
 
+  @NotLogged
   public boolean hasAlgae() {
     return claw.hasAlgae();
   }
 
+  @NotLogged
   public boolean doesntHaveAlgae() {
     return !claw.hasAlgae();
   }
 
+  @NotLogged
   public WantedState getWantedState() {
     return this.wantedState;
   }
@@ -1654,6 +1660,7 @@ public class Superstructure {
     this.targetSide = side;
   }
 
+  @Logged(name = "TargetSideIsLeft", importance = Importance.INFO)
   public boolean isTargetSideLeft() {
     if (DriverStation.isAutonomous() || targetingMethod == TargetingMethod.NO_AUTO_TARGET) {
       return targetSide.isLeft();
@@ -1727,6 +1734,7 @@ public class Superstructure {
     AP()
   }
 
+  @NotLogged
   private int getTagForFace() {
     return switch (targetFace) {
       case ab -> isRedAlliance ? 7 : 18;
@@ -1738,6 +1746,7 @@ public class Superstructure {
     };
   }
 
+  @NotLogged
   private int getTagForFace(ReefFaces face) {
     return switch (face) {
       case ab -> isRedAlliance ? 7 : 18;
@@ -1902,6 +1911,7 @@ public class Superstructure {
     }
   }
 
+  @Logged(name = "OnOtherHalfOfField", importance = Importance.CRITICAL)
   public boolean onOtherHalfOfField() {
     return isRedAlliance
         ? (drivetrain.getPose().getMeasureX().in(Meters)
@@ -1910,6 +1920,7 @@ public class Superstructure {
             >= FieldConstants.fieldLength.in(Meters) / 2);
   }
 
+  @Logged(name = "OnLeftHalfOfField", importance = Importance.CRITICAL)
   public boolean onLeftHalfOfField() {
     return isRedAlliance
         ? (drivetrain.getPose().getMeasureY().in(Meters)
@@ -1918,6 +1929,7 @@ public class Superstructure {
             >= (FieldConstants.fieldWidth.in(Meters) / 2) - 0.5);
   }
 
+  @NotLogged
   public CurrentState decideStateForAlgae() {
     return CurrentState.MOVE_ALGAE_TO_NET_POSITION;
     // return onOtherHalfOfField()
@@ -1927,6 +1939,7 @@ public class Superstructure {
     // : CurrentState.MOVE_ALGAE_TO_PROCESSOR_POSITION;
   }
 
+  @NotLogged
   public Command setWantedStateCommand(WantedState state) {
     return Commands.runOnce(() -> setWantedState(state));
   }
@@ -1936,6 +1949,7 @@ public class Superstructure {
    * @param hasAlgae WantedState when this button is pressed and the claw has algae
    * @param noPiece WantedState when this button is pressed and there are no game pieces detected
    */
+  @NotLogged
   public Command configureButtonBinding(
       WantedState hasCoral, WantedState hasAlgae, WantedState noPiece) {
     return Commands.either(
