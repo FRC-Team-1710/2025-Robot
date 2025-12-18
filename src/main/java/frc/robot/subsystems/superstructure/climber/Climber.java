@@ -8,25 +8,25 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 
 @Logged
 public class Climber {
   @Logged(name = "Motor", importance = Importance.CRITICAL)
   private TalonFX climber;
+
   @Logged(name = "GoForClimb", importance = Importance.CRITICAL)
   public boolean goForClimb;
+
   @Logged(name = "SafeToRetract", importance = Importance.INFO)
   public boolean safeToRetract = false;
 
   @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ClimberStates currentState = ClimberStates.STOWED;
 
-  @NotLogged
-  private double gearRatio = 80;
+  @NotLogged private double gearRatio = 80;
 
   public Climber() {
     climber = new TalonFX(41);

@@ -1,19 +1,18 @@
 package frc.robot.utils;
 
 import frc.robot.Constants.AutomationLevel;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutomationLevelChooser {
-  private final LoggedDashboardChooser<AutomationLevel> automationLevelChooser;
+  // private final LoggedDashboardChooser<AutomationLevel> automationLevelChooser;
 
   public AutomationLevelChooser() {
-    automationLevelChooser = new LoggedDashboardChooser<>("Automation Choises");
+    // automationLevelChooser = new LoggedDashboardChooser<>("Automation Choices");
 
-    automationLevelChooser.addOption("Auto Drive", AutomationLevel.AUTO_DRIVE);
-    automationLevelChooser.addOption("No Auto Drive", AutomationLevel.NO_AUTO_DRIVE);
+    // automationLevelChooser.addOption("Auto Drive", AutomationLevel.AUTO_DRIVE);
+    // automationLevelChooser.addOption("No Auto Drive", AutomationLevel.NO_AUTO_DRIVE);
   }
 
   public AutomationLevel getAutomationLevel() {
-    return automationLevelChooser.get();
+    return AutomationLevel.AUTO_DRIVE;
   }
 }

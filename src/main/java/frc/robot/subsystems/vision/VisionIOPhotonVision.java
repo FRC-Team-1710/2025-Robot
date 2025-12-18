@@ -8,6 +8,9 @@ package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -21,28 +24,39 @@ import frc.robot.subsystems.drive.Drive.VisionParameters;
 import frc.robot.utils.FieldConstants;
 import java.util.*;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** IO implementation for real PhotonVision hardware. */
+@Logged
 public class VisionIOPhotonVision implements VisionIO {
-  final PhotonCamera camera;
-  private Transform3d robotToCamera;
-  final Supplier<VisionParameters> visionParams;
+  @NotLogged final PhotonCamera camera;
+  @NotLogged private Transform3d robotToCamera;
+  @NotLogged final Supplier<VisionParameters> visionParams;
+
+  @Logged(name = "Results", importance = Importance.CRITICAL)
   List<PhotonPipelineResult> cameraResults;
+
+  @Logged(name = "LatestResults", importance = Importance.CRITICAL)
   PhotonPipelineResult latestResult;
+
+  @Logged(name = "Targets", importance = Importance.CRITICAL)
   List<PhotonTrackedTarget> cameraTargets;
+
+  @Logged(name = "Target", importance = Importance.CRITICAL)
   PhotonTrackedTarget target;
 
+  @Logged(name = "LastAcceptedPose", importance = Importance.CRITICAL)
   public Pose3d lastAcceptedPose = new Pose3d();
+
+  @Logged(name = "Flagged", importance = Importance.CRITICAL)
   public boolean flagged =
       false; // Tells if tag is sus (not giving readings that match the expected)
-  boolean rejectTagsFromDistance = false;
-  double tagRejectionDistance = 3.5; // METERS
-  List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
+
+  @NotLogged boolean rejectTagsFromDistance = false;
+  @NotLogged double tagRejectionDistance = 3.5; // METERS
+  @NotLogged List<Integer> bargeTagIDs = List.of(4, 5, 14, 15);
 
   public VisionIOPhotonVision( // Creating class
       String cameraName, Transform3d robotToCamera, Supplier<VisionParameters> visionParams) {
@@ -104,6 +118,7 @@ public class VisionIOPhotonVision implements VisionIO {
     return new PoseObservation();
   }
 
+  @NotLogged
   private PoseObservation buildPoseObservation(PhotonPipelineResult result, Pose3d robotPose) {
     List<RawFiducial> rawFiducialsList = new ArrayList<>();
     double totalDistance = 0.0;
@@ -141,6 +156,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return Standard deviations from the robot to the camera
    */
+  @NotLogged
   public Transform3d getStdDev() {
     return robotToCamera;
   }
@@ -154,6 +170,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return Least ambiguous AprilTag in camera's view
    */
+  @Logged(name = "BestTarget", importance = Importance.CRITICAL)
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }
@@ -163,6 +180,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return Specified AprilTag or null if it isn't in the camera's view
    */
+  @NotLogged
   public PhotonTrackedTarget getTarget(int id) {
     if (!cameraTargets.isEmpty()) {
       for (var target : cameraTargets) {
@@ -180,6 +198,7 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param id Requested AprilTag
    * @return True if the AprilTag exists in the results, false otherwise
    */
+  @NotLogged
   public boolean hasTarget(int id) {
     if (!cameraTargets.isEmpty()) {
       for (var target : cameraTargets) {
@@ -197,6 +216,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @param tagID Provided AprilTag ID to locate and use for calculation
    */
+  @NotLogged
   public Transform3d getRobotToTargetOffset(int tagID) {
     Transform3d tagToCameraPose;
     try {
@@ -204,7 +224,6 @@ public class VisionIOPhotonVision implements VisionIO {
     } catch (Exception e) {
       return new Transform3d();
     }
-    Logger.recordOutput("VisionDebugging/tagToCameraPose via " + camera.getName(), tagToCameraPose);
     return tagToCameraPose;
   }
 
@@ -214,7 +233,7 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param id Requested tag ID
    * @return Returns the robots position relative to the AprilTag
    */
-  @AutoLogOutput
+  @NotLogged
   public Transform3d getTransformToTag(int id) {
     if (latestResult.hasTargets()) {
       for (var target : latestResult.getTargets()) {
@@ -226,6 +245,7 @@ public class VisionIOPhotonVision implements VisionIO {
     return new Transform3d(new Translation3d(3, 0, 0), new Rotation3d());
   }
 
+  @NotLogged
   public Transform3d getCameraToTag(int id) {
     if (latestResult.hasTargets()) {
       for (var target : latestResult.getTargets()) {
@@ -242,14 +262,16 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return Boolean to represent the presence of AprilTag results
    */
+  @Logged(name = "HasTargets", importance = Importance.CRITICAL)
   public boolean hasTargets() {
     return !cameraTargets.isEmpty();
   }
 
   /** Redundant perchance. */
-  public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
+  @NotLogged public Trigger hasTargets = new Trigger(() -> !cameraTargets.isEmpty());
 
   /** Also probably redundant perchance. */
+  @NotLogged
   public RawFiducial result(int joystickButtonid) {
     return createRawFiducial(getTarget(joystickButtonid));
   }
@@ -259,6 +281,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return List of targets
    */
+  @NotLogged
   public List<PhotonTrackedTarget> getCameraTargets() {
     return cameraTargets;
   }
@@ -288,6 +311,7 @@ public class VisionIOPhotonVision implements VisionIO {
     this.flagged = flagged;
   }
 
+  @NotLogged
   private RawFiducial createRawFiducial(PhotonTrackedTarget target) {
     return new RawFiducial(
         target.getFiducialId(),

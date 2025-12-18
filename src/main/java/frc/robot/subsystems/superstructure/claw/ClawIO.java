@@ -17,8 +17,8 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -29,8 +29,9 @@ import frc.robot.subsystems.superstructure.claw.Claw.ClawStates;
 public interface ClawIO {
   @Logged
   public static class ClawIOInputs {
-  @Logged(name = "Manual", importance = Importance.INFO)
+    @Logged(name = "Manual", importance = Importance.INFO)
     public double wristManual = 0.0;
+
     @Logged(name = "IntakePercent", importance = Importance.INFO)
     public double intakePercent = 0.0;
 
@@ -42,14 +43,15 @@ public interface ClawIO {
 
     @Logged(name = "ClawConnected", importance = Importance.CRITICAL)
     public boolean clawConnected = false;
+
     @Logged(name = "WristConnected", importance = Importance.CRITICAL)
     public boolean wristConnected = false;
 
-    @NotLogged
-    public boolean hasZeroed = false;
+    @NotLogged public boolean hasZeroed = false;
 
     @Logged(name = "HasAlgae", importance = Importance.CRITICAL)
     public boolean hasAlgae = false;
+
     @Logged(name = "RollerLocked", importance = Importance.CRITICAL)
     public boolean rollerLocked = false;
 
@@ -58,32 +60,38 @@ public interface ClawIO {
 
     @Logged(name = "WristMotorAngle", importance = Importance.INFO)
     public Angle wristMotorAngle = Degrees.of(0);
+
     @Logged(name = "Angle", importance = Importance.CRITICAL)
     public Angle angle = Degrees.of(0);
 
     @Logged(name = "WristVelocity", importance = Importance.INFO)
     public AngularVelocity wristVelocity = DegreesPerSecond.of(0);
+
     @Logged(name = "IntakeVelocity", importance = Importance.INFO)
     public AngularVelocity intakeVelocity = DegreesPerSecond.of(0);
 
     @Logged(name = "WristAppliedVoltage", importance = Importance.INFO)
     public Voltage wristAppliedVoltage = Volts.of(0.0);
+
     @Logged(name = "WristStatorCurrent", importance = Importance.INFO)
     public Current wristStatorCurrent = Amps.of(0);
+
     @Logged(name = "WristSupplyCurrent", importance = Importance.INFO)
     public Current wristSupplyCurrent = Amps.of(0);
+
     @Logged(name = "RollerStatorCurrent", importance = Importance.INFO)
     public Current rollerStatorCurrent = Amps.of(0);
+
     @Logged(name = "RollerSupplyCurrent", importance = Importance.INFO)
     public Current rollerSupplyCurrent = Amps.of(0);
+
     @Logged(name = "RollerAppliedVoltage", importance = Importance.INFO)
     public Voltage rollerAppliedVoltage = Volts.of(0.0);
 
     @Logged(name = "RollerPosition", importance = Importance.CRITICAL)
     public double rollerPosition = 0.0;
 
-    @NotLogged
-    public ClawStates state = ClawStates.IDLE;
+    @NotLogged public ClawStates state = ClawStates.IDLE;
   }
 
   /** Updates the set of loggable inputs. */

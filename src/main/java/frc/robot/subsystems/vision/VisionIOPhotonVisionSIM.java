@@ -8,6 +8,8 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.subsystems.drive.Drive.VisionParameters;
@@ -16,15 +18,16 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
+@Logged
 public class VisionIOPhotonVisionSIM extends VisionIOPhotonVision {
-  private VisionSystemSim visionSim;
-  private PhotonCameraSim cameraSim;
+  @NotLogged private VisionSystemSim visionSim;
+  @NotLogged private PhotonCameraSim cameraSim;
 
   /**
    * Constructs a PhotonVision SIM object with the specified camera name and camera position.
    *
    * @param cameraName the name of the camera
-   * @param robotToCamera gets positon of camera to robot
+   * @param robotToCamera gets position of camera to robot
    * @param poseSupplier current pose of robot
    */
   public VisionIOPhotonVisionSIM(

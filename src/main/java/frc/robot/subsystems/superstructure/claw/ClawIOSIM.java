@@ -4,8 +4,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radian;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -31,52 +31,54 @@ public class ClawIOSIM extends ClawIOCTRE {
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.004, 1),
           DCMotor.getKrakenX60(1));
-          @NotLogged
-  private double appliedVolts = 0.0;
-  @NotLogged
-  private Angle sp = Degrees.of(0.0);
+
+  @NotLogged private double appliedVolts = 0.0;
+  @NotLogged private Angle sp = Degrees.of(0.0);
 
   @Logged(name = "kp", importance = Importance.DEBUG)
   private double kp = 0.1;
+
   @Logged(name = "ki", importance = Importance.DEBUG)
   private double ki = 0.0;
+
   @Logged(name = "kd", importance = Importance.DEBUG)
   private double kd = 0.0175;
+
   @Logged(name = "ks", importance = Importance.DEBUG)
   private double ks = 0.0;
+
   @Logged(name = "kg", importance = Importance.DEBUG)
   private double kg = 0.035100;
+
   @Logged(name = "kv", importance = Importance.DEBUG)
   private double kv = 0.019;
+
   @Logged(name = "ka", importance = Importance.DEBUG)
   private double ka = 0.0;
+
   @Logged(name = "maxacel", importance = Importance.DEBUG)
   private double maxacel = 500.0;
+
   @Logged(name = "maxvel", importance = Importance.DEBUG)
   private double maxvel = 200.0;
 
-  @NotLogged
-  private final MechanismLigament2d m_wrist;
-  @NotLogged
-  private final MechanismLigament2d m_wrist2;
-  @NotLogged
-  private final MechanismLigament2d m_wristEXTENSION;
-  @NotLogged
-  private final MechanismLigament2d m_wristEXTENSION2;
+  @NotLogged private final MechanismLigament2d m_wrist;
+  @NotLogged private final MechanismLigament2d m_wrist2;
+  @NotLogged private final MechanismLigament2d m_wristEXTENSION;
+  @NotLogged private final MechanismLigament2d m_wristEXTENSION2;
 
-  @NotLogged
-  private final MechanismLigament2d[] m_Algae;
+  @NotLogged private final MechanismLigament2d[] m_Algae;
 
-  @NotLogged
-  private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
+  @NotLogged private final DCMotor m_armGearbox = DCMotor.getKrakenX60(1);
+
   @NotLogged
   private final ProfiledPIDController m_bottomController =
       new ProfiledPIDController(kp, ki, kd, new TrapezoidProfile.Constraints(maxvel, maxacel));
-      @NotLogged
-  private ArmFeedforward wristff = new ArmFeedforward(ks, kg, kv, ka);
-  @NotLogged
-  private final Encoder m_topEncoder = new Encoder(11, 12);
+
+  @NotLogged private ArmFeedforward wristff = new ArmFeedforward(ks, kg, kv, ka);
+  @NotLogged private final Encoder m_topEncoder = new Encoder(11, 12);
   private static final double kArmEncoderDistPerPulse = 2.0 * Math.PI / 4096;
+
   @NotLogged
   private final SingleJointedArmSim m_arm_topSim =
       new SingleJointedArmSim(
@@ -88,10 +90,9 @@ public class ClawIOSIM extends ClawIOCTRE {
           Units.degreesToRadians(450),
           true,
           Units.degreesToRadians(0));
-          @NotLogged
-  private final PWMTalonFX pwmTalonFX = new PWMTalonFX(1);
-  @NotLogged
-  private final EncoderSim m_topEncoderSim = new EncoderSim(m_topEncoder);
+
+  @NotLogged private final PWMTalonFX pwmTalonFX = new PWMTalonFX(1);
+  @NotLogged private final EncoderSim m_topEncoderSim = new EncoderSim(m_topEncoder);
 
   public ClawIOSIM(ElevatorIOSIM elevator) {
     m_topEncoderSim.setDistancePerPulse(kArmEncoderDistPerPulse);
@@ -151,7 +152,8 @@ public class ClawIOSIM extends ClawIOCTRE {
               + wristff.calculate(
                   m_arm_topSim.getAngleRads(), m_bottomController.getSetpoint().velocity));
       // if (Constants.useSmartDashboard) {
-      //   SmartDashboard.putNumber("position", Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
+      //   SmartDashboard.putNumber("position",
+      // Units.radiansToDegrees(m_arm_topSim.getAngleRads()));
       //   SmartDashboard.putNumber("setpoint", 170 - sp.magnitude() + 280);
       //   SmartDashboard.putNumber("goal", m_bottomController.getSetpoint().position);
       // }

@@ -19,10 +19,9 @@ import com.therekrab.autopilot.APConstraints;
 import com.therekrab.autopilot.APProfile;
 import com.therekrab.autopilot.APTarget;
 import com.therekrab.autopilot.Autopilot;
-
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -68,29 +67,19 @@ import frc.robot.utils.TunableController;
 
 @Logged
 public class Superstructure {
-  @NotLogged
-  private final Drive drivetrain;
-  @NotLogged
-  private final Claw claw;
-  @NotLogged
-  private final Climber climber;
-  @NotLogged
-  private final Elevator elevator;
-  @NotLogged
-  private final Funnel funnel;
-  @NotLogged
-  private final Manipulator manipulator;
+  @NotLogged private final Drive drivetrain;
+  @NotLogged private final Claw claw;
+  @NotLogged private final Climber climber;
+  @NotLogged private final Elevator elevator;
+  @NotLogged private final Funnel funnel;
+  @NotLogged private final Manipulator manipulator;
 
-  @NotLogged
-  private final Vision vision;
+  @NotLogged private final Vision vision;
 
-  @NotLogged
-  private final LEDSubsystem ledSubsystem;
+  @NotLogged private final LEDSubsystem ledSubsystem;
 
-  @NotLogged
-  private final TunableController driver;
-  @NotLogged
-  private final TunableController mech;
+  @NotLogged private final TunableController driver;
+  @NotLogged private final TunableController mech;
 
   @NotLogged
   private final APConstraints constraints =
@@ -98,37 +87,43 @@ public class Superstructure {
           .withAcceleration(Constants.currentMode == Mode.SIM ? 50 : 7.5)
           .withVelocity(Constants.currentMode == Mode.SIM ? Double.POSITIVE_INFINITY : 0)
           .withJerk(Constants.currentMode == Mode.SIM ? 0.1 : 0.0175);
-          @NotLogged
+
+  @NotLogged
   private final APProfile profile =
       new APProfile(constraints)
           .withErrorXY(Inches.of(1.25))
           .withErrorTheta(Degrees.of(5))
           .withBeelineRadius(Inches.of(24));
 
-          @NotLogged
-  private Autopilot autopilot = new Autopilot(profile);
+  @NotLogged private Autopilot autopilot = new Autopilot(profile);
 
   @Logged(name = "APTarget", importance = Importance.CRITICAL)
   private APTarget currentTarget = new APTarget(new Pose2d());
 
   @Logged(name = "WantedState", importance = Importance.CRITICAL)
   private WantedState wantedState = WantedState.STOPPED;
+
   @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private CurrentState currentState = CurrentState.STOPPED;
+
   @Logged(name = "PreviousState", importance = Importance.CRITICAL)
   private CurrentState previousState;
 
   @Logged(name = "CurrentAutoDriveType", importance = Importance.CRITICAL)
   private AutoAlignType currentAutoDriveType = AutoAlignType.PP;
+
   @Logged(name = "CurrentAlignTarget", importance = Importance.CRITICAL)
   private AlignTarget currentAlignTarget = AlignTarget.REEF;
 
   @Logged(name = "TargetFace", importance = Importance.CRITICAL)
   private ReefFaces targetFace = ReefFaces.ab;
+
   @Logged(name = "TargetSide", importance = Importance.CRITICAL)
   private ReefSide targetSide = ReefSide.left;
+
   @Logged(name = "TargetLevel", importance = Importance.CRITICAL)
   private ReefLevel targetLevel = ReefLevel.L4;
+
   @Logged(name = "TargetSourceSide", importance = Importance.CRITICAL)
   private TargetSourceSide targetSourceSide = TargetSourceSide.FAR;
 
@@ -143,13 +138,12 @@ public class Superstructure {
 
   @Logged(name = "AutomationLevel", importance = Importance.INFO)
   private AutomationLevel automationLevel = AutomationLevel.AUTO_DRIVE;
+
   @Logged(name = "SimCoralAutomation", importance = Importance.DEBUG)
   private SimCoralAutomation simCoralAutomation = SimCoralAutomation.AUTO_SIM_CORAL;
 
-  @NotLogged
-  private final AutomationLevelChooser automationLevelChooser;
-  @NotLogged
-  private final SimCoralAutomationChooser simCoralAutomationChooser;
+  @NotLogged private final AutomationLevelChooser automationLevelChooser;
+  @NotLogged private final SimCoralAutomationChooser simCoralAutomationChooser;
 
   @Logged(name = "DriverOverrideAlignment", importance = Importance.CRITICAL)
   private double driverOverrideAlignment = 0.25;
@@ -173,6 +167,7 @@ public class Superstructure {
 
   @Logged(name = "CompressMaxSpeed", importance = Importance.CRITICAL)
   private boolean compressMaxSpeed = true;
+
   @Logged(name = "SpeedCompression", importance = Importance.CRITICAL)
   private double speedComp = 1;
 
@@ -185,10 +180,8 @@ public class Superstructure {
   @Logged(name = "EjectTimer", importance = Importance.CRITICAL)
   private final Timer ejectTimer = new Timer();
 
-  @NotLogged
-  private double beforeTimeStamp = RobotController.getFPGATime();
-  @NotLogged
-  private double superBeforeTimeStamp = RobotController.getFPGATime();
+  @NotLogged private double beforeTimeStamp = RobotController.getFPGATime();
+  @NotLogged private double superBeforeTimeStamp = RobotController.getFPGATime();
 
   private final LinearVelocity maxSpeed = TunerConstants.kSpeedAt12Volts;
 
@@ -202,22 +195,23 @@ public class Superstructure {
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.Velocity);
 
-          @NotLogged
+  @NotLogged
   private final SwerveRequest.FieldCentric fieldCentricVoltage =
       new SwerveRequest.FieldCentric()
           .withDeadband(maxSpeed.times(0.025))
           .withRotationalDeadband(Constants.MaxAngularRate.times(0.025))
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-          @NotLogged
+  @NotLogged
   private final PIDController movingRotation =
       new PIDController(
           Constants.currentMode == Mode.SIM ? 0.03 : 0.01,
           0,
           Constants.currentMode == Mode.SIM ? 0.00175 : 0);
 
-          @Logged(name = "CurrentPathFindingCommand", importance = Importance.CRITICAL)
+  @Logged(name = "CurrentPathFindingCommand", importance = Importance.CRITICAL)
   private Command currentPathFindingCommand = Commands.none();
+
   @NotLogged
   private PathConstraints pathfindingConstraints = PathConstraints.unlimitedConstraints(12);
 
@@ -352,7 +346,8 @@ public class Superstructure {
     beforeTimeStamp = RobotController.getFPGATime();
     climber.periodic();
     // Logger.recordOutput(
-    //     "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+    //     "Superstructure/Periodic/ClimberPeriodic", RobotController.getFPGATime() -
+    // beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     elevator.periodic();
@@ -363,7 +358,8 @@ public class Superstructure {
     beforeTimeStamp = RobotController.getFPGATime();
     funnel.periodic();
     // Logger.recordOutput(
-    //     "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() - beforeTimeStamp);
+    //     "Superstructure/Periodic/FunnelPeriodic", RobotController.getFPGATime() -
+    // beforeTimeStamp);
 
     beforeTimeStamp = RobotController.getFPGATime();
     manipulator.periodic();

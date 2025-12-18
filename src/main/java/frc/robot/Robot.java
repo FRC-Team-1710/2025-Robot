@@ -140,7 +140,7 @@ public class Robot extends TimedRobot {
   public void autonomousExit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
-      m_robotContainer.requsetDefault();
+      m_robotContainer.requestDefault();
     }
   }
 
@@ -154,7 +154,7 @@ public class Robot extends TimedRobot {
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
-      m_robotContainer.requsetDefault();
+      m_robotContainer.requestDefault();
     }
 
     SignalLogger.start();

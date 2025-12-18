@@ -11,10 +11,9 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
@@ -25,100 +24,91 @@ import edu.wpi.first.units.measure.Voltage;
 @Logged
 public class ClawIOCTRE implements ClawIO {
   public static final double GEAR_RATIO = 66.6666666;
+
   @Logged(name = "Locked", importance = Importance.INFO)
   private boolean locked = false;
+
   @Logged(name = "RollerLocked", importance = Importance.INFO)
   private boolean rollerLocked = false;
+
   @Logged(name = "HasZeroed", importance = Importance.INFO)
   private boolean hasZeroed = false;
 
-  
   @Logged(name = "kP", importance = Importance.INFO)
   private double kP = 1.5;
-  
+
   @Logged(name = "kI", importance = Importance.INFO)
   private double kI = 0.0;
-  
+
   @Logged(name = "kD", importance = Importance.INFO)
   private double kD = 0.0;
-  
+
   @Logged(name = "kS", importance = Importance.INFO)
   private double kS = 0.0;
-  
+
   @Logged(name = "kG", importance = Importance.INFO)
   private double kG = 0.0;
-  
+
   @Logged(name = "kV", importance = Importance.INFO)
   private double kV = 0.0;
-  
+
   @Logged(name = "kA", importance = Importance.INFO)
   private double kA = 0.0;
-  
+
   @Logged(name = "kAcel", importance = Importance.INFO)
   private double kAcel = 65;
-  
+
   @Logged(name = "kVel", importance = Importance.INFO)
   private double kVel = 85;
 
-  
   @Logged(name = "RollerKP", importance = Importance.INFO)
   private double rollerKP = 3;
-  
+
   @Logged(name = "RollerKI", importance = Importance.INFO)
   private double rollerKI = 0.0;
-  
+
   @Logged(name = "RollerKD", importance = Importance.INFO)
   private double rollerKD = 0.0;
 
   @Logged(name = "Wrist", importance = Importance.CRITICAL)
   public final TalonFX wrist = new TalonFX(51);
+
   @Logged(name = "Rollers", importance = Importance.CRITICAL)
   public final TalonFX rollers = new TalonFX(52);
 
   @NotLogged
   private final PIDController rollerPID = new PIDController(rollerKP, rollerKI, rollerKD);
+
   // private final ProfiledPIDController wristPID =
   //     new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kVel, kAcel));
   // private final ArmFeedforward wristFF = new ArmFeedforward(kS, kG, kV, kA);
 
-  @NotLogged
-  private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
+  @NotLogged private final MotionMagicVoltage request = new MotionMagicVoltage(0).withSlot(0);
 
-  @NotLogged
-  private final StatusSignal<Angle> wristPosition = wrist.getPosition();
-  @NotLogged
-  private final StatusSignal<Double> wristReference = wrist.getClosedLoopReference();
-  @NotLogged
-  private final StatusSignal<AngularVelocity> wristVelocity = wrist.getVelocity();
-  @NotLogged
-  private final StatusSignal<Voltage> wristAppliedVolts = wrist.getMotorVoltage();
-  @NotLogged
-  private final StatusSignal<Current> wristStatorCurrent = wrist.getStatorCurrent();
-  @NotLogged
-  private final StatusSignal<Current> wristSupplyCurrent = wrist.getSupplyCurrent();
-  @NotLogged
-  private final StatusSignal<AngularVelocity> intakeVelocity = rollers.getVelocity();
-  @NotLogged
-  private final StatusSignal<Voltage> intakeAppliedVolts = rollers.getMotorVoltage();
-  @NotLogged
-  private final StatusSignal<Current> intakeStatorCurrent = rollers.getStatorCurrent();
-  @NotLogged
-  private final StatusSignal<Current> intakeSupplyCurrent = rollers.getSupplyCurrent();
+  @NotLogged private final StatusSignal<Angle> wristPosition = wrist.getPosition();
+  @NotLogged private final StatusSignal<Double> wristReference = wrist.getClosedLoopReference();
+  @NotLogged private final StatusSignal<AngularVelocity> wristVelocity = wrist.getVelocity();
+  @NotLogged private final StatusSignal<Voltage> wristAppliedVolts = wrist.getMotorVoltage();
+  @NotLogged private final StatusSignal<Current> wristStatorCurrent = wrist.getStatorCurrent();
+  @NotLogged private final StatusSignal<Current> wristSupplyCurrent = wrist.getSupplyCurrent();
+  @NotLogged private final StatusSignal<AngularVelocity> intakeVelocity = rollers.getVelocity();
+  @NotLogged private final StatusSignal<Voltage> intakeAppliedVolts = rollers.getMotorVoltage();
+  @NotLogged private final StatusSignal<Current> intakeStatorCurrent = rollers.getStatorCurrent();
+  @NotLogged private final StatusSignal<Current> intakeSupplyCurrent = rollers.getSupplyCurrent();
 
-  @NotLogged
-  private final Debouncer clawDebounce = new Debouncer(0.5);
-  @NotLogged
-  private final Debouncer wristDebounce = new Debouncer(0.5);
+  @NotLogged private final Debouncer clawDebounce = new Debouncer(0.5);
+  @NotLogged private final Debouncer wristDebounce = new Debouncer(0.5);
 
   @Logged(name = "SetAngle", importance = Importance.INFO)
   private Angle setAngle = Degrees.of(0);
+
   @Logged(name = "WristManual", importance = Importance.INFO)
   private double wristManual = 0.0;
+
   @Logged(name = "RunPercent", importance = Importance.INFO)
   private double runPercent = 0.0;
 
-  @NotLogged
-  TalonFXConfiguration config2 = new TalonFXConfiguration();
+  @NotLogged TalonFXConfiguration config2 = new TalonFXConfiguration();
 
   public ClawIOCTRE() {
 
@@ -169,18 +159,20 @@ public class ClawIOCTRE implements ClawIO {
     //   config.Slot0.kG = SmartDashboard.getNumber("Claw/PID/G", kG);
     //   config.Slot0.kV = SmartDashboard.getNumber("Claw/PID/V", kV);
     //   config.Slot0.kA = SmartDashboard.getNumber("Claw/PID/A", kA);
-    //   config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Claw/PID/Acel", kAcel);
-    //   config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Claw/PID/Vel", kVel);
+    //   config.MotionMagic.MotionMagicAcceleration = SmartDashboard.getNumber("Claw/PID/Acel",
+    // kAcel);
+    //   config.MotionMagic.MotionMagicCruiseVelocity = SmartDashboard.getNumber("Claw/PID/Vel",
+    // kVel);
     // } else {
-      config.Slot0.kP = kP;
-      config.Slot0.kI = kI;
-      config.Slot0.kD = kD;
-      config.Slot0.kS = kS;
-      config.Slot0.kG = kG;
-      config.Slot0.kV = kV;
-      config.Slot0.kA = kA;
-      config.MotionMagic.MotionMagicAcceleration = kAcel;
-      config.MotionMagic.MotionMagicCruiseVelocity = kVel;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+    config.Slot0.kS = kS;
+    config.Slot0.kG = kG;
+    config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
+    config.MotionMagic.MotionMagicAcceleration = kAcel;
+    config.MotionMagic.MotionMagicCruiseVelocity = kVel;
     // }
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     return config;
@@ -234,7 +226,8 @@ public class ClawIOCTRE implements ClawIO {
     //   tempPIDTuning();
 
     //   SmartDashboard.putNumber("Claw Inches", wrist.getPosition().getValueAsDouble());
-    //   SmartDashboard.putNumber("Claw Setpoint", wrist.getClosedLoopReference().getValueAsDouble());
+    //   SmartDashboard.putNumber("Claw Setpoint",
+    // wrist.getClosedLoopReference().getValueAsDouble());
     // }
 
     // if (locked) {

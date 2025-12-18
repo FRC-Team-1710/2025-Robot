@@ -14,14 +14,13 @@ package frc.robot.subsystems.superstructure.claw;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.claw.ClawIO.ClawIOInputs;
-
 import java.util.function.BooleanSupplier;
 
 /**
@@ -33,17 +32,18 @@ import java.util.function.BooleanSupplier;
 public class Claw {
   @Logged(name = "IO", importance = Importance.CRITICAL)
   private final ClawIO io;
+
   @Logged(name = "Inputs", importance = Importance.CRITICAL)
   private final ClawIOInputs inputs;
 
   @Logged(name = "CurrentState", importance = Importance.CRITICAL)
   private ClawStates currentState = ClawStates.IDLE;
+
   @Logged(name = "CurrentAlgaeState", importance = Importance.DEBUG)
   private CurrentAlgaeState currentAlgaeState = CurrentAlgaeState.NONE;
 
-  @NotLogged
-  private boolean doneZeroing = false;
-  
+  @NotLogged private boolean doneZeroing = false;
+
   @Logged(name = "RollerPositionWhenAlgaeGrabbed", importance = Importance.CRITICAL)
   private double rollerPositionWhenAlgaeGrabbed = 0;
 

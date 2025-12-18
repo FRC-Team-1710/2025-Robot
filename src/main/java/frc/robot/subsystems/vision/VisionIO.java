@@ -6,18 +6,27 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
-import org.littletonrobotics.junction.AutoLog;
 
+@Logged
 public interface VisionIO {
-  @AutoLog
+  @Logged
   public static class VisionIOInputs {
+    @Logged(name = "Connected", importance = Importance.CRITICAL)
     boolean connected = false;
+
+    @Logged(name = "PoseEstimateMT1", importance = Importance.CRITICAL)
     PoseEstimate poseEstimateMT1 = new PoseEstimate();
+
+    @Logged(name = "PoseEstimateMT2", importance = Importance.CRITICAL)
     PoseEstimate poseEstimateMT2 = new PoseEstimate();
-    RawFiducial[] rawFiducialsMT1 = new RawFiducial[0];
-    RawFiducial[] rawFiducialsMT2 = new RawFiducial[0];
+
+    @NotLogged RawFiducial[] rawFiducialsMT1 = new RawFiducial[0];
+    @NotLogged RawFiducial[] rawFiducialsMT2 = new RawFiducial[0];
   }
 
   default void updateInputs(VisionIOInputs inputs) {}

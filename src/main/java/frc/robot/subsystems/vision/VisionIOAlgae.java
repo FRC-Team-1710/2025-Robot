@@ -1,14 +1,20 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import java.util.List;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+@Logged
 public class VisionIOAlgae {
-  final PhotonCamera camera;
-  List<PhotonPipelineResult> cameraResults;
+  @NotLogged final PhotonCamera camera;
+  @NotLogged List<PhotonPipelineResult> cameraResults;
+
+  @Logged(name = "CurrentResult", importance = Importance.CRITICAL)
   PhotonPipelineResult currentResult;
 
   public VisionIOAlgae( // Creating class
@@ -23,6 +29,7 @@ public class VisionIOAlgae {
     }
   }
 
+  @Logged(name = "TargetVisible", importance = Importance.CRITICAL)
   public boolean targetVisible() {
     return Constants.currentMode == Mode.REAL
         ? ((!cameraResults.isEmpty() || !(cameraResults == null)) && currentResult.hasTargets())
@@ -30,6 +37,7 @@ public class VisionIOAlgae {
   }
 
   // LEFT BUMPER
+  @Logged(name = "AlgaeYaw", importance = Importance.CRITICAL)
   public double getAlgaeYaw() {
     if (Constants.currentMode == Mode.REAL) {
       boolean targetVisible = false;

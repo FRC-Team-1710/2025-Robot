@@ -5,8 +5,8 @@
 package frc.robot.autos;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,22 +23,15 @@ import java.util.Map;
 /** Add your docs here. */
 @Logged
 public class AutosBuilder {
-  @NotLogged
-  private final Superstructure superstructure;
+  @NotLogged private final Superstructure superstructure;
 
-  @NotLogged
-  private ArrayList<Command> commandList = new ArrayList<>();
+  @NotLogged private ArrayList<Command> commandList = new ArrayList<>();
 
-  @NotLogged
-  private NextCommand nextCommand;
-  @NotLogged
-  private Source source;
-  @NotLogged
-  private SourceDistance sourceDistance;
-  @NotLogged
-  private Reef reef;
-  @NotLogged
-  private ReefHeight reefHeight;
+  @NotLogged private NextCommand nextCommand;
+  @NotLogged private Source source;
+  @NotLogged private SourceDistance sourceDistance;
+  @NotLogged private Reef reef;
+  @NotLogged private ReefHeight reefHeight;
 
   @Logged(name = "AutoChooser", importance = Importance.CRITICAL)
   SendableChooser<Auto> autoChooser = new SendableChooser<Auto>();
@@ -46,8 +39,7 @@ public class AutosBuilder {
   @Logged(name = "AutoString", importance = Importance.CRITICAL)
   private String autoString = "cooked";
 
-  @NotLogged
-  private Command preBuiltAuto = Commands.none();
+  @NotLogged private Command preBuiltAuto = Commands.none();
 
   @NotLogged
   Map<Character, Source> charToSource =
@@ -55,7 +47,7 @@ public class AutosBuilder {
           'R', Source.RIGHT,
           'N', Source.LEFT);
 
-          @NotLogged
+  @NotLogged
   Map<Character, Reef> charToReef =
       Map.ofEntries(
           Map.entry('A', Reef.A),
@@ -71,14 +63,14 @@ public class AutosBuilder {
           Map.entry('K', Reef.K),
           Map.entry('L', Reef.L));
 
-          @NotLogged
+  @NotLogged
   Map<Character, ReefHeight> charToReefHeight =
       Map.of(
           '2', ReefHeight.L2,
           '3', ReefHeight.L3,
           '4', ReefHeight.L4);
 
-          @NotLogged
+  @NotLogged
   Map<Character, SourceDistance> charToSourceDistance =
       Map.of(
           'F', SourceDistance.FAR,

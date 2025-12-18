@@ -6,13 +6,14 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseObservation;
@@ -28,40 +29,63 @@ import java.util.*;
  * from MegaTag1 and MegaTag2 vision systems, validates measurements, and provides filtered vision
  * data to the robot's pose estimator.
  */
+@Logged
 public class Vision extends SubsystemBase {
+  @NotLogged private static final VisionMode MODE = VisionMode.MA;
+  @NotLogged private static final String VISION_PATH = "Vision/Camera";
 
-  private static final VisionMode MODE = VisionMode.MA;
-  private static final String VISION_PATH = "Vision/Camera";
+  @NotLogged private final VisionConsumer consumer;
 
-  private final VisionConsumer consumer;
+  @Logged(name = "IO", importance = Importance.CRITICAL)
   private final VisionIO[] io;
+
+  @Logged(name = "AlgaeCam", importance = Importance.CRITICAL)
   private final VisionIOAlgae algaeCamera;
-  private final VisionIOInputsAutoLogged[] inputs;
+
+  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  private final VisionIOInputs[] inputs;
+
   // private final Alert[] disconnectedAlerts;
 
+  @NotLogged
   private final int[] branchIDs = {
     6, 7, 8, 9, 10, 11,
     17, 18, 19, 20, 21, 22
   };
 
+  @NotLogged
   private final double flagAngle =
       Math.toRadians(
           2.0); // Pitch and roll of a reading before a camera needs to be flagged. IN RADIANS FOR
+
   // GODS SAKE
 
+  @Logged(name = "RejectCam", importance = Importance.CRITICAL)
   private boolean[] rejectCamera = {false, false, true, true};
 
   /**
    * Lists to store vision measurements and poses. These are maintained at the class level to allow
    * for logging during both real and simulation operation.
    */
+  @Logged(name = "Measurements", importance = Importance.CRITICAL)
   private List<VisionMeasurement> measurements = new ArrayList<>();
 
+  @Logged(name = "TagPoses", importance = Importance.CRITICAL)
   private List<Pose3d> tagPoses = new ArrayList<>();
+
+  @Logged(name = "AcceptedTagPoses", importance = Importance.CRITICAL)
   private List<Pose3d> acceptedTagPoses = new ArrayList<>();
+
+  @Logged(name = "RejectedTagPoses", importance = Importance.CRITICAL)
   private List<Pose3d> rejectedTagPoses = new ArrayList<>();
+
+  @Logged(name = "RobotPoses", importance = Importance.CRITICAL)
   private List<Pose3d> robotPoses = new ArrayList<>();
+
+  @Logged(name = "AcceptedPoses", importance = Importance.CRITICAL)
   private List<Pose3d> acceptedPoses = new ArrayList<>();
+
+  @Logged(name = "RejectedPoses", importance = Importance.CRITICAL)
   private List<Pose3d> rejectedPoses = new ArrayList<>();
 
   /**
@@ -77,9 +101,9 @@ public class Vision extends SubsystemBase {
     this.algaeCamera = algaeCamera;
 
     // Initialize input arrays for each camera
-    inputs = new VisionIOInputsAutoLogged[io.length];
+    inputs = new VisionIOInputs[io.length];
     for (int i = 0; i < io.length; i++) {
-      inputs[i] = new VisionIOInputsAutoLogged();
+      inputs[i] = new VisionIOInputs();
     }
 
     // Initialize disconnection alerts for each camera
@@ -89,29 +113,21 @@ public class Vision extends SubsystemBase {
     //     new Alert(String.format("Vision camera %d is disconnected.", i), AlertType.kWarning);
     // }
 
-    if (Constants.useSmartDashboard) {
-      SmartDashboard.putBoolean("Disable Front Left Cam", false);
-      SmartDashboard.putBoolean("Disable Front Right Cam", false);
-      SmartDashboard.putBoolean("Disable Back Left Cam", false);
-      SmartDashboard.putBoolean("Disable Back Right Cam", false);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   SmartDashboard.putBoolean("Disable Front Left Cam", false);
+    //   SmartDashboard.putBoolean("Disable Front Right Cam", false);
+    //   SmartDashboard.putBoolean("Disable Back Left Cam", false);
+    //   SmartDashboard.putBoolean("Disable Back Right Cam", false);
+    // }
   }
 
   @Override
   public void periodic() {
     // Update inputs and check connection status for each camera
-    double beforeTimeStamp = RobotController.getFPGATime();
-    Logger.recordOutput("ItsGonnaBe4", io.length);
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      // disconnectedAlerts[i].set(!inputs[i].connected);
-      Logger.processInputs(VISION_PATH + i, inputs[i]);
     }
     algaeCamera.updateResults();
-    double algaeYaw = algaeCamera.getAlgaeYaw();
-    if (algaeYaw != 0.0) {
-      Logger.recordOutput("Algae Yaw", algaeYaw);
-    }
 
     // Process vision data and send to consumer
     VisionData visionData = processAllCameras();
@@ -123,9 +139,6 @@ public class Vision extends SubsystemBase {
       if (currentCamera.hasTargets()) {
         Rotation3d rotationReading =
             currentCamera.lastAcceptedPose.getRotation(); // Grab rotation from reading for skew
-        Logger.recordOutput(
-            "VisionDebugging/Camera " + i + " pose",
-            currentCamera.lastAcceptedPose); // Log entire pose from camera
         boolean flagged =
             (rotationReading.getX() <= -flagAngle || rotationReading.getX() >= flagAngle)
                 || (rotationReading.getY() <= -flagAngle
@@ -133,12 +146,10 @@ public class Vision extends SubsystemBase {
         rejectCamera[i] = flagged; // Here is where the camera is rejected if skewed
         currentCamera.flag(flagged); // This flags the camera in the camera class
       }
-      Logger.recordOutput("VisionDebugging/Camera " + i + " flagged", getCamera(i).flagged);
     }
-    Logger.recordOutput(
-        "Superstructure/Periodic/Vision", RobotController.getFPGATime() - beforeTimeStamp);
   }
 
+  @NotLogged
   public VisionIOPhotonVision getCamera(int index) {
     return (VisionIOPhotonVision) io[index];
   }
@@ -150,45 +161,46 @@ public class Vision extends SubsystemBase {
    * @param desiredOffset The desired offset of the robot relative to the tag
    * @return Transform3d that represents the robots position relative to the offset
    */
+  @NotLogged
   public Transform3d calculateOffset(int id, Translation2d desiredOffset) {
     Transform3d leftCamToTag = getCamera(0).getRobotToTargetOffset(id);
     Transform3d rightCamToTag = getCamera(1).getRobotToTargetOffset(id);
 
     try {
-      Logger.recordOutput(
-          "VisionDebugging/target position",
-          new Transform3d(
-                  FieldConstants.aprilTags.getTagPose(id).get().getTranslation(),
-                  FieldConstants.aprilTags.getTagPose(id).get().getRotation())
-              .plus(
-                  new Transform3d(
-                      new Translation3d(
-                          desiredOffset.getX(),
-                          desiredOffset.getY(),
-                          -FieldConstants.aprilTags.getTagPose(id).get().getZ()),
-                      new Rotation3d(-Math.PI, 0, 0))));
-      Logger.recordOutput(
-          "VisionDebugging/left cam based target position",
-          leftCamToTag
-              .plus(
-                  new Transform3d(
-                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-                      new Rotation3d()))
-              .inverse());
-      Logger.recordOutput(
-          "VisionDebugging/right cam based target position",
-          rightCamToTag
-              .plus(
-                  new Transform3d(
-                      new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
-                      new Rotation3d()))
-              .inverse());
-      Logger.recordOutput(
-          "VisionDebugging/Left Cam Offset",
-          getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
-      Logger.recordOutput(
-          "VisionDebugging/Right Cam Offset",
-          getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+      // Logger.recordOutput(
+      //     "VisionDebugging/target position",
+      //     new Transform3d(
+      //             FieldConstants.aprilTags.getTagPose(id).get().getTranslation(),
+      //             FieldConstants.aprilTags.getTagPose(id).get().getRotation())
+      //         .plus(
+      //             new Transform3d(
+      //                 new Translation3d(
+      //                     desiredOffset.getX(),
+      //                     desiredOffset.getY(),
+      //                     -FieldConstants.aprilTags.getTagPose(id).get().getZ()),
+      //                 new Rotation3d(-Math.PI, 0, 0))));
+      // Logger.recordOutput(
+      //     "VisionDebugging/left cam based target position",
+      //     leftCamToTag
+      //         .plus(
+      //             new Transform3d(
+      //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+      //                 new Rotation3d()))
+      //         .inverse());
+      // Logger.recordOutput(
+      //     "VisionDebugging/right cam based target position",
+      //     rightCamToTag
+      //         .plus(
+      //             new Transform3d(
+      //                 new Translation3d(desiredOffset.getX(), desiredOffset.getY(), 0),
+      //                 new Rotation3d()))
+      //         .inverse());
+      // Logger.recordOutput(
+      //     "VisionDebugging/Left Cam Offset",
+      //     getCamera(0).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
+      // Logger.recordOutput(
+      //     "VisionDebugging/Right Cam Offset",
+      //     getCamera(1).getTarget(id).bestCameraToTarget.getTranslation().toVector().getData());
     } catch (Exception e) {
 
     }
@@ -201,8 +213,8 @@ public class Vision extends SubsystemBase {
                 ? rightCamToTag
                 : new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-    Logger.recordOutput("X to Tag", result.getX());
-    Logger.recordOutput("Y to Tag", result.getY());
+    // Logger.recordOutput("X to Tag", result.getX());
+    // Logger.recordOutput("Y to Tag", result.getY());
 
     return result;
   }
@@ -213,6 +225,7 @@ public class Vision extends SubsystemBase {
    * @param id Requested tag's fiducial ID
    * @return If one of the front 2 cameras have the requested target, returns true
    */
+  @NotLogged
   public boolean containsRequestedTarget(int id) {
     return getCamera(0).hasTarget(id) || getCamera(1).hasTarget(id);
   }
@@ -224,12 +237,14 @@ public class Vision extends SubsystemBase {
    * @param tagID Requested tag's ID
    * @return Distance from the robot's center to the target found
    */
+  @NotLogged
   public double getDistanceToTag(int tagID) {
     return Math.sqrt(
         Math.pow(calculateOffset(tagID, new Translation2d()).getX(), 2)
             + Math.pow(calculateOffset(tagID, new Translation2d()).getY(), 2));
   }
 
+  @NotLogged
   public boolean containsBranchID(int value) {
     return Arrays.stream(branchIDs).anyMatch(id -> id == value);
   }
@@ -253,15 +268,12 @@ public class Vision extends SubsystemBase {
     if (!availableTags.isEmpty()) {
       int targetTagID =
           Collections.min(availableTags.entrySet(), HashMap.Entry.comparingByValue()).getKey();
-      Logger.recordOutput("VisionDebugging/Target Tag ID", targetTagID);
       boolean leftSide =
           (getCamera(getCameraIDWithTarget(targetTagID))
                   .getRobotToTargetOffset(targetTagID)
                   .getTranslation()
                   .getY()
               < 0);
-
-      Logger.recordOutput("LeftSide?", leftSide);
     }
   }
 
@@ -274,9 +286,6 @@ public class Vision extends SubsystemBase {
               target.fiducialId, target.bestCameraToTarget.getTranslation().getNorm());
         }
       }
-    }
-    if (!availableTags.isEmpty()) {
-      Logger.recordOutput("LeftSide?", leftSide);
     }
   }
 
@@ -294,8 +303,6 @@ public class Vision extends SubsystemBase {
     }
     Transform3d uncalibratedReading = getCamera(leftCamera ? 0 : 1).getCameraToTag(tagID);
     Transform3d referenceReading = getCamera(leftCamera ? 1 : 0).getCameraToTag(tagID);
-    Logger.recordOutput("VisionDebugging/Uncalibrated Reading Left", uncalibratedReading);
-    Logger.recordOutput("VisionDebugging/Reference Reading", referenceReading);
     getCamera(leftCamera ? 0 : 1)
         .setStdDev(
             getCamera(leftCamera ? 1 : 0)
@@ -311,6 +318,7 @@ public class Vision extends SubsystemBase {
    * @param tagID The tag ID to find the camera for
    * @return The camera ID that has the target
    */
+  @NotLogged
   public int getCameraIDWithTarget(int tagID) {
     for (int i = 0; i < io.length; i++) {
       if (getCamera(i).hasTarget(tagID)) {
@@ -320,10 +328,12 @@ public class Vision extends SubsystemBase {
     return 0;
   }
 
+  @Logged(name = "AlgaeYaw", importance = Importance.CRITICAL)
   public double getAlgaeYaw() {
     return algaeCamera.getAlgaeYaw();
   }
 
+  @Logged(name = "AlgaeIsVisible", importance = Importance.CRITICAL)
   public boolean algaeIsVisible() {
     return algaeCamera.targetVisible();
   }
@@ -333,6 +343,7 @@ public class Vision extends SubsystemBase {
    *
    * @return Combined VisionData from all cameras
    */
+  @NotLogged
   private VisionData processAllCameras() {
     return Arrays.stream(inputs)
         .map(input -> processCamera(Arrays.asList(inputs).indexOf(input), input))
@@ -346,13 +357,14 @@ public class Vision extends SubsystemBase {
    * @param input Input data from the camera
    * @return Processed VisionData for this camera
    */
+  @NotLogged
   private VisionData processCamera(int cameraIndex, VisionIOInputs input) {
-    if (Constants.useSmartDashboard) {
-      rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
-      rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
-      rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
-      rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
-    }
+    // if (Constants.useSmartDashboard) {
+    //   rejectCamera[0] = SmartDashboard.getBoolean("Disable Front Left Cam", false);
+    //   rejectCamera[1] = SmartDashboard.getBoolean("Disable Front Right Cam", false);
+    //   rejectCamera[2] = SmartDashboard.getBoolean("Disable Back Left Cam", false);
+    //   rejectCamera[3] = SmartDashboard.getBoolean("Disable Back Right Cam", false);
+    // }
 
     if (rejectCamera[cameraIndex]) return VisionData.empty();
 
@@ -374,6 +386,7 @@ public class Vision extends SubsystemBase {
    * @param observation The pose observation to process
    * @return Processed VisionData for this observation
    */
+  @NotLogged
   private VisionData processObservation(int cameraIndex, PoseObservation observation) {
     // Clear previous data
     measurements.clear();
@@ -391,6 +404,7 @@ public class Vision extends SubsystemBase {
     }
   }
 
+  @NotLogged
   private VisionData realObservation(int cameraIndex, PoseObservation observation) {
     // Validate measurement against current vision mode criteria
     boolean acceptedVisionMeasurement = MODE.acceptVisionMeasurement(observation);
@@ -414,6 +428,7 @@ public class Vision extends SubsystemBase {
     return data;
   }
 
+  @NotLogged
   private VisionData simObservation(int cameraIndex, PoseObservation observation) {
     Pose3d robotPose = observation.poseEstimate().pose();
     robotPoses.add(robotPose);
@@ -462,6 +477,7 @@ public class Vision extends SubsystemBase {
   }
 
   /** Logs vision data for a specific camera and MegaTag type. */
+  @NotLogged
   private void logCameraData(int cameraIndex, String mtType, VisionData data) {
     logPoses(VISION_PATH + cameraIndex + mtType, data);
   }
@@ -473,20 +489,21 @@ public class Vision extends SubsystemBase {
 
   /** Logs pose data to AdvantageKit. */
   private void logPoses(String basePath, VisionData data) {
-    Logger.recordOutput(basePath + "/TagPoses", toPose3dArray(data.tagPoses()));
-    Logger.recordOutput(basePath + "/TagPosesAccepted", toPose3dArray(data.acceptedTagPoses()));
-    Logger.recordOutput(basePath + "/TagPosesRejected", toPose3dArray(data.rejectedTagPoses()));
-    Logger.recordOutput(basePath + "/RobotPoses", toPose3dArray(data.robotPoses()));
-    Logger.recordOutput(basePath + "/RobotPosesAccepted", toPose3dArray(data.acceptedPoses()));
-    Logger.recordOutput(basePath + "/RobotPosesRejected", toPose3dArray(data.rejectedPoses()));
+    // Logger.recordOutput(basePath + "/TagPoses", toPose3dArray(data.tagPoses()));
+    // Logger.recordOutput(basePath + "/TagPosesAccepted", toPose3dArray(data.acceptedTagPoses()));
+    // Logger.recordOutput(basePath + "/TagPosesRejected", toPose3dArray(data.rejectedTagPoses()));
+    // Logger.recordOutput(basePath + "/RobotPoses", toPose3dArray(data.robotPoses()));
+    // Logger.recordOutput(basePath + "/RobotPosesAccepted", toPose3dArray(data.acceptedPoses()));
+    // Logger.recordOutput(basePath + "/RobotPosesRejected", toPose3dArray(data.rejectedPoses()));
   }
 
   /** Converts a list of poses to an array. */
-  private Pose3d[] toPose3dArray(List<Pose3d> poses) {
-    return poses.toArray(new Pose3d[poses.size()]);
-  }
+  // private Pose3d[] toPose3dArray(List<Pose3d> poses) {
+  //   return poses.toArray(new Pose3d[poses.size()]);
+  // }
 
   /** Sorts vision measurements by timestamp. */
+  @NotLogged
   private List<VisionMeasurement> sortMeasurements(List<VisionMeasurement> measurements) {
     return measurements.stream()
         .sorted(
