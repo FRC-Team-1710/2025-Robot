@@ -1,16 +1,23 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Milliseconds;
+
+import java.util.HashMap;
+
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.Subsystems;
 import frc.robot.autos.AutosBuilder;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -531,4 +538,17 @@ public class RobotContainer {
     autosBuilder.periodic();
     superstructure.periodic();
   }
+
+        public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
+                HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> map = new HashMap<>();
+                map.put(Subsystems.Drive, new Pair<Runnable,Pair<Time,Time>>(drivetrain::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Claw, new Pair<Runnable,Pair<Time,Time>>(claw::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Climber, new Pair<Runnable,Pair<Time,Time>>(climber::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Elevator, new Pair<Runnable,Pair<Time,Time>>(elevator::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Funnel, new Pair<Runnable,Pair<Time,Time>>(funnel::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Manipulator, new Pair<Runnable,Pair<Time,Time>>(manipulator::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Superstructure, new Pair<Runnable,Pair<Time,Time>>(superstructure::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                map.put(Subsystems.Vision, new Pair<Runnable,Pair<Time,Time>>(vision::periodic, new Pair<Time,Time>(Milliseconds.of(20), Milliseconds.of(0))));
+                return map;
+        }
 }

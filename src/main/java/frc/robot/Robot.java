@@ -6,6 +6,9 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -14,8 +17,12 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.Subsystems;
+import frc.robot.utils.DynamicTimedRobot;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SimCoral;
+
+import java.util.HashMap;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -24,7 +31,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-public class Robot extends LoggedRobot {
+public class Robot extends DynamicTimedRobot {
   private Command m_autonomousCommand;
   // Configuration constants
   public static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
@@ -53,7 +60,7 @@ public class Robot extends LoggedRobot {
 
       case REPLAY:
         // Replaying a log, set up replay source
-        setUseTiming(false); // Run as fast as possible
+        // setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog();
         Logger.setReplaySource(new WPILOGReader(logPath));
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
@@ -88,6 +95,8 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
 
     m_robotContainer = new RobotContainer();
+
+    addAllSubsystems(m_robotContainer.getAllSubsystems());
 
     m_robotContainer.setAlliance(redAlliance);
 
@@ -200,4 +209,10 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {}
+  
+  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> subsystems) {
+    for (Subsystems key : subsystems.keySet()) {
+      addSubsystem(key, subsystems.get(key).getFirst(), subsystems.get(key).getSecond().getFirst(), subsystems.get(key).getSecond().getSecond());
+    }
+  }
 }
