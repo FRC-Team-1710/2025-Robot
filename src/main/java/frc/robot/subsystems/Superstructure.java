@@ -1283,7 +1283,7 @@ public class Superstructure {
     return autopilot.atTarget(drivetrain.getPose(), currentTarget);
   }
 
-  @Logged(name = "RobotOnWrongHalfOfReefFace", importance = Importance.INFO)
+  // @Logged(name = "RobotOnWrongHalfOfReefFace", importance = Importance.INFO)
   public boolean isRobotOnWrongHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1296,7 +1296,7 @@ public class Superstructure {
     return dotProduct > 0;
   }
 
-  @Logged(name = "RobotOnLeftHalfOfReefFace", importance = Importance.INFO)
+  // @Logged(name = "RobotOnLeftHalfOfReefFace", importance = Importance.INFO)
   public boolean isRobotOnLeftHalfOfReefFace(Pose2d pose) {
     Translation2d relativeTranslation =
         drivetrain.getPose().getTranslation().minus(pose.getTranslation());
@@ -1310,13 +1310,13 @@ public class Superstructure {
     return dotProduct < 0;
   }
 
-  @Logged(name = "ProcessorRotation", importance = Importance.CRITICAL)
+  // @Logged(name = "ProcessorRotation", importance = Importance.CRITICAL)
   private Rotation2d getProcessorRotation() {
     return Rotation2d.fromDegrees(
         isRedAlliance ? onOtherHalfOfField() ? 270 : 90 : onOtherHalfOfField() ? 90 : 270);
   }
 
-  @Logged(name = "TargetSourcePoseAuto", importance = Importance.CRITICAL)
+  // @Logged(name = "TargetSourcePoseAuto", importance = Importance.CRITICAL)
   private Pose2d targetSourcePoseAuto(Pose2d pose) {
     if (DriverStation.isAutonomous()) {
       return new Pose2d(
@@ -1362,7 +1362,7 @@ public class Superstructure {
                 new Rotation2d()));
   }
 
-  @Logged(name = "TargetPose", importance = Importance.CRITICAL)
+  // @Logged(name = "TargetPose", importance = Importance.CRITICAL)
   private Pose2d getTargetPose() {
     return new Pose2d(
             FieldConstants.aprilTags
@@ -1376,7 +1376,7 @@ public class Superstructure {
                 offsetX, isTargetSideLeft() ? -offsetY : offsetY, new Rotation2d(Math.PI)));
   }
 
-  @Logged(name = "DrivetrainNearTarget", importance = Importance.CRITICAL)
+  // @Logged(name = "DrivetrainNearTarget", importance = Importance.CRITICAL)
   private boolean isDrivetrainNearTarget() {
     return Math.abs(
             new Pose2d(

@@ -13,7 +13,6 @@ import frc.robot.subsystems.Superstructure.ReefFaces;
 import frc.robot.subsystems.Superstructure.ReefLevel;
 import frc.robot.subsystems.Superstructure.ReefSide;
 import java.util.ArrayList;
-import org.littletonrobotics.junction.Logger;
 
 public class SimCoral {
   private static ArrayList<Pose3d> poses = new ArrayList<>();
@@ -265,7 +264,7 @@ public class SimCoral {
       for (int i = 0; i < poses.size(); i++) {
         newPoses[i] = poses.get(i);
       }
-      Logger.recordOutput("SimCoralPoses", newPoses);
+      // Logger.recordOutput("SimCoralPoses", newPoses);
     }
   }
 

@@ -35,16 +35,16 @@ public class VisionIOPhotonVision implements VisionIO {
   @NotLogged private Transform3d robotToCamera;
   @NotLogged final Supplier<VisionParameters> visionParams;
 
-  @Logged(name = "Results", importance = Importance.CRITICAL)
+  // @Logged(name = "Results", importance = Importance.CRITICAL)
   List<PhotonPipelineResult> cameraResults;
 
   @Logged(name = "LatestResults", importance = Importance.CRITICAL)
   PhotonPipelineResult latestResult;
 
-  @Logged(name = "Targets", importance = Importance.CRITICAL)
+  // @Logged(name = "Targets", importance = Importance.CRITICAL)
   List<PhotonTrackedTarget> cameraTargets;
 
-  @Logged(name = "Target", importance = Importance.CRITICAL)
+  // @Logged(name = "Target", importance = Importance.CRITICAL)
   PhotonTrackedTarget target;
 
   @Logged(name = "LastAcceptedPose", importance = Importance.CRITICAL)
@@ -170,7 +170,7 @@ public class VisionIOPhotonVision implements VisionIO {
    *
    * @return Least ambiguous AprilTag in camera's view
    */
-  @Logged(name = "BestTarget", importance = Importance.CRITICAL)
+  // @Logged(name = "BestTarget", importance = Importance.CRITICAL)
   public PhotonTrackedTarget getBestTarget() {
     return latestResult.getBestTarget();
   }

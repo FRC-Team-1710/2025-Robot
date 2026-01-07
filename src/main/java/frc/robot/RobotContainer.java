@@ -46,8 +46,9 @@ import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.TunableController;
 import frc.robot.utils.TunableController.TunableControllerType;
+import frc.robot.utils.customLogger.SimplyLogged;
 
-@Logged
+@SimplyLogged(name = "RobotContainer")
 public class RobotContainer {
   // Logged in ds
   @NotLogged
@@ -66,16 +67,16 @@ public class RobotContainer {
 
   @NotLogged private final Joystick reefTargetingSystem = new Joystick(2);
 
-  @Logged(name = "Drivetrain", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Drivetrain")
   public final Drive drivetrain;
 
-  @Logged(name = "Manipulator", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Manipulator")
   public final Manipulator manipulator;
 
-  @Logged(name = "Elevator", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Elevator")
   public final Elevator elevator;
 
-  @Logged(name = "Funnel", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Funnel")
   public final Funnel funnel;
 
   @Logged(name = "Climber", importance = Importance.CRITICAL)

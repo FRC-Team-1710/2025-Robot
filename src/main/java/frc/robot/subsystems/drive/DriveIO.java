@@ -130,8 +130,7 @@ public interface DriveIO {
     public boolean gyroConnected = false;
 
     // Module position arrays
-    @NotLogged
-    public double[][] drivePositions = new double[Constants.PP_CONFIG.numModules][0];
+    @NotLogged public double[][] drivePositions = new double[Constants.PP_CONFIG.numModules][0];
 
     @NotLogged
     public Rotation2d[][] steerPositions = new Rotation2d[Constants.PP_CONFIG.numModules][0];

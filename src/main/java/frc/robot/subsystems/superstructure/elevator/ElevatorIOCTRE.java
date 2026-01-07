@@ -40,7 +40,7 @@ public class ElevatorIOCTRE implements ElevatorIO {
   public final TalonFX leader = new TalonFX(11);
 
   /** The follower TalonFX motor controller (CAN ID: 12) */
-  @Logged(name = "Leader", importance = Importance.CRITICAL)
+  @Logged(name = "Follower", importance = Importance.CRITICAL)
   public final TalonFX follower = new TalonFX(12);
 
   // Torques

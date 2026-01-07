@@ -118,7 +118,7 @@ public class AutosBuilder {
     }
   }
 
-  @Logged(name = "ValidateAuto", importance = Importance.CRITICAL)
+  // @Logged(name = "ValidateAuto", importance = Importance.CRITICAL)
   public String validateAuto(String input) {
     boolean first = true;
     for (int i = 0; i < input.length(); i++) {

@@ -36,13 +36,13 @@ public class Vision extends SubsystemBase {
 
   @NotLogged private final VisionConsumer consumer;
 
-  @Logged(name = "IO", importance = Importance.CRITICAL)
+  // @Logged(name = "IO", importance = Importance.CRITICAL)
   private final VisionIO[] io;
 
   @Logged(name = "AlgaeCam", importance = Importance.CRITICAL)
   private final VisionIOAlgae algaeCamera;
 
-  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  // @Logged(name = "Inputs", importance = Importance.CRITICAL)
   private final VisionIOInputs[] inputs;
 
   // private final Alert[] disconnectedAlerts;
@@ -67,7 +67,7 @@ public class Vision extends SubsystemBase {
    * Lists to store vision measurements and poses. These are maintained at the class level to allow
    * for logging during both real and simulation operation.
    */
-  @Logged(name = "Measurements", importance = Importance.CRITICAL)
+  // @Logged(name = "Measurements", importance = Importance.CRITICAL)
   private List<VisionMeasurement> measurements = new ArrayList<>();
 
   @Logged(name = "TagPoses", importance = Importance.CRITICAL)

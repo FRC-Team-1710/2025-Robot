@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO.ElevatorIOInputs;
+import frc.robot.utils.customLogger.SimplyLogged;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -17,28 +18,28 @@ import java.util.function.DoubleSupplier;
  * The Elevator subsystem controls a dual-motor mechanism for game piece manipulation. It supports
  * multiple distances for different game actions
  */
-@Logged
+@SimplyLogged(name = "Elevator")
 public class Elevator {
   // Hardware interface and inputs
-  @Logged(name = "IO", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "IO")
   private final ElevatorIO io;
 
-  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Inputs")
   private final ElevatorIOInputs inputs;
 
   // Current elevator distance mode
-  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "CurrentState")
   private ElevatorStates currentState = ElevatorStates.INTAKE;
 
-  @Logged(name = "Timer", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Timer")
   private final Timer timer = new Timer();
 
   @NotLogged private boolean doneZeroing = false;
 
-  @Logged(name = "CanMoveUp", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "CanMoveUp")
   private final BooleanSupplier canMoveUp;
 
-  @Logged(name = "ManualOverride", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "ManualOverride")
   private final DoubleSupplier manualSupplier;
 
   /**

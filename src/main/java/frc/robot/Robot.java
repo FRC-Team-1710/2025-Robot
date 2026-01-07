@@ -5,9 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.epilogue.Epilogue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,42 +16,46 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.SimCoral;
+import frc.robot.utils.customLogger.SimplyLogged;
+import frc.robot.utils.customLogger.SimplyLogger;
 import java.util.Optional;
 
-@Logged
+@SimplyLogged(name = "Robot")
 public class Robot extends TimedRobot {
-  @Logged(name = "AutonomousCommand", importance = Importance.DEBUG)
+  @SimplyLogged(name = "AutonomousCommand")
   private Command m_autonomousCommand;
 
   // Configuration constants
-  @Logged(name = "BeforeMatch", importance = Importance.DEBUG)
+  @SimplyLogged(name = "BeforeMatch")
   public static volatile boolean BEFORE_MATCH = true; // Controls MT1-only usage before match
 
-  @Logged(name = "RobotContainer", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "RobotContainer")
   private final RobotContainer m_robotContainer;
 
-  @Logged(name = "RedAlliance", importance = Importance.DEBUG)
+  @SimplyLogged(name = "RedAlliance")
   private static boolean redAlliance;
+
+  private SimplyLogger logger;
 
   Timer m_gcTimer = new Timer();
 
   public Robot() {
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    Epilogue.configure(
-        config -> {
-          if (isSimulation()) {
-            config.errorHandler = ErrorHandler.crashOnError();
-          } else {
-            config.errorHandler = ErrorHandler.printErrorMessages();
-          }
+    // Epilogue.configure(
+    //     config -> {
+    //       if (isSimulation()) {
+    //         config.errorHandler = ErrorHandler.crashOnError();
+    //       } else {
+    //         config.errorHandler = ErrorHandler.printErrorMessages();
+    //       }
 
-          config.root = "Telemetry";
+    //       config.root = "Telemetry";
 
-          config.minimumImportance = Constants.importance;
-        });
+    //       config.minimumImportance = Constants.importance;
+    //     });
 
-    Epilogue.bind(this);
+    // Epilogue.bind(this);
 
     DataLogManager.start();
 
@@ -84,6 +85,10 @@ public class Robot extends TimedRobot {
     m_gcTimer.start();
 
     Threads.setCurrentThreadPriority(false, 10);
+
+    logger = new SimplyLogger(this);
+
+    for (String val : logger.getResults().values()) System.out.println(val);
   }
 
   @Override

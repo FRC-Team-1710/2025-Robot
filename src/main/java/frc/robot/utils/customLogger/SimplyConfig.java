@@ -16,7 +16,9 @@ public class SimplyConfig {
 
   public Priorities minimumProperty = Priorities.DEBUG;
 
-  public String root = "Robot";
+  public String root = "Logger";
+
+  public boolean crashOnError = false;
 
   public SimplyConfig() {}
 
@@ -42,6 +44,11 @@ public class SimplyConfig {
 
   public SimplyConfig withRoot(String root) {
     this.root = root;
+    return this;
+  }
+
+  public SimplyConfig withCrashOnError(boolean crashOnError) {
+    this.crashOnError = crashOnError;
     return this;
   }
 }

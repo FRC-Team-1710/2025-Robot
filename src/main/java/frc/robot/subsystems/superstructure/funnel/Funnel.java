@@ -13,6 +13,7 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.subsystems.superstructure.funnel.FunnelIO.FunnelIOInputs;
+import frc.robot.utils.customLogger.SimplyLogged;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -20,19 +21,19 @@ import java.util.function.BooleanSupplier;
  * multiple positions for different game actions and provides both open-loop and closed-loop control
  * options.
  */
-@Logged
+@SimplyLogged(name = "Funnel")
 public class Funnel {
   // Hardware interface and inputs
-  @Logged(name = "IO", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "IO")
   private final FunnelIO io;
 
-  @Logged(name = "Inputs", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Inputs")
   private final FunnelIOInputs inputs;
 
-  @Logged(name = "CurrentState", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "CurrentState")
   private FunnelState currentState = FunnelState.INTAKE;
 
-  @Logged(name = "Bump", importance = Importance.CRITICAL)
+  @SimplyLogged(name = "Bump")
   private final BooleanSupplier bumpBoolean;
 
   public Funnel(FunnelIO io, BooleanSupplier bumpBoolean) {

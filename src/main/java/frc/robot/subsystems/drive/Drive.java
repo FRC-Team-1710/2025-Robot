@@ -68,7 +68,7 @@ public class Drive extends SubsystemBase {
   @Logged(name = "Inputs", importance = Importance.CRITICAL)
   private final DriveIOInputs inputs;
 
-  @Logged(name = "Modules", importance = Importance.CRITICAL)
+  // @Logged(name = "Modules", importance = Importance.CRITICAL)
   private final ModuleIOInputs[] modules = ArrayBuilder.buildModuleInputs();
 
   @NotLogged
